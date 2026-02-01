@@ -246,5 +246,39 @@ export const api = {
         });
         return res.blob();
     },
+
+    // Security Alerts
+    getSecurityAlerts: async (userId: number, openOnly: boolean = false): Promise<any[]> => {
+        const url = `${API_BASE}/admin/security/alerts${openOnly ? '?openOnly=true' : ''}`;
+        const res = await fetch(url, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    getSecurityAlertStats: async (userId: number): Promise<{ totalOpen: number; criticalOpen: number }> => {
+        const res = await fetch(`${API_BASE}/admin/security/alerts/stats`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return { totalOpen: 0, criticalOpen: 0 };
+        return res.json();
+    },
+
+    acknowledgeSecurityAlert: async (userId: number, alertId: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/security/alerts/${alertId}/acknowledge`, {
+            method: 'POST',
+            headers: getHeaders(userId),
+        });
+        return res.json();
+    },
+
+    resolveSecurityAlert: async (userId: number, alertId: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/security/alerts/${alertId}/resolve`, {
+            method: 'POST',
+            headers: getHeaders(userId),
+        });
+        return res.json();
+    },
 };
 

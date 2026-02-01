@@ -12,23 +12,25 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private final AuthService authService;
+        private final AuthService authService;
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        return authService.authenticate(request)
-                .map(user -> ResponseEntity.ok(Map.of(
-                        "success", true,
-                        "user", user)))
-                .orElse(ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "message", "職員番号またはパスワードが正しくありません")));
-    }
+        @PostMapping("/login")
+        public ResponseEntity<?> login(@RequestBody LoginRequest request,
+                        jakarta.servlet.http.HttpServletRequest servletRequest) {
+                String ipAddress = servletRequest.getRemoteAddr();
+                return authService.authenticate(request, ipAddress)
+                                .map(user -> ResponseEntity.ok(Map.of(
+                                                "success", true,
+                                                "user", user)))
+                                .orElse(ResponseEntity.badRequest().body(Map.of(
+                                                "success", false,
+                                                "message", "職員番号またはパスワードが正しくありません")));
+        }
 
-    @GetMapping("/user/{id}")
-    public ResponseEntity<?> getUser(@PathVariable Long id) {
-        return authService.getUserById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+        @GetMapping("/user/{id}")
+        public ResponseEntity<?> getUser(@PathVariable Long id) {
+                return authService.getUserById(id)
+                                .map(ResponseEntity::ok)
+                                .orElse(ResponseEntity.notFound().build());
+        }
 }

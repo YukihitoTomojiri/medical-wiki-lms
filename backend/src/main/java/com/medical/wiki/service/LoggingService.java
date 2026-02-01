@@ -13,11 +13,13 @@ import java.time.LocalDateTime;
 public class LoggingService {
     private final SystemLogRepository logRepository;
     private final jakarta.servlet.http.HttpServletRequest request;
+    private final com.medical.wiki.repository.UserRepository userRepository;
+    private final SecurityAnomalyService securityAnomalyService;
 
     @Transactional
     public void log(String action, String target, String description, String performedBy) {
         String ipAddress = request.getRemoteAddr();
-        
+
         SystemLog log = SystemLog.builder()
                 .timestamp(LocalDateTime.now())
                 .action(action)
@@ -27,5 +29,10 @@ public class LoggingService {
                 .ipAddress(ipAddress)
                 .build();
         logRepository.save(log);
+
+        // Trigger Security Check
+        userRepository.findByEmployeeId(performedBy).ifPresent(user -> {
+            securityAnomalyService.checkAccessAnomaly(user, action, ipAddress);
+        });
     }
 }

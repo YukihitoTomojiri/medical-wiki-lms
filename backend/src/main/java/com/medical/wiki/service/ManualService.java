@@ -23,10 +23,10 @@ public class ManualService {
     private final ProgressRepository progressRepository;
     private final UserRepository userRepository;
     private final LoggingService loggingService;
+    private final SecurityAnomalyService securityAnomalyService;
     private final String uploadDir = "/app/uploads/manuals";
 
     public List<ManualDto> getAllManuals(Long userId) {
-
         List<Manual> manuals = manualRepository.findAllByOrderByCreatedAtDesc();
         Set<Long> readManualIds = progressRepository.findByUserId(userId)
                 .stream()
@@ -73,8 +73,9 @@ public class ManualService {
                 .build();
 
         Manual newManual = manualRepository.save(manual);
-        loggingService.log("MANUAL_CREATE", newManual.getTitle(), "Manual created by " + author.getName(), author.getEmployeeId());
-        
+        loggingService.log("MANUAL_CREATE", newManual.getTitle(), "Manual created by " + author.getName(),
+                author.getEmployeeId());
+
         return ManualDto.fromEntity(newManual);
     }
 
@@ -96,12 +97,10 @@ public class ManualService {
                         executorName = userRepository.findById(executorId).map(User::getName).orElse("ADMIN");
                     }
                     loggingService.log("MANUAL_UPDATE", saved.getTitle(), "Manual updated", executorName);
-                    
+
                     return ManualDto.fromEntity(saved);
                 });
     }
-
-
 
     public List<String> getAllCategories() {
         return manualRepository.findAll().stream()
@@ -116,20 +115,20 @@ public class ManualService {
         if (!Files.exists(root)) {
             Files.createDirectories(root);
         }
-        
+
         String filename = "manual_" + manualId + ".pdf";
         Path filepath = root.resolve(filename);
         Files.copy(file.getInputStream(), filepath, StandardCopyOption.REPLACE_EXISTING);
-        
+
         Manual manual = manualRepository.findById(manualId)
                 .orElseThrow(() -> new RuntimeException("Manual not found"));
         manual.setPdfPath(filename);
         manualRepository.save(manual);
-        
+
         return filename;
     }
 
-    public Optional<Resource> getPdfResource(Long manualId) {
+    public Optional<Resource> getPdfResource(Long manualId, Long userId, String ipAddress) {
         return manualRepository.findById(manualId)
                 .flatMap(manual -> {
                     if (manual.getPdfPath() == null) {
@@ -139,6 +138,14 @@ public class ManualService {
                         Path file = Paths.get(uploadDir).resolve(manual.getPdfPath());
                         Resource resource = new UrlResource(file.toUri());
                         if (resource.exists() || resource.isReadable()) {
+                            // Log and Check Anomaly
+                            if (userId != null) {
+                                userRepository.findById(userId).ifPresent(user -> {
+                                    loggingService.log("MANUAL_DOWNLOAD", manual.getTitle(), "Manual PDF Downloaded",
+                                            user.getEmployeeId());
+                                    securityAnomalyService.checkMassDownload(user, ipAddress);
+                                });
+                            }
                             return Optional.of(resource);
                         }
                     } catch (Exception e) {
