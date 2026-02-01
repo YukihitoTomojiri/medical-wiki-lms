@@ -31,4 +31,6 @@ public interface SecurityAnomalyRepository extends JpaRepository<SecurityAnomaly
 
     @Query("SELECT COUNT(s) FROM SecurityAnomaly s WHERE s.status = 'OPEN' AND s.severity IN ('HIGH', 'CRITICAL')")
     long countCriticalOpenAlerts();
+
+    long countByDetectedAtAfter(LocalDateTime detectedAt);
 }

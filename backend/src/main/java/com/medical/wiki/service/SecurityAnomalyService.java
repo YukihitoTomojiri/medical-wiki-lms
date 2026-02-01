@@ -19,6 +19,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,46 +32,41 @@ public class SecurityAnomalyService {
 
     private static final ZoneId JST = ZoneId.of("Asia/Tokyo");
 
-    // Late Night Definition (00:00 - 05:00 JST)
-    private static final int LATE_NIGHT_START_HOUR = 0;
-    private static final int LATE_NIGHT_END_HOUR = 5;
-
     // Thresholds
-    private static final int LATE_NIGHT_DOWNLOAD_THRESHOLD = 5;
-    private static final int LATE_NIGHT_DOWNLOAD_WINDOW_MINUTES = 1;
-
+    private static final int RAPID_IMPORTANT_ACTION_THRESHOLD = 5;
+    private static final int RAPID_IMPORTANT_ACTION_WINDOW_MINUTES = 1;
     private static final int CONSECUTIVE_LOGIN_FAILURE_THRESHOLD = 3;
 
+    private static final Set<String> IMPORTANT_ACTIONS = Set.of(
+            "MANUAL_DOWNLOAD", "MANUAL_DELETE", "USER_DELETE", "USER_GRANT_ROLE");
+
     /**
-     * Check for Late Night Mass Download Anomaly
-     * Rule: Late Night (0-5) AND >5 downloads in 1 minute.
+     * Check for Rapid Important Action Anomaly
+     * Rule: >5 important actions in 1 minute.
      */
     @Transactional
-    public void checkDownloadAnomaly(User user, String ipAddress) {
-        ZonedDateTime nowJst = ZonedDateTime.now(JST);
-
-        // Only check if Late Night
-        if (!isLateNightAccess(nowJst)) {
+    public void checkImportantActionAnomaly(User user, String action, String ipAddress) {
+        if (!IMPORTANT_ACTIONS.contains(action)) {
             return;
         }
 
+        ZonedDateTime nowJst = ZonedDateTime.now(JST);
         LocalDateTime now = nowJst.toLocalDateTime();
-        LocalDateTime since = now.minusMinutes(LATE_NIGHT_DOWNLOAD_WINDOW_MINUTES);
+        LocalDateTime since = now.minusMinutes(RAPID_IMPORTANT_ACTION_WINDOW_MINUTES);
 
         long count = systemLogRepository.countByPerformedByAndActionAndTimestampAfter(
-                user.getEmployeeId(), "MANUAL_DOWNLOAD", since);
+                user.getEmployeeId(), action, since);
 
-        if (count >= LATE_NIGHT_DOWNLOAD_THRESHOLD) {
-            // Check for recent alerts to avoid duplicate spam
+        if (count >= RAPID_IMPORTANT_ACTION_THRESHOLD) {
             long recentAlerts = securityAnomalyRepository.countByUserIdAndTypeAndDetectedAtAfter(
-                    user.getId(), AnomalyType.MASS_DOWNLOAD, since.minusMinutes(5)); // Debounce 5 mins
+                    user.getId(), AnomalyType.RAPID_ACCESS, since.minusMinutes(5));
 
             if (recentAlerts == 0) {
                 createAnomaly(
-                        AnomalyType.MASS_DOWNLOAD,
+                        AnomalyType.RAPID_ACCESS,
                         user,
                         Severity.HIGH,
-                        String.format("深夜帯(%d件/分)の大量ダウンロードを検知", count),
+                        String.format("短時間の重要操作検知(%s: %d回/分)", action, count),
                         ipAddress,
                         now);
             }
@@ -95,26 +91,6 @@ public class SecurityAnomalyService {
 
         if (allFailures) {
             LocalDateTime now = ZonedDateTime.now(JST).toLocalDateTime();
-
-            // Check if alert already exists recently (e.g. in last 10 mins)
-            // Note: repository countByUserId... uses Long userId. We might not have userId
-            // for failed login if users don't exist.
-            // But we can check via manual query or just ignore dedupe for invalid users?
-            // Or add countByEmployeeId... to repo.
-            // For now, let's assume valid users mostly.
-            // If employeeId corresponds to a user, we can fetch userId?
-            // Actually, let's stick to simple logic: Just record it strictly.
-            // But deduplication is good.
-
-            // Since we don't have User object easily here without repo, let's just record.
-            // The constraint "Only record..." implies we should be strict on triggering
-            // conditions.
-            // If user keeps failing, we keep recording every 3rd failure? (1,2,3 -> alert.
-            // 2,3,4 -> alert?)
-            // If I look at top 3, and they are F,F,F.
-            // When 4th failure comes, top 3 are F,F,F (newest). Alert again.
-            // This is acceptable behavior for brute force attack (noisy is better than
-            // silent).
 
             SecurityAnomaly anomaly = SecurityAnomaly.builder()
                     .type(AnomalyType.LOGIN_FAILURE)
@@ -148,10 +124,23 @@ public class SecurityAnomalyService {
     }
 
     public Map<String, Long> getAlertStats() {
+        LocalDateTime last24h = LocalDateTime.now(JST).minusHours(24);
+
+        long totalOpen = securityAnomalyRepository.countOpenAlerts();
+        long criticalOpen = securityAnomalyRepository.countCriticalOpenAlerts();
+        // Note: Repository needs method for 24h count.
+        // Or I can just fetch all open/recent and count in memory if dataset is small?
+        // Better to add repository method `countByDetectedAtAfter(LocalDateTime
+        // since)`.
+        long alerts24h = securityAnomalyRepository.countByDetectedAtAfter(last24h);
+
         return Map.of(
-                "totalOpen", securityAnomalyRepository.countOpenAlerts(),
-                "criticalOpen", securityAnomalyRepository.countCriticalOpenAlerts());
+                "totalOpen", totalOpen,
+                "criticalOpen", criticalOpen,
+                "alerts24h", alerts24h);
     }
+
+    // ... rest of the file ... (acknowledgeAlert, resolveAlert, createAnomaly)
 
     @Transactional
     public SecurityAnomalyDto acknowledgeAlert(Long id) {
@@ -169,13 +158,6 @@ public class SecurityAnomalyService {
         anomaly.setStatus(Status.RESOLVED);
         securityAnomalyRepository.save(anomaly);
         return SecurityAnomalyDto.fromEntity(anomaly);
-    }
-
-    // Helpers
-
-    private boolean isLateNightAccess(ZonedDateTime jstTime) {
-        int hour = jstTime.getHour();
-        return hour >= LATE_NIGHT_START_HOUR && hour < LATE_NIGHT_END_HOUR;
     }
 
     private void createAnomaly(AnomalyType type, User user, Severity severity,

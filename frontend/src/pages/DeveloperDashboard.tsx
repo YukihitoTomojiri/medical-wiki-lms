@@ -73,7 +73,7 @@ export default function DeveloperDashboard() {
         dbPing: 0
     });
     const [securityAlerts, setSecurityAlerts] = useState<any[]>([]);
-    const [alertStats, setAlertStats] = useState({ totalOpen: 0, criticalOpen: 0 });
+    const [alertStats, setAlertStats] = useState({ totalOpen: 0, criticalOpen: 0, alerts24h: 0 });
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -539,7 +539,7 @@ export default function DeveloperDashboard() {
                 {activeTab === 'system' ? (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {/* Status Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                             {/* DB Status */}
                             <div className={`p-5 rounded-2xl border flex items-center gap-4 shadow-sm transition-all ${stats.dbStatus === 'Connected'
                                 ? 'bg-emerald-50 border-emerald-100'
@@ -595,6 +595,21 @@ export default function DeveloperDashboard() {
                                     <p className="font-bold text-2xl text-gray-800">{computedStats.facilities}</p>
                                 </div>
                             </div>
+
+                            {/* 24h Alerts Widget */}
+                            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                                <div className={`p-3 rounded-xl ${alertStats.alerts24h === 0 ? 'bg-emerald-100 text-emerald-600' :
+                                    alertStats.alerts24h < 5 ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'}`}>
+                                    <Activity size={24} />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500 font-medium">Alerts (24h)</p>
+                                    <p className={`font-bold text-2xl ${alertStats.alerts24h === 0 ? 'text-emerald-600' :
+                                        alertStats.alerts24h < 5 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                        {alertStats.alerts24h}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Security Alerts Section */}
@@ -642,20 +657,20 @@ export default function DeveloperDashboard() {
                                             <div
                                                 key={alert.id}
                                                 className={`p-4 rounded-2xl border flex items-center gap-4 transition-all ${alert.status === 'RESOLVED'
-                                                        ? 'bg-gray-50 border-gray-100 opacity-60'
-                                                        : alert.severity === 'CRITICAL'
-                                                            ? 'bg-red-50 border-red-200'
-                                                            : alert.severity === 'HIGH'
-                                                                ? 'bg-orange-50 border-orange-200'
-                                                                : alert.severity === 'MEDIUM'
-                                                                    ? 'bg-yellow-50 border-yellow-200'
-                                                                    : 'bg-blue-50 border-blue-200'
+                                                    ? 'bg-gray-50 border-gray-100 opacity-60'
+                                                    : alert.severity === 'CRITICAL'
+                                                        ? 'bg-red-50 border-red-200'
+                                                        : alert.severity === 'HIGH'
+                                                            ? 'bg-orange-50 border-orange-200'
+                                                            : alert.severity === 'MEDIUM'
+                                                                ? 'bg-yellow-50 border-yellow-200'
+                                                                : 'bg-blue-50 border-blue-200'
                                                     }`}
                                             >
                                                 <div className={`p-2 rounded-xl ${alert.severity === 'CRITICAL' ? 'bg-red-100 text-red-600' :
-                                                        alert.severity === 'HIGH' ? 'bg-orange-100 text-orange-600' :
-                                                            alert.severity === 'MEDIUM' ? 'bg-yellow-100 text-yellow-600' :
-                                                                'bg-blue-100 text-blue-600'
+                                                    alert.severity === 'HIGH' ? 'bg-orange-100 text-orange-600' :
+                                                        alert.severity === 'MEDIUM' ? 'bg-yellow-100 text-yellow-600' :
+                                                            'bg-blue-100 text-blue-600'
                                                     }`}>
                                                     {alert.type === 'LATE_NIGHT_ACCESS' ? <Clock size={20} /> :
                                                         alert.type === 'RAPID_ACCESS' ? <AlertTriangle size={20} /> :
@@ -668,15 +683,15 @@ export default function DeveloperDashboard() {
                                                             {alert.typeDisplayName}
                                                         </span>
                                                         <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${alert.severity === 'CRITICAL' ? 'bg-red-200 text-red-800' :
-                                                                alert.severity === 'HIGH' ? 'bg-orange-200 text-orange-800' :
-                                                                    alert.severity === 'MEDIUM' ? 'bg-yellow-200 text-yellow-800' :
-                                                                        'bg-blue-200 text-blue-800'
+                                                            alert.severity === 'HIGH' ? 'bg-orange-200 text-orange-800' :
+                                                                alert.severity === 'MEDIUM' ? 'bg-yellow-200 text-yellow-800' :
+                                                                    'bg-blue-200 text-blue-800'
                                                             }`}>
                                                             {alert.severity}
                                                         </span>
                                                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${alert.status === 'OPEN' ? 'bg-red-100 text-red-600' :
-                                                                alert.status === 'ACKNOWLEDGED' ? 'bg-yellow-100 text-yellow-600' :
-                                                                    'bg-green-100 text-green-600'
+                                                            alert.status === 'ACKNOWLEDGED' ? 'bg-yellow-100 text-yellow-600' :
+                                                                'bg-green-100 text-green-600'
                                                             }`}>
                                                             {alert.status}
                                                         </span>
@@ -1013,7 +1028,7 @@ export default function DeveloperDashboard() {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div >
                 ) : activeTab === 'logs' ? (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                         {/* Audit Logs View */}
@@ -1251,7 +1266,8 @@ export default function DeveloperDashboard() {
                     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                         <AllUsersAdmin />
                     </div>
-                )}
+                )
+                }
 
 
                 {/* System Log Footer with Integrated Diagnostics */}
