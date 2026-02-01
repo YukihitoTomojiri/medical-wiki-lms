@@ -143,7 +143,7 @@ public class ManualService {
                                 userRepository.findById(userId).ifPresent(user -> {
                                     loggingService.log("MANUAL_DOWNLOAD", manual.getTitle(), "Manual PDF Downloaded",
                                             user.getEmployeeId());
-                                    securityAnomalyService.checkMassDownload(user, ipAddress);
+                                    securityAnomalyService.checkDownloadAnomaly(user, ipAddress);
                                 });
                             }
                             return Optional.of(resource);

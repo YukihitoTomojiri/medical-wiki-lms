@@ -14,4 +14,6 @@ public interface SystemLogRepository extends JpaRepository<SystemLog, Long> {
     List<SystemLog> findAllByOrderByTimestampDesc();
 
     long countByPerformedByAndActionAndTimestampAfter(String performedBy, String action, LocalDateTime timestamp);
+
+    List<SystemLog> findTop3ByPerformedByOrderByTimestampDesc(String performedBy);
 }

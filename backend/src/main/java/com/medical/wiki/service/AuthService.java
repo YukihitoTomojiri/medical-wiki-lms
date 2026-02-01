@@ -29,7 +29,8 @@ public class AuthService {
         }
 
         // Login failed or user not found
-        securityAnomalyService.recordLoginFailure(request.getEmployeeId(), ipAddress);
+        loggingService.log("LOGIN_FAILURE", "Auth", "Failed login attempt", request.getEmployeeId());
+        securityAnomalyService.checkLoginFailure(request.getEmployeeId(), ipAddress);
         return Optional.empty();
     }
 
