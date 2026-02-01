@@ -40,6 +40,22 @@ export const api = {
         });
         return res.json();
     },
+    forgotPassword: async (email: string): Promise<any> => {
+        const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+        });
+        return res.json();
+    },
+    resetPassword: async (token: string, password: string): Promise<any> => {
+        const res = await fetch(`${API_BASE}/auth/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, password }),
+        });
+        return res.json();
+    },
 
 
     // Manuals

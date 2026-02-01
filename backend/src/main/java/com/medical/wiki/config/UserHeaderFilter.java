@@ -1,6 +1,5 @@
 package com.medical.wiki.config;
 
-import com.medical.wiki.entity.User;
 import com.medical.wiki.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -25,9 +24,9 @@ public class UserHeaderFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        
+
         String userIdStr = request.getHeader("X-User-Id");
-        
+
         if (userIdStr != null && !userIdStr.isEmpty()) {
             try {
                 Long userId = Long.parseLong(userIdStr);

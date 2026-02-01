@@ -46,6 +46,22 @@ public class AuthController {
                 }
         }
 
+        @PostMapping("/forgot-password")
+        public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+                authService.forgotPassword(request.get("email"));
+                return ResponseEntity.ok(Map.of("success", true, "message", "Reset link sent if email exists"));
+        }
+
+        @PostMapping("/reset-password")
+        public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+                try {
+                        authService.resetPassword(request.get("token"), request.get("password"));
+                        return ResponseEntity.ok(Map.of("success", true));
+                } catch (Exception e) {
+                        return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+                }
+        }
+
         @PostMapping("/setup")
         public ResponseEntity<?> setupAccount(@RequestBody Map<String, Object> request) {
                 try {

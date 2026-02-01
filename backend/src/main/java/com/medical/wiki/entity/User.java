@@ -50,6 +50,15 @@ public class User {
     @Column(name = "invitation_token")
     private String invitationToken;
 
+    @Column(length = 100)
+    private String email;
+
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Column(name = "reset_token_expiry")
+    private LocalDateTime resetTokenExpiry;
+
     public enum Role {
         ADMIN, USER, DEVELOPER
     }

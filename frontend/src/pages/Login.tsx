@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../api';
 import { User } from '../types';
 import { BookOpen, Eye, EyeOff, LogIn, Building2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface LoginProps {
     onLogin: (user: User) => void;
@@ -58,26 +59,26 @@ export default function Login({ onLogin }: LoginProps) {
                 <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-gray-200/50 p-8 border border-white/50">
                     <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
                         <Building2 className="text-primary-500" size={20} />
-                        <span className="text-gray-600 font-medium">医療法人 職員ログイン</span>
+                        <span className="text-gray-700 font-bold text-lg">医療法人 職員ログイン</span>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-lg font-bold text-gray-900 mb-2">
                                 職員番号
                             </label>
                             <input
                                 type="text"
                                 value={employeeId}
                                 onChange={(e) => setEmployeeId(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all bg-white"
+                                className="w-full px-4 py-4 text-lg rounded-xl border-2 border-gray-200 focus:border-primary-600 focus:ring-4 focus:ring-primary-600/20 outline-none transition-all bg-white font-medium placeholder:text-gray-400"
                                 placeholder="例: user001"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-lg font-bold text-gray-900 mb-2">
                                 パスワード
                             </label>
                             <div className="relative">
@@ -85,8 +86,8 @@ export default function Login({ onLogin }: LoginProps) {
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all pr-12 bg-white"
-                                    placeholder="パスワードを入力"
+                                    className="w-full px-4 py-4 text-lg rounded-xl border-2 border-gray-200 focus:border-primary-600 focus:ring-4 focus:ring-primary-600/20 outline-none transition-all pr-12 bg-white font-medium placeholder:text-gray-400"
+                                    placeholder="パスワードを入力してください"
                                     required
                                 />
                                 <button
@@ -97,6 +98,11 @@ export default function Login({ onLogin }: LoginProps) {
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </button>
                             </div>
+                        </div>
+                        <div className="flex justify-end mt-2">
+                            <Link to="/forgot-password" className="text-sm font-bold text-primary-600 hover:text-primary-700 hover:underline transition-all">
+                                パスワードを忘れた方はこちら
+                            </Link>
                         </div>
 
                         {error && (
@@ -109,14 +115,14 @@ export default function Login({ onLogin }: LoginProps) {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-medium rounded-xl hover:from-primary-600 hover:to-primary-700 focus:ring-4 focus:ring-primary-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-primary-500/25"
+                            className="w-full py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white text-lg font-bold rounded-xl hover:from-primary-700 hover:to-primary-800 focus:ring-4 focus:ring-primary-600/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-primary-600/30"
                         >
                             {loading ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             ) : (
                                 <>
                                     <LogIn size={20} />
-                                    ログイン
+                                    ログインする
                                 </>
                             )}
                         </button>

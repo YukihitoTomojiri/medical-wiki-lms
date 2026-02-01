@@ -28,7 +28,8 @@ import {
     ShieldAlert,
     Clock,
     Eye,
-    CheckCircle2
+    CheckCircle2,
+    Key
 } from 'lucide-react';
 
 
@@ -94,6 +95,7 @@ export default function DeveloperDashboard() {
     const [isRegistering, setIsRegistering] = useState(false);
     const [registeredUser, setRegisteredUser] = useState<any>(null);
     const [showPostRegisterModal, setShowPostRegisterModal] = useState(false);
+    const [modalConfig, setModalConfig] = useState<{ title?: string, defaultTab?: 'invite' | 'temp' }>({});
 
     // Initial Load
     useEffect(() => {
@@ -265,7 +267,8 @@ export default function DeveloperDashboard() {
         setEditForm({
             role: user.role,
             facility: user.facility,
-            department: user.department
+            department: user.department,
+            email: user.email
         });
     };
 
@@ -280,7 +283,8 @@ export default function DeveloperDashboard() {
             await api.updateUser(1, id, {
                 role: editForm.role,
                 facility: editForm.facility,
-                department: editForm.department
+                department: editForm.department,
+                email: editForm.email
             });
             addLog(`User updated successfully`, 'success');
             setEditingUserId(null);
@@ -310,7 +314,8 @@ export default function DeveloperDashboard() {
         password: '',
         facility: '本館',
         department: '3階病棟',
-        role: 'USER' as const
+        role: 'USER' as const,
+        email: ''
     });
     const [csvError, setCsvError] = useState<string | null>(null);
 
@@ -325,6 +330,7 @@ export default function DeveloperDashboard() {
             if (res.id) {
                 addLog(`User registered successfully`, 'success');
                 setRegisteredUser(res);
+                setModalConfig({}); // Default for new registration
                 setShowPostRegisterModal(true);
                 setRegisterForm({
                     employeeId: '',
@@ -332,7 +338,8 @@ export default function DeveloperDashboard() {
                     password: '',
                     facility: '本館',
                     department: '3階病棟',
-                    role: 'USER'
+                    role: 'USER',
+                    email: ''
                 });
                 fetchData();
             } else {
@@ -444,6 +451,15 @@ export default function DeveloperDashboard() {
             }
         };
         reader.readAsText(file);
+    };
+
+    const openResetModal = (user: User) => {
+        setRegisteredUser(user);
+        setModalConfig({
+            title: 'User Access Control',
+            defaultTab: 'temp'
+        });
+        setShowPostRegisterModal(true);
     };
 
 
@@ -802,6 +818,16 @@ export default function DeveloperDashboard() {
                                             />
                                         </div>
                                         <div className="md:col-span-1">
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Email</label>
+                                            <input
+                                                type="email"
+                                                placeholder="user@example.com"
+                                                value={registerForm.email}
+                                                onChange={e => setRegisterForm({ ...registerForm, email: e.target.value })}
+                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                            />
+                                        </div>
+                                        <div className="md:col-span-1">
                                             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Facility</label>
                                             <select
                                                 value={registerForm.facility}
@@ -905,6 +931,7 @@ export default function DeveloperDashboard() {
                                                     </th>
                                                     <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">ID</th>
                                                     <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Identity Name</th>
+                                                    <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Email</th>
 
                                                     <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Facility</th>
                                                     <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Department</th>
@@ -930,6 +957,20 @@ export default function DeveloperDashboard() {
                                                             </td>
                                                             <td className="px-4 py-4 text-sm font-mono text-gray-400">{user.employeeId}</td>
                                                             <td className="px-4 py-4 text-sm font-extrabold text-gray-800">{user.name}</td>
+
+                                                            <td className="px-4 py-4 text-sm">
+                                                                {isEditing ? (
+                                                                    <input
+                                                                        type="email"
+                                                                        value={editForm.email || ''}
+                                                                        onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                                                                        className="w-full p-2 border-2 border-orange-200 rounded-xl text-sm bg-white focus:border-orange-500 outline-none transition-all font-bold"
+                                                                        placeholder="Email"
+                                                                    />
+                                                                ) : (
+                                                                    <span className="text-gray-500 font-mono text-xs">{user.email || '-'}</span>
+                                                                )}
+                                                            </td>
 
                                                             {/* Facility */}
                                                             <td className="px-4 py-4 text-sm">
@@ -1015,13 +1056,23 @@ export default function DeveloperDashboard() {
                                                                         </button>
                                                                     </div>
                                                                 ) : (
-                                                                    <button
-                                                                        onClick={() => startEdit(user)}
-                                                                        className="flex items-center gap-2 px-4 py-2 text-xs font-black tracking-widest text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all"
-                                                                    >
-                                                                        <Edit2 size={14} />
-                                                                        EDIT
-                                                                    </button>
+                                                                    <div className="flex justify-end gap-2">
+                                                                        <button
+                                                                            onClick={() => openResetModal(user)}
+                                                                            className="flex items-center gap-2 px-3 py-2 text-xs font-black tracking-widest text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all"
+                                                                            title="Reset Password"
+                                                                        >
+                                                                            <Key size={14} />
+                                                                            RESET
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => startEdit(user)}
+                                                                            className="flex items-center gap-2 px-4 py-2 text-xs font-black tracking-widest text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all"
+                                                                        >
+                                                                            <Edit2 size={14} />
+                                                                            EDIT
+                                                                        </button>
+                                                                    </div>
                                                                 )}
                                                             </td>
                                                         </tr>
@@ -1371,8 +1422,11 @@ export default function DeveloperDashboard() {
                 <PostRegisterModal
                     user={registeredUser}
                     onClose={() => setShowPostRegisterModal(false)}
+                    title={modalConfig.title}
+                    defaultTab={modalConfig.defaultTab}
                 />
-            )}
+            )
+            }
         </>
     );
 }
