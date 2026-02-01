@@ -213,5 +213,38 @@ export const api = {
         });
         return res.json();
     },
+
+    // Compliance Export
+    getComplianceFacilities: async (userId: number): Promise<string[]> => {
+        const res = await fetch(`${API_BASE}/admin/compliance/facilities`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    exportComplianceCsv: async (userId: number, facility?: string, start?: string, end?: string): Promise<Blob> => {
+        const params = new URLSearchParams();
+        if (facility && facility !== 'all') params.append('facility', facility);
+        if (start) params.append('start', start);
+        if (end) params.append('end', end);
+        const url = `${API_BASE}/admin/compliance/export/csv${params.toString() ? '?' + params.toString() : ''}`;
+        const res = await fetch(url, {
+            headers: getHeaders(userId),
+        });
+        return res.blob();
+    },
+
+    exportCompliancePdf: async (userId: number, facility?: string, start?: string, end?: string): Promise<Blob> => {
+        const params = new URLSearchParams();
+        if (facility && facility !== 'all') params.append('facility', facility);
+        if (start) params.append('start', start);
+        if (end) params.append('end', end);
+        const url = `${API_BASE}/admin/compliance/export/pdf${params.toString() ? '?' + params.toString() : ''}`;
+        const res = await fetch(url, {
+            headers: getHeaders(userId),
+        });
+        return res.blob();
+    },
 };
 

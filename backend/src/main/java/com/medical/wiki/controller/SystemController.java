@@ -2,14 +2,19 @@ package com.medical.wiki.controller;
 
 import com.medical.wiki.dto.UserDto;
 import com.medical.wiki.repository.SystemLogRepository;
+import com.medical.wiki.service.ComplianceExportService;
 import com.medical.wiki.service.ProgressService;
 import com.medical.wiki.service.UserService;
 import com.medical.wiki.service.LoggingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.management.ManagementFactory;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -23,6 +28,7 @@ public class SystemController {
     private final UserService userService;
     private final ProgressService progressService;
     private final LoggingService loggingService;
+    private final ComplianceExportService complianceExportService;
 
     @GetMapping("/system")
     public ResponseEntity<?> getSystemStats() {
@@ -51,6 +57,50 @@ public class SystemController {
     public ResponseEntity<?> getLogs() {
         return ResponseEntity.ok(logRepository.findTop100ByOrderByTimestampDesc());
     }
+
+    // ============ Compliance Export APIs ============
+
+    @GetMapping("/compliance/facilities")
+    public ResponseEntity<?> getDistinctFacilities() {
+        List<String> facilities = complianceExportService.getDistinctFacilities();
+        return ResponseEntity.ok(facilities);
+    }
+
+    @GetMapping("/compliance/export/csv")
+    public ResponseEntity<byte[]> exportProgressCsv(
+            @RequestParam(required = false) String facility,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+
+        byte[] csvData = complianceExportService.exportProgressCsv(facility, start, end);
+
+        String filename = String.format("compliance_report_%s.csv",
+                LocalDate.now().toString());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                .body(csvData);
+    }
+
+    @GetMapping("/compliance/export/pdf")
+    public ResponseEntity<byte[]> exportCompliancePdf(
+            @RequestParam(required = false) String facility,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+
+        byte[] pdfData = complianceExportService.exportComplianceReport(facility, start, end);
+
+        String filename = String.format("compliance_report_%s.pdf",
+                LocalDate.now().toString());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfData);
+    }
+
+    // ============ User Management APIs ============
 
     @PostMapping("/users/bulk-delete")
     public ResponseEntity<?> bulkDelete(@RequestBody List<Long> ids,

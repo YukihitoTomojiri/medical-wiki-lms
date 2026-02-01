@@ -8,8 +8,11 @@ import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmployeeId(String employeeId);
+
     List<User> findAllByRoleNot(User.Role role);
+
     List<User> findAllByDeletedAtIsNull();
+
     Optional<User> findByEmployeeIdAndDeletedAtIsNull(String employeeId);
 
     @org.springframework.data.jpa.repository.Query(value = "SELECT * FROM users", nativeQuery = true)
@@ -17,4 +20,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @org.springframework.data.jpa.repository.Query(value = "SELECT * FROM users WHERE employee_id = :employeeId", nativeQuery = true)
     Optional<User> findByEmployeeIdIncludingDeleted(@Param("employeeId") String employeeId);
+
+    // Compliance export queries
+    List<User> findByFacilityAndDeletedAtIsNull(String facility);
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT u.facility FROM User u WHERE u.deletedAt IS NULL ORDER BY u.facility")
+    List<String> findDistinctFacilities();
 }

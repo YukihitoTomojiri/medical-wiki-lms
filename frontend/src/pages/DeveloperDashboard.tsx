@@ -19,7 +19,10 @@ import {
     Terminal,
     Plus,
     Upload,
-    AlertCircle
+    AlertCircle,
+    FileDown,
+    Building2,
+    Calendar
 } from 'lucide-react';
 
 
@@ -37,7 +40,14 @@ export default function DeveloperDashboard() {
         version: '1.0.0',
     });
 
-    const [activeTab, setActiveTab] = useState<'system' | 'logs' | 'archive'>('system');
+    const [activeTab, setActiveTab] = useState<'system' | 'logs' | 'archive' | 'compliance'>('system');
+
+    // Compliance Export States
+    const [complianceFacilities, setComplianceFacilities] = useState<string[]>([]);
+    const [selectedFacility, setSelectedFacility] = useState<string>('all');
+    const [startDate, setStartDate] = useState<string>('');
+    const [endDate, setEndDate] = useState<string>('');
+    const [exporting, setExporting] = useState(false);
 
     // Data States
     const [userList, setUserList] = useState<User[]>([]);
@@ -470,6 +480,20 @@ export default function DeveloperDashboard() {
                             : 'text-gray-500 hover:text-gray-700'}`}
                     >
                         User Archive
+                    </button>
+                    <button
+                        onClick={() => {
+                            setActiveTab('compliance');
+                            // Fetch facilities when tab is selected
+                            api.getComplianceFacilities(1)
+                                .then(data => setComplianceFacilities(data))
+                                .catch(console.error);
+                        }}
+                        className={`px-6 py-2.5 rounded-lg text-sm font-black tracking-wide transition-all ${activeTab === 'compliance'
+                            ? 'bg-white text-gray-800 shadow-sm ring-1 ring-black/5'
+                            : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        Compliance Export
                     </button>
                 </div>
 
@@ -909,6 +933,151 @@ export default function DeveloperDashboard() {
                                             <p className="text-slate-600 text-[10px] mt-2 font-medium">System activity logs will appear here</p>
                                         </div>
                                     )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : activeTab === 'compliance' ? (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-6">
+                        {/* Header */}
+                        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                            <div className="flex items-center gap-3 mb-2">
+                                <FileDown className="text-blue-600" size={24} />
+                                <h2 className="text-xl font-black text-gray-800">Compliance Export</h2>
+                            </div>
+                            <p className="text-sm text-gray-500">
+                                施設・期間を選択して、学習進捗データをCSV/PDF形式でエクスポートします。
+                            </p>
+                        </div>
+
+                        {/* Filter Section */}
+                        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                            <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+                                <Building2 size={16} />
+                                フィルター設定
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* Facility Dropdown */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">施設</label>
+                                    <select
+                                        value={selectedFacility}
+                                        onChange={(e) => setSelectedFacility(e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                        <option value="all">全施設</option>
+                                        {complianceFacilities.map(f => (
+                                            <option key={f} value={f}>{f}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Start Date */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
+                                        <Calendar size={12} />
+                                        開始日
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                {/* End Date */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
+                                        <Calendar size={12} />
+                                        終了日
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Export Buttons */}
+                        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                            <h3 className="text-sm font-bold text-gray-700 mb-4">エクスポート</h3>
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={async () => {
+                                        setExporting(true);
+                                        try {
+                                            const blob = await api.exportComplianceCsv(1, selectedFacility, startDate, endDate);
+                                            const url = window.URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.style.display = 'none';
+                                            a.href = url;
+                                            const filename = `compliance_report_${new Date().toISOString().split('T')[0]}.csv`;
+                                            a.download = filename;
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            document.body.removeChild(a);
+                                            window.URL.revokeObjectURL(url);
+                                            addLog('CSV exported successfully', 'success');
+                                        } catch (e) {
+                                            console.error(e);
+                                            addLog('CSV export failed', 'error');
+                                        } finally {
+                                            setExporting(false);
+                                        }
+                                    }}
+                                    disabled={exporting}
+                                    className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-sm"
+                                >
+                                    <FileDown size={18} />
+                                    {exporting ? 'Exporting...' : 'CSV ダウンロード'}
+                                </button>
+
+                                <button
+                                    onClick={async () => {
+                                        setExporting(true);
+                                        try {
+                                            const blob = await api.exportCompliancePdf(1, selectedFacility, startDate, endDate);
+                                            const url = window.URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.style.display = 'none';
+                                            a.href = url;
+                                            const filename = `compliance_report_${new Date().toISOString().split('T')[0]}.pdf`;
+                                            a.download = filename;
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            document.body.removeChild(a);
+                                            window.URL.revokeObjectURL(url);
+                                            addLog('PDF exported successfully', 'success');
+                                        } catch (e) {
+                                            console.error(e);
+                                            addLog('PDF export failed', 'error');
+                                        } finally {
+                                            setExporting(false);
+                                        }
+                                    }}
+                                    disabled={exporting}
+                                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors disabled:opacity-50 shadow-sm"
+                                >
+                                    <FileText size={18} />
+                                    {exporting ? 'Exporting...' : 'PDF ダウンロード'}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Info Card */}
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                            <div className="flex gap-3">
+                                <AlertCircle className="text-blue-600 shrink-0" size={20} />
+                                <div className="text-sm text-blue-800">
+                                    <p className="font-bold mb-1">エクスポート内容</p>
+                                    <ul className="list-disc list-inside text-blue-700 space-y-1">
+                                        <li>CSV: ユーザー × マニュアル進捗マトリクス（Excel対応）</li>
+                                        <li>PDF: サマリーレポート（完了率統計、ユーザー一覧）</li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
