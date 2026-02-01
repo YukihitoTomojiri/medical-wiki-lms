@@ -23,8 +23,7 @@ import {
     Clock,
     Cpu
 } from 'lucide-react';
-
-
+import SystemHealthFooter from '../components/SystemHealthFooter';
 
 interface LogEntry {
     id: number;
@@ -419,7 +418,10 @@ export default function DeveloperDashboard() {
                 }}
                 isLoading={isRegistering}
             />
-            <div className="space-y-4 pb-10 max-w-7xl mx-auto px-4 sm:px-6">
+
+            <SystemHealthFooter stats={stats} diagnostics={diagnostics} />
+
+            <div className="space-y-4 pb-24 max-w-7xl mx-auto px-4 sm:px-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
@@ -477,7 +479,6 @@ export default function DeveloperDashboard() {
 
                 {activeTab === 'system' ? (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        {/* Status Cards */}
                         {/* Status Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
                             {/* DB Status */}
@@ -667,36 +668,6 @@ export default function DeveloperDashboard() {
                                                 REGISTER
                                             </button>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* System Health Horizontal Mini-Section */}
-                            <div className="bg-gray-50/50 rounded-xl border border-gray-100 p-3 flex items-center justify-between shadow-sm">
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-2">
-                                        <Activity size={16} className="text-orange-500" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">System Health</span>
-                                    </div>
-                                    <div className="h-4 w-px bg-gray-200" />
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex items-center gap-2">
-                                            <p className="text-[8px] font-black uppercase tracking-widest text-gray-400">Latency</p>
-                                            <p className="text-xs font-black text-emerald-600 font-mono tracking-tight">{diagnostics.dbPing}ms</p>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <p className="text-[8px] font-black uppercase tracking-widest text-gray-400">Environment</p>
-                                            <div className="px-2 py-0.5 bg-white border border-gray-100 rounded text-[8px] font-black uppercase tracking-widest text-slate-500">
-                                                medical-wiki-backend
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <p className="text-[8px] font-black uppercase tracking-widest text-gray-400">Status</p>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className={`w-1.5 h-1.5 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                                        <span className="font-black text-[10px] uppercase tracking-wider text-gray-600">Production Node Online</span>
                                     </div>
                                 </div>
                             </div>
@@ -1010,9 +981,7 @@ export default function DeveloperDashboard() {
                         {logs.length === 0 && <span className="text-slate-600 italic px-2">System initialized. Waiting for events...</span>}
                     </div>
                 </div>
-            </div >
+            </div>
         </>
     );
 }
-
-
