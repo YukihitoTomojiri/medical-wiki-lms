@@ -642,61 +642,6 @@ export default function DeveloperDashboard() {
                                 </div>
                             </div>
 
-                            {/* System Status Banner */}
-                            <div className="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden group border border-slate-700">
-                                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700 group-hover:opacity-10">
-                                    <Terminal size={160} />
-                                </div>
-                                <div className="relative z-10">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-xl font-black flex items-center gap-3 tracking-tight">
-                                            <Activity className="text-orange-500 animate-pulse" />
-                                            System Diagnostics
-                                        </h3>
-                                        <div className="flex gap-4">
-                                            <div className="px-3 py-1 bg-white/5 rounded-lg border border-white/10 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                                                Node: medical-wiki-backend
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-8">
-                                        <div className="space-y-2">
-                                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">DB Latency</p>
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-2xl font-black text-emerald-400 font-mono tracking-tighter">
-                                                    {diagnostics.dbPing}
-                                                </span>
-                                                <span className="text-xs font-bold text-slate-500">ms</span>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">System Uptime</p>
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-2xl font-black text-orange-400 font-mono tracking-tighter">
-                                                    {Math.floor(diagnostics.uptime / 3600000)}h {Math.floor((diagnostics.uptime % 3600000) / 60000)}m
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Memory Usage</p>
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-2xl font-black text-blue-400 font-mono tracking-tighter">
-                                                    {Math.round(diagnostics.memoryUsed / 1024 / 1024)}
-                                                </span>
-                                                <span className="text-xs font-bold text-slate-500">/ {Math.round(diagnostics.memoryTotal / 1024 / 1024)} MB</span>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">DB Connectivity</p>
-                                            <div className="flex items-center gap-2">
-                                                <div className={`w-2 h-2 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]' : 'bg-red-500'}`} />
-                                                <span className="font-black text-sm uppercase tracking-wider">{stats.dbStatus}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                             {/* User Management Section */}
                             <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl shadow-gray-200/50 overflow-hidden">
                                 <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
@@ -975,13 +920,13 @@ export default function DeveloperDashboard() {
                 )}
 
 
-                {/* System Log Footer with Integrated Status */}
-                <div className="fixed bottom-0 left-0 right-0 bg-slate-900 text-slate-300 border-t border-slate-700 shadow-2xl transition-transform duration-300 ease-out transform translate-y-[calc(100%-44px)] hover:translate-y-0 z-50 backdrop-blur-sm">
-                    <div className="bg-slate-800/95 px-4 py-2.5 flex items-center justify-between cursor-pointer group">
-                        {/* Left: Status + Console Title */}
-                        <div className="flex items-center gap-4">
-                            {/* System Status Indicator */}
-                            <div className="flex items-center gap-2 pr-4 border-r border-slate-700">
+                {/* System Log Footer with Integrated Diagnostics */}
+                <div className="fixed bottom-0 left-0 right-0 bg-slate-900 text-slate-300 border-t border-slate-700 shadow-2xl transition-transform duration-300 ease-out transform translate-y-[calc(100%-88px)] hover:translate-y-0 z-50 backdrop-blur-sm">
+                    {/* Diagnostics Bar - Always visible */}
+                    <div className="bg-slate-900/95 px-4 py-2 flex items-center justify-between border-b border-slate-800">
+                        <div className="flex items-center gap-3 flex-wrap">
+                            {/* System Status */}
+                            <div className="flex items-center gap-2 pr-3 border-r border-slate-700">
                                 <div className={`w-2 h-2 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
                                 <span className={`text-[10px] font-black uppercase tracking-widest ${stats.dbStatus === 'Connected' ? 'text-emerald-400' : 'text-red-400'}`}>
                                     {stats.dbStatus === 'Connected' ? 'Operational' : 'Degraded'}
@@ -989,31 +934,56 @@ export default function DeveloperDashboard() {
                             </div>
 
                             {/* DB Latency */}
-                            <div className="flex items-center gap-1.5 pr-4 border-r border-slate-700">
+                            <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
                                 <Database size={12} className="text-slate-500" />
                                 <span className={`text-[10px] font-bold ${diagnostics.dbPing < 50 ? 'text-emerald-400' : diagnostics.dbPing < 100 ? 'text-amber-400' : 'text-red-400'}`}>
                                     {diagnostics.dbPing}ms
                                 </span>
                             </div>
 
-                            {/* Environment Badge */}
-                            <div className="flex items-center gap-1.5 pr-4 border-r border-slate-700">
-                                <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded text-[9px] font-black uppercase tracking-widest border border-orange-500/30">
-                                    MEDICAL-WIKI-BACKEND
+                            {/* Uptime */}
+                            <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
+                                <Activity size={12} className="text-slate-500" />
+                                <span className="text-[10px] font-bold text-orange-400">
+                                    {Math.floor(diagnostics.uptime / 3600000)}h {Math.floor((diagnostics.uptime % 3600000) / 60000)}m
                                 </span>
                             </div>
 
-                            {/* Console Title */}
-                            <div className="flex items-center gap-3">
-                                <div className="p-1 bg-slate-700 rounded group-hover:bg-slate-600 transition-colors">
-                                    <Terminal size={14} className="text-orange-500" />
-                                </div>
-                                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 group-hover:text-slate-200 transition-colors">System Log Console</span>
-                                <span className="px-1.5 py-0.5 bg-slate-700 rounded text-[10px] text-slate-300">{logs.length} events</span>
+                            {/* Memory Usage */}
+                            <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
+                                <Shield size={12} className="text-slate-500" />
+                                <span className="text-[10px] font-bold text-blue-400">
+                                    {Math.round(diagnostics.memoryUsed / 1024 / 1024)}
+                                </span>
+                                <span className="text-[9px] text-slate-500">/ {Math.round(diagnostics.memoryTotal / 1024 / 1024)} MB</span>
+                            </div>
+
+                            {/* Node Name */}
+                            <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
+                                <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded text-[9px] font-black uppercase tracking-widest border border-orange-500/30">
+                                    medical-wiki-backend
+                                </span>
+                            </div>
+
+                            {/* Soft-deleted Users Count */}
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] text-slate-500">🗑️</span>
+                                <span className="text-[10px] font-bold text-slate-400">
+                                    {userList.filter(u => u.deletedAt).length}
+                                </span>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Right: Window Controls */}
+                    {/* Console Header */}
+                    <div className="bg-slate-800/95 px-4 py-2 flex items-center justify-between cursor-pointer group">
+                        <div className="flex items-center gap-3">
+                            <div className="p-1 bg-slate-700 rounded group-hover:bg-slate-600 transition-colors">
+                                <Terminal size={14} className="text-orange-500" />
+                            </div>
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 group-hover:text-slate-200 transition-colors">System Log Console</span>
+                            <span className="px-1.5 py-0.5 bg-slate-700 rounded text-[10px] text-slate-300">{logs.length} events</span>
+                        </div>
                         <div className="flex gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
                             <div className="w-2 h-2 rounded-full bg-red-500" />
                             <div className="w-2 h-2 rounded-full bg-yellow-500" />
