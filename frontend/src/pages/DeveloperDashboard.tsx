@@ -928,10 +928,10 @@ export default function DeveloperDashboard() {
                                             <div className="flex-grow min-w-0">
                                                 <div className="flex items-center gap-3">
                                                     <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest ${log.action === 'LOGIN' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
-                                                            log.action === 'USER_UPDATE' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                                                                log.action === 'USER_DELETE' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                                                                    log.action.includes('BULK') ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
-                                                                        'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                                        log.action === 'USER_UPDATE' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                                                            log.action === 'USER_DELETE' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                                                                log.action.includes('BULK') ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
+                                                                    'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                                                         }`}>
                                                         {log.action}
                                                     </span>
@@ -975,16 +975,45 @@ export default function DeveloperDashboard() {
                 )}
 
 
-                {/* System Log Footer */}
-                <div className="fixed bottom-0 left-0 right-0 bg-slate-900 text-slate-300 border-t border-slate-700 shadow-2xl transition-transform transform translate-y-[calc(100%-40px)] hover:translate-y-0 z-50">
-                    <div className="bg-slate-800 px-4 py-2 flex items-center justify-between cursor-pointer group">
-                        <div className="flex items-center gap-3">
-                            <div className="p-1 bg-slate-700 rounded group-hover:bg-slate-600 transition-colors">
-                                <Terminal size={14} className="text-orange-500" />
+                {/* System Log Footer with Integrated Status */}
+                <div className="fixed bottom-0 left-0 right-0 bg-slate-900 text-slate-300 border-t border-slate-700 shadow-2xl transition-transform duration-300 ease-out transform translate-y-[calc(100%-44px)] hover:translate-y-0 z-50 backdrop-blur-sm">
+                    <div className="bg-slate-800/95 px-4 py-2.5 flex items-center justify-between cursor-pointer group">
+                        {/* Left: Status + Console Title */}
+                        <div className="flex items-center gap-4">
+                            {/* System Status Indicator */}
+                            <div className="flex items-center gap-2 pr-4 border-r border-slate-700">
+                                <div className={`w-2 h-2 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${stats.dbStatus === 'Connected' ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {stats.dbStatus === 'Connected' ? 'Operational' : 'Degraded'}
+                                </span>
                             </div>
-                            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 group-hover:text-slate-200 transition-colors">System Log Console</span>
-                            <span className="px-1.5 py-0.5 bg-slate-700 rounded text-[10px] text-slate-300">{logs.length} events</span>
+
+                            {/* DB Latency */}
+                            <div className="flex items-center gap-1.5 pr-4 border-r border-slate-700">
+                                <Database size={12} className="text-slate-500" />
+                                <span className={`text-[10px] font-bold ${diagnostics.dbPing < 50 ? 'text-emerald-400' : diagnostics.dbPing < 100 ? 'text-amber-400' : 'text-red-400'}`}>
+                                    {diagnostics.dbPing}ms
+                                </span>
+                            </div>
+
+                            {/* Environment Badge */}
+                            <div className="flex items-center gap-1.5 pr-4 border-r border-slate-700">
+                                <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded text-[9px] font-black uppercase tracking-widest border border-orange-500/30">
+                                    MEDICAL-WIKI-BACKEND
+                                </span>
+                            </div>
+
+                            {/* Console Title */}
+                            <div className="flex items-center gap-3">
+                                <div className="p-1 bg-slate-700 rounded group-hover:bg-slate-600 transition-colors">
+                                    <Terminal size={14} className="text-orange-500" />
+                                </div>
+                                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 group-hover:text-slate-200 transition-colors">System Log Console</span>
+                                <span className="px-1.5 py-0.5 bg-slate-700 rounded text-[10px] text-slate-300">{logs.length} events</span>
+                            </div>
                         </div>
+
+                        {/* Right: Window Controls */}
                         <div className="flex gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
                             <div className="w-2 h-2 rounded-full bg-red-500" />
                             <div className="w-2 h-2 rounded-full bg-yellow-500" />
@@ -993,14 +1022,18 @@ export default function DeveloperDashboard() {
                     </div>
                     <div className="h-48 overflow-y-auto p-4 font-mono text-xs space-y-1 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
                         {logs.map(log => (
-                            <div key={log.id} className="flex gap-3 hover:bg-white/5 p-0.5 rounded px-2 border-l-2 border-transparent hover:border-orange-500 transition-all">
-                                <span className="text-slate-500 select-none w-20">{log.timestamp}</span>
-                                <span className={`font-bold w-16 uppercase ${log.type === 'error' ? 'text-red-400' :
+                            <div key={log.id} className="flex gap-3 hover:bg-white/5 p-0.5 rounded px-2 border-l-2 border-transparent hover:border-orange-500 transition-all items-center">
+                                {/* Environment Badge */}
+                                <span className="px-1.5 py-0.5 bg-slate-800 text-slate-500 rounded text-[8px] font-bold uppercase tracking-wider border border-slate-700 flex-shrink-0">
+                                    ENV
+                                </span>
+                                <span className="text-slate-500 select-none w-20 flex-shrink-0">{log.timestamp}</span>
+                                <span className={`font-bold w-16 uppercase flex-shrink-0 ${log.type === 'error' ? 'text-red-400' :
                                     log.type === 'success' ? 'text-emerald-400' : 'text-blue-400'
                                     }`}>
                                     {log.type}
                                 </span>
-                                <span className="text-slate-300">{log.message}</span>
+                                <span className="text-slate-300 truncate">{log.message}</span>
                             </div>
                         ))}
                         {logs.length === 0 && <span className="text-slate-600 italic px-2">System initialized. Waiting for events...</span>}
