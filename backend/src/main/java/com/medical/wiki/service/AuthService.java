@@ -1,7 +1,6 @@
 package com.medical.wiki.service;
 
 import com.medical.wiki.dto.*;
-import com.medical.wiki.entity.*;
 import com.medical.wiki.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +23,6 @@ public class AuthService {
                     return UserDto.fromEntity(user);
                 });
     }
-
 
     public Optional<UserDto> getUserById(Long id) {
         return userRepository.findById(id).map(UserDto::fromEntity);

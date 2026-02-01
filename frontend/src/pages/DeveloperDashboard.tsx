@@ -417,7 +417,7 @@ export default function DeveloperDashboard() {
                 }}
                 isLoading={isRegistering}
             />
-            <div className="space-y-8 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="space-y-4 pb-10 max-w-7xl mx-auto px-4 sm:px-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
@@ -476,60 +476,60 @@ export default function DeveloperDashboard() {
                 {activeTab === 'system' ? (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {/* Status Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                             {/* DB Status */}
-                            <div className={`p-5 rounded-2xl border flex items-center gap-4 shadow-sm transition-all ${stats.dbStatus === 'Connected'
+                            <div className={`p-3 rounded-xl border flex items-center gap-3 shadow-sm transition-all ${stats.dbStatus === 'Connected'
                                 ? 'bg-emerald-50 border-emerald-100'
                                 : 'bg-red-50 border-red-100'
                                 } `}>
-                                <div className={`p-3 rounded-xl ${stats.dbStatus === 'Connected' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'
+                                <div className={`p-2 rounded-lg ${stats.dbStatus === 'Connected' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'
                                     } `}>
-                                    <Database size={24} />
+                                    <Database size={20} />
                                 </div>
-                                <div>
-                                    <p className="text-sm font-medium opacity-70">Database</p>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`w-2.5 h-2.5 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500' : 'bg-red-500'
+                                <div className="min-w-0">
+                                    <p className="text-[10px] font-black uppercase tracking-wider opacity-60 leading-none mb-1">Database</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${stats.dbStatus === 'Connected' ? 'bg-emerald-500' : 'bg-red-500'
                                             } `} />
-                                        <p className="font-bold text-lg">{stats.dbStatus}</p>
+                                        <p className="font-black text-sm truncate uppercase tracking-tight">{stats.dbStatus}</p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Users Count */}
-                            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className="p-3 bg-orange-100 text-orange-600 rounded-xl">
-                                    <Users size={24} />
+                            <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
+                                <div className="p-2 bg-orange-100 text-orange-600 rounded-lg">
+                                    <Users size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 font-medium">Total Users</p>
-                                    <p className="font-bold text-2xl text-gray-800">{userList.length}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-wider text-gray-400 leading-none mb-1">Total Users</p>
+                                    <p className="font-black text-lg text-gray-800 leading-none">{userList.length}</p>
                                 </div>
                             </div>
 
                             {/* Role Breakdown */}
-                            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className="p-3 bg-purple-100 text-purple-600 rounded-xl">
-                                    <Shield size={24} />
+                            <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
+                                <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                                    <Shield size={20} />
                                 </div>
-                                <div>
-                                    <p className="text-sm text-gray-500 font-medium">Privileges</p>
-                                    <div className="flex gap-2 text-xs font-semibold mt-1">
-                                        <span className="text-purple-600 bg-purple-50 px-2 py-0.5 rounded">Dev:{computedStats.developers}</span>
-                                        <span className="text-red-600 bg-red-50 px-2 py-0.5 rounded">Adm:{computedStats.admins}</span>
-                                        <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded">Usr:{computedStats.users}</span>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] font-black uppercase tracking-wider text-gray-400 leading-none mb-1">Privileges</p>
+                                    <div className="flex gap-1.5 text-[10px] font-bold mt-0.5">
+                                        <span className="text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">D:{computedStats.developers}</span>
+                                        <span className="text-red-600 bg-red-50 px-1.5 py-0.5 rounded">A:{computedStats.admins}</span>
+                                        <span className="text-green-600 bg-green-50 px-1.5 py-0.5 rounded">U:{computedStats.users}</span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Facilities */}
-                            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
-                                    <FileText size={24} />
+                            <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
+                                <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                                    <FileText size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 font-medium">Facilities</p>
-                                    <p className="font-bold text-2xl text-gray-800">{computedStats.facilities}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-wider text-gray-400 leading-none mb-1">Facilities</p>
+                                    <p className="font-black text-lg text-gray-800 leading-none">{computedStats.facilities}</p>
                                 </div>
                             </div>
                         </div>
@@ -537,67 +537,67 @@ export default function DeveloperDashboard() {
                         {/* Main Content Area */}
                         <div className="max-w-6xl mx-auto w-full space-y-8">
                             {/* User Registration Section */}
-                            <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl shadow-gray-200/50 overflow-hidden">
-                                <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-emerald-50/30">
+                            <div className="bg-white rounded-[1.5rem] border border-gray-100 shadow-2xl shadow-gray-200/50 overflow-hidden">
+                                <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between bg-emerald-50/30">
                                     <div>
-                                        <h3 className="text-xl font-black text-gray-800 tracking-tight flex items-center gap-2">
-                                            <Plus className="text-emerald-500" size={24} />
+                                        <h3 className="text-lg font-black text-gray-800 tracking-tight flex items-center gap-2">
+                                            <Plus className="text-emerald-500" size={20} />
                                             User Registration
                                         </h3>
-                                        <p className="text-sm text-gray-500 font-medium">Add individual users or upload batch data</p>
+                                        <p className="text-xs text-gray-500 font-medium whitespace-nowrap">Add individual users or upload batch data</p>
                                     </div>
                                     <div className="flex items-center gap-4">
-                                        <label className="flex items-center gap-2 px-6 py-3 bg-slate-800 text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-slate-700 transition-all shadow-lg shadow-slate-200 cursor-pointer active:scale-95">
-                                            <Upload size={16} />
+                                        <label className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-700 transition-all shadow-lg shadow-slate-200 cursor-pointer active:scale-95">
+                                            <Upload size={14} />
                                             Upload CSV
                                             <input type="file" accept=".csv" onChange={handleCsvUpload} className="hidden" />
                                         </label>
                                     </div>
                                 </div>
 
-                                <div className="p-8">
+                                <div className="p-4 sm:p-5">
                                     {csvError && (
-                                        <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-                                            <AlertCircle className="text-red-500 mt-0.5 flex-shrink-0" size={20} />
+                                        <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                                            <AlertCircle className="text-red-500 mt-0.5 flex-shrink-0" size={18} />
                                             <div className="flex-grow">
-                                                <p className="text-sm font-black text-red-800">処理エラーが発生しました</p>
-                                                <p className="text-xs text-red-600 mt-1 whitespace-pre-line font-medium leading-relaxed">
+                                                <p className="text-xs font-black text-red-800">処理エラーが発生しました</p>
+                                                <p className="text-[10px] text-red-600 mt-0.5 whitespace-pre-line font-medium leading-tight">
                                                     {csvError}
                                                 </p>
                                             </div>
                                             <button onClick={() => setCsvError(null)} className="ml-0.5 text-red-400 hover:text-red-600 p-1 hover:bg-red-100 rounded-lg transition-colors">
-                                                <XIcon size={18} />
+                                                <XIcon size={16} />
                                             </button>
                                         </div>
                                     )}
 
-                                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-6 gap-2">
                                         <div className="md:col-span-1">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">ID</label>
+                                            <label className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">ID</label>
                                             <input
                                                 type="text"
                                                 placeholder="dev-001"
                                                 value={registerForm.employeeId}
                                                 onChange={e => setRegisterForm({ ...registerForm, employeeId: e.target.value })}
-                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-mono focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                                className="w-full py-1.5 px-3 bg-gray-50 border border-gray-100 rounded-lg text-xs font-mono focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                             />
                                         </div>
                                         <div className="md:col-span-1">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Identity Name</label>
+                                            <label className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Identity Name</label>
                                             <input
                                                 type="text"
                                                 placeholder="Name"
                                                 value={registerForm.name}
                                                 onChange={e => setRegisterForm({ ...registerForm, name: e.target.value })}
-                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                                className="w-full py-1.5 px-3 bg-gray-50 border border-gray-100 rounded-lg text-xs font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                             />
                                         </div>
                                         <div className="md:col-span-1">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Facility</label>
+                                            <label className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Facility</label>
                                             <select
                                                 value={registerForm.facility}
                                                 onChange={e => setRegisterForm({ ...registerForm, facility: e.target.value, department: getDepartments(e.target.value)[0] || '' })}
-                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-black focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                                className="w-full py-1.5 px-3 bg-gray-50 border border-gray-100 rounded-lg text-xs font-black focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                             >
                                                 <option value="本館">本館</option>
                                                 <option value="南棟">南棟</option>
@@ -606,11 +606,11 @@ export default function DeveloperDashboard() {
                                             </select>
                                         </div>
                                         <div className="md:col-span-1">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Department</label>
+                                            <label className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Department</label>
                                             <select
                                                 value={registerForm.department}
                                                 onChange={e => setRegisterForm({ ...registerForm, department: e.target.value })}
-                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-black focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                                className="w-full py-1.5 px-3 bg-gray-50 border border-gray-100 rounded-lg text-xs font-black focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                             >
                                                 {getDepartments(registerForm.facility).map(dept => (
                                                     <option key={dept} value={dept}>{dept}</option>
@@ -618,11 +618,11 @@ export default function DeveloperDashboard() {
                                             </select>
                                         </div>
                                         <div className="md:col-span-1">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Role</label>
+                                            <label className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Role</label>
                                             <select
                                                 value={registerForm.role}
                                                 onChange={e => setRegisterForm({ ...registerForm, role: e.target.value as any })}
-                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-black focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                                className="w-full py-1.5 px-3 bg-gray-50 border border-gray-100 rounded-lg text-xs font-black focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                             >
                                                 <option value="USER">USER</option>
                                                 <option value="ADMIN">ADMIN</option>
@@ -632,9 +632,9 @@ export default function DeveloperDashboard() {
                                         <div className="md:col-span-1 flex items-end">
                                             <button
                                                 onClick={handleSingleRegister}
-                                                className="w-full py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 transition-all font-black text-xs tracking-widest active:scale-95 flex items-center justify-center gap-2"
+                                                className="w-full py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 transition-all font-black text-[10px] tracking-widest active:scale-95 flex items-center justify-center gap-2"
                                             >
-                                                <Check size={16} />
+                                                <Check size={14} />
                                                 REGISTER
                                             </button>
                                         </div>
@@ -643,54 +643,54 @@ export default function DeveloperDashboard() {
                             </div>
 
                             {/* System Status Banner */}
-                            <div className="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden group border border-slate-700">
-                                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700 group-hover:opacity-10">
-                                    <Terminal size={160} />
+                            <div className="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 rounded-2xl p-5 text-white shadow-2xl relative overflow-hidden group border border-slate-700">
+                                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform duration-700 group-hover:opacity-10">
+                                    <Terminal size={120} />
                                 </div>
                                 <div className="relative z-10">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-xl font-black flex items-center gap-3 tracking-tight">
-                                            <Activity className="text-orange-500 animate-pulse" />
+                                    <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+                                        <h3 className="text-lg font-black flex items-center gap-3 tracking-tight">
+                                            <Activity className="text-orange-500 animate-pulse" size={20} />
                                             System Diagnostics
                                         </h3>
                                         <div className="flex gap-4">
-                                            <div className="px-3 py-1 bg-white/5 rounded-lg border border-white/10 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                            <div className="px-2 py-0.5 bg-white/5 rounded-lg border border-white/10 text-[8px] font-black uppercase tracking-widest text-slate-400">
                                                 Node: medical-wiki-backend
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-8">
-                                        <div className="space-y-2">
-                                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">DB Latency</p>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <div className="space-y-1">
+                                            <p className="text-slate-500 text-[8px] font-black uppercase tracking-[0.2em]">DB Latency</p>
                                             <div className="flex items-baseline gap-1">
-                                                <span className="text-2xl font-black text-emerald-400 font-mono tracking-tighter">
+                                                <span className="text-lg font-black text-emerald-400 font-mono tracking-tighter">
                                                     {diagnostics.dbPing}
                                                 </span>
-                                                <span className="text-xs font-bold text-slate-500">ms</span>
+                                                <span className="text-[10px] font-bold text-slate-500">ms</span>
                                             </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">System Uptime</p>
+                                        <div className="space-y-1">
+                                            <p className="text-slate-500 text-[8px] font-black uppercase tracking-[0.2em]">System Uptime</p>
                                             <div className="flex items-baseline gap-1">
-                                                <span className="text-2xl font-black text-orange-400 font-mono tracking-tighter">
+                                                <span className="text-lg font-black text-orange-400 font-mono tracking-tighter">
                                                     {Math.floor(diagnostics.uptime / 3600000)}h {Math.floor((diagnostics.uptime % 3600000) / 60000)}m
                                                 </span>
                                             </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Memory Usage</p>
+                                        <div className="space-y-1">
+                                            <p className="text-slate-500 text-[8px] font-black uppercase tracking-[0.2em]">Memory Usage</p>
                                             <div className="flex items-baseline gap-1">
-                                                <span className="text-2xl font-black text-blue-400 font-mono tracking-tighter">
+                                                <span className="text-lg font-black text-blue-400 font-mono tracking-tighter">
                                                     {Math.round(diagnostics.memoryUsed / 1024 / 1024)}
                                                 </span>
-                                                <span className="text-xs font-bold text-slate-500">/ {Math.round(diagnostics.memoryTotal / 1024 / 1024)} MB</span>
+                                                <span className="text-[10px] font-bold text-slate-500">/ {Math.round(diagnostics.memoryTotal / 1024 / 1024)} MB</span>
                                             </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">DB Connectivity</p>
+                                        <div className="space-y-1">
+                                            <p className="text-slate-500 text-[8px] font-black uppercase tracking-[0.2em]">DB Connectivity</p>
                                             <div className="flex items-center gap-2">
                                                 <div className={`w-2 h-2 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]' : 'bg-red-500'}`} />
-                                                <span className="font-black text-sm uppercase tracking-wider">{stats.dbStatus}</span>
+                                                <span className="font-black text-xs uppercase tracking-wider">{stats.dbStatus}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -699,7 +699,7 @@ export default function DeveloperDashboard() {
 
                             {/* User Management Section */}
                             <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl shadow-gray-200/50 overflow-hidden">
-                                <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                                <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                                     <div>
                                         <h3 className="text-xl font-black text-gray-800 tracking-tight">Active Nodes Control</h3>
                                         <p className="text-sm text-gray-500 font-medium">Control access and user privileges</p>
@@ -736,12 +736,12 @@ export default function DeveloperDashboard() {
                                     )}
                                 </div>
 
-                                <div className="p-8">
+                                <div className="p-4 sm:p-5">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left border-collapse">
                                             <thead>
                                                 <tr className="border-b border-gray-100">
-                                                    <th className="px-4 py-4 w-10">
+                                                    <th className="px-3 py-3 w-10">
                                                         <input
                                                             type="checkbox"
                                                             checked={selectedUsers.length === userList.length && userList.length > 0}
@@ -928,10 +928,10 @@ export default function DeveloperDashboard() {
                                             <div className="flex-grow min-w-0">
                                                 <div className="flex items-center gap-3">
                                                     <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest ${log.action === 'LOGIN' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
-                                                            log.action === 'USER_UPDATE' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                                                                log.action === 'USER_DELETE' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                                                                    log.action.includes('BULK') ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
-                                                                        'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                                        log.action === 'USER_UPDATE' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                                                            log.action === 'USER_DELETE' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                                                                log.action.includes('BULK') ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
+                                                                    'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                                                         }`}>
                                                         {log.action}
                                                     </span>
