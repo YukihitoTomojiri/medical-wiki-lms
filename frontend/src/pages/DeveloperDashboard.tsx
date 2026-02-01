@@ -990,6 +990,8 @@ export default function DeveloperDashboard() {
                             <div className="w-2 h-2 rounded-full bg-green-500" />
                         </div>
                     </div>
+
+                    {/* Log Entries */}
                     <div className="h-48 overflow-y-auto p-4 font-mono text-xs space-y-1 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
                         {logs.map(log => (
                             <div key={log.id} className="flex gap-3 hover:bg-white/5 p-0.5 rounded px-2 border-l-2 border-transparent hover:border-orange-500 transition-all items-center">
