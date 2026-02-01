@@ -19,7 +19,9 @@ import {
     Terminal,
     Plus,
     Upload,
-    AlertCircle
+    AlertCircle,
+    Clock,
+    Cpu
 } from 'lucide-react';
 
 
@@ -474,9 +476,10 @@ export default function DeveloperDashboard() {
                 </div>
 
                 {activeTab === 'system' ? (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {/* Status Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        {/* Status Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
                             {/* DB Status */}
                             <div className={`p-3 rounded-xl border flex items-center gap-3 shadow-sm transition-all ${stats.dbStatus === 'Connected'
                                 ? 'bg-emerald-50 border-emerald-100'
@@ -532,10 +535,36 @@ export default function DeveloperDashboard() {
                                     <p className="font-black text-lg text-gray-800 leading-none">{computedStats.facilities}</p>
                                 </div>
                             </div>
+
+                            {/* System Uptime */}
+                            <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
+                                <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
+                                    <Clock size={20} />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-wider text-gray-400 leading-none mb-1">Uptime</p>
+                                    <p className="font-black text-sm text-gray-800 leading-none">
+                                        {Math.floor(diagnostics.uptime / 3600000)}h {Math.floor((diagnostics.uptime % 3600000) / 60000)}m
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Memory Usage */}
+                            <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
+                                <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                                    <Cpu size={20} />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] font-black uppercase tracking-wider text-gray-400 leading-none mb-1">Memory</p>
+                                    <p className="font-black text-sm text-gray-800 leading-none truncate">
+                                        {Math.round(diagnostics.memoryUsed / 1024 / 1024)}MB
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Main Content Area */}
-                        <div className="max-w-6xl mx-auto w-full space-y-8">
+                        <div className="max-w-6xl mx-auto w-full space-y-6">
                             {/* User Registration Section */}
                             <div className="bg-white rounded-[1.5rem] border border-gray-100 shadow-2xl shadow-gray-200/50 overflow-hidden">
                                 <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between bg-emerald-50/30">
@@ -642,63 +671,38 @@ export default function DeveloperDashboard() {
                                 </div>
                             </div>
 
-                            {/* System Status Banner */}
-                            <div className="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 rounded-2xl p-5 text-white shadow-2xl relative overflow-hidden group border border-slate-700">
-                                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform duration-700 group-hover:opacity-10">
-                                    <Terminal size={120} />
-                                </div>
-                                <div className="relative z-10">
-                                    <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
-                                        <h3 className="text-lg font-black flex items-center gap-3 tracking-tight">
-                                            <Activity className="text-orange-500 animate-pulse" size={20} />
-                                            System Diagnostics
-                                        </h3>
-                                        <div className="flex gap-4">
-                                            <div className="px-2 py-0.5 bg-white/5 rounded-lg border border-white/10 text-[8px] font-black uppercase tracking-widest text-slate-400">
-                                                Node: medical-wiki-backend
+                            {/* System Health Horizontal Mini-Section */}
+                            <div className="bg-gray-50/50 rounded-xl border border-gray-100 p-3 flex items-center justify-between shadow-sm">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <Activity size={16} className="text-orange-500" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">System Health</span>
+                                    </div>
+                                    <div className="h-4 w-px bg-gray-200" />
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-[8px] font-black uppercase tracking-widest text-gray-400">Latency</p>
+                                            <p className="text-xs font-black text-emerald-600 font-mono tracking-tight">{diagnostics.dbPing}ms</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-[8px] font-black uppercase tracking-widest text-gray-400">Environment</p>
+                                            <div className="px-2 py-0.5 bg-white border border-gray-100 rounded text-[8px] font-black uppercase tracking-widest text-slate-500">
+                                                medical-wiki-backend
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <div className="space-y-1">
-                                            <p className="text-slate-500 text-[8px] font-black uppercase tracking-[0.2em]">DB Latency</p>
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-lg font-black text-emerald-400 font-mono tracking-tighter">
-                                                    {diagnostics.dbPing}
-                                                </span>
-                                                <span className="text-[10px] font-bold text-slate-500">ms</span>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-slate-500 text-[8px] font-black uppercase tracking-[0.2em]">System Uptime</p>
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-lg font-black text-orange-400 font-mono tracking-tighter">
-                                                    {Math.floor(diagnostics.uptime / 3600000)}h {Math.floor((diagnostics.uptime % 3600000) / 60000)}m
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-slate-500 text-[8px] font-black uppercase tracking-[0.2em]">Memory Usage</p>
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-lg font-black text-blue-400 font-mono tracking-tighter">
-                                                    {Math.round(diagnostics.memoryUsed / 1024 / 1024)}
-                                                </span>
-                                                <span className="text-[10px] font-bold text-slate-500">/ {Math.round(diagnostics.memoryTotal / 1024 / 1024)} MB</span>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-slate-500 text-[8px] font-black uppercase tracking-[0.2em]">DB Connectivity</p>
-                                            <div className="flex items-center gap-2">
-                                                <div className={`w-2 h-2 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]' : 'bg-red-500'}`} />
-                                                <span className="font-black text-xs uppercase tracking-wider">{stats.dbStatus}</span>
-                                            </div>
-                                        </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <p className="text-[8px] font-black uppercase tracking-widest text-gray-400">Status</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className={`w-1.5 h-1.5 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                                        <span className="font-black text-[10px] uppercase tracking-wider text-gray-600">Production Node Online</span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* User Management Section */}
-                            <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl shadow-gray-200/50 overflow-hidden">
+                            <div className="bg-white rounded-[1.5rem] border border-gray-100 shadow-2xl shadow-gray-200/50 overflow-hidden">
                                 <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                                     <div>
                                         <h3 className="text-xl font-black text-gray-800 tracking-tight">Active Nodes Control</h3>
