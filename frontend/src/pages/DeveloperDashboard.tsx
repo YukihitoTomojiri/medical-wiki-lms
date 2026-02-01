@@ -6,6 +6,7 @@ import { User, UserCreateRequest } from '../types';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { RestoreConfirmModal } from '../components/RestoreConfirmModal';
 import AllUsersAdmin from './AllUsersAdmin';
+import { PostRegisterModal } from '../components/PostRegisterModal';
 import {
     Activity,
     Database,
@@ -91,6 +92,8 @@ export default function DeveloperDashboard() {
     const [restorableUsers, setRestorableUsers] = useState<User[]>([]);
     const [pendingCsvData, setPendingCsvData] = useState<UserCreateRequest[]>([]);
     const [isRegistering, setIsRegistering] = useState(false);
+    const [registeredUser, setRegisteredUser] = useState<any>(null);
+    const [showPostRegisterModal, setShowPostRegisterModal] = useState(false);
 
     // Initial Load
     useEffect(() => {
@@ -304,7 +307,7 @@ export default function DeveloperDashboard() {
     const [registerForm, setRegisterForm] = useState({
         employeeId: '',
         name: '',
-        password: 'password123', // Default for new users
+        password: '',
         facility: '本館',
         department: '3階病棟',
         role: 'USER' as const
@@ -321,10 +324,12 @@ export default function DeveloperDashboard() {
             const res = await api.registerUser(1, registerForm);
             if (res.id) {
                 addLog(`User registered successfully`, 'success');
+                setRegisteredUser(res);
+                setShowPostRegisterModal(true);
                 setRegisterForm({
                     employeeId: '',
                     name: '',
-                    password: 'password123',
+                    password: '',
                     facility: '本館',
                     department: '3階病棟',
                     role: 'USER'
@@ -1362,6 +1367,12 @@ export default function DeveloperDashboard() {
                     </div>
                 </div>
             </div >
+            {showPostRegisterModal && registeredUser && (
+                <PostRegisterModal
+                    user={registeredUser}
+                    onClose={() => setShowPostRegisterModal(false)}
+                />
+            )}
         </>
     );
 }

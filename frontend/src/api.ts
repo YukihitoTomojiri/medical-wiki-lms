@@ -23,6 +23,25 @@ export const api = {
         return res.json();
     },
 
+    changePassword: async (userId: number, newPassword: string): Promise<any> => {
+        const res = await fetch(`${API_BASE}/auth/change-password`, {
+            method: 'POST',
+            headers: getHeaders(userId),
+            body: JSON.stringify({ userId, newPassword }),
+        });
+        return res.json();
+    },
+
+    setupAccount: async (token: string, password: string): Promise<any> => {
+        const res = await fetch(`${API_BASE}/auth/setup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, password }),
+        });
+        return res.json();
+    },
+
+
     // Manuals
     getManuals: async (userId: number, category?: string): Promise<Manual[]> => {
         const url = category
@@ -206,6 +225,14 @@ export const api = {
         return res.json();
     },
 
+    issueTempPassword: async (userId: number, targetUserId: number): Promise<{ tempPassword: string }> => {
+        const res = await fetch(`${API_BASE}/users/${targetUserId}/temp-password`, {
+            method: 'POST',
+            headers: getHeaders(userId),
+        });
+        return res.json();
+    },
+
     getAllUsersIncludingDeleted: async (userId: number): Promise<any> => {
         const res = await fetch(`${API_BASE}/admin/users/all-including-deleted`, {
             method: 'GET',
@@ -257,11 +284,11 @@ export const api = {
         return res.json();
     },
 
-    getSecurityAlertStats: async (userId: number): Promise<{ totalOpen: number; criticalOpen: number }> => {
+    getSecurityAlertStats: async (userId: number): Promise<{ totalOpen: number; criticalOpen: number; alerts24h: number }> => {
         const res = await fetch(`${API_BASE}/admin/security/alerts/stats`, {
             headers: getHeaders(userId),
         });
-        if (!res.ok) return { totalOpen: 0, criticalOpen: 0 };
+        if (!res.ok) return { totalOpen: 0, criticalOpen: 0, alerts24h: 0 };
         return res.json();
     },
 

@@ -21,8 +21,16 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserUpdateDto dto, @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserUpdateDto dto,
+            @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
         return ResponseEntity.ok(userService.updateUser(id, dto, executorId));
+    }
+
+    @PostMapping("/{id}/temp-password")
+    public ResponseEntity<java.util.Map<String, String>> issueTempPassword(@PathVariable Long id,
+            @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
+        String tempPassword = userService.issueTempPassword(id, executorId);
+        return ResponseEntity.ok(java.util.Map.of("tempPassword", tempPassword));
     }
 
 }

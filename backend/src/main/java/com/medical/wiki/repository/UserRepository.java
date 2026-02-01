@@ -26,4 +26,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @org.springframework.data.jpa.repository.Query("SELECT DISTINCT u.facility FROM User u WHERE u.deletedAt IS NULL ORDER BY u.facility")
     List<String> findDistinctFacilities();
+
+    Optional<User> findByInvitationToken(String invitationToken);
 }

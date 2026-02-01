@@ -44,6 +44,12 @@ public class User {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name = "must_change_password")
+    private Boolean mustChangePassword;
+
+    @Column(name = "invitation_token")
+    private String invitationToken;
+
     public enum Role {
         ADMIN, USER, DEVELOPER
     }

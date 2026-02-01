@@ -10,6 +10,8 @@ import DeveloperDashboard from './pages/DeveloperDashboard';
 import AllUsersAdmin from './pages/AllUsersAdmin';
 import ManualEdit from './pages/ManualEdit';
 import Layout from './components/Layout';
+import ChangePassword from './pages/ChangePassword';
+import SetupAccount from './pages/SetupAccount';
 
 function App() {
     const [user, setUser] = useState<User | null>(() => {
@@ -38,7 +40,19 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     <Route path="/login" element={<Login onLogin={handleLogin} />} />
+                    <Route path="/setup" element={<SetupAccount onLogin={handleLogin} />} />
                     <Route path="*" element={<Navigate to="/login" replace />} />
+                </Routes>
+            </BrowserRouter>
+        );
+    }
+
+    if (user.mustChangePassword) {
+        return (
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/change-password" element={<ChangePassword user={user} onComplete={handleLogin} />} />
+                    <Route path="*" element={<Navigate to="/change-password" replace />} />
                 </Routes>
             </BrowserRouter>
         );

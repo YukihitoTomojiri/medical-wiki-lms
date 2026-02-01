@@ -8,6 +8,8 @@ export interface User {
     deletedAt?: string;
     createdAt?: string;
     updatedAt?: string;
+    mustChangePassword?: boolean;
+    invitationToken?: string;
 }
 
 export interface Manual {
