@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { api } from '../api';
 import { X, Copy, Check, Mail, Key } from 'lucide-react';
 
 interface Props {
     user: any;
     onClose: () => void;
+    title?: string;
+    description?: string;
+    defaultTab?: 'invite' | 'temp';
 }
 
-export const PostRegisterModal = ({ user, onClose }: Props) => {
-    const [activeTab, setActiveTab] = useState<'invite' | 'temp'>('invite');
+export const PostRegisterModal = ({ user, onClose, title, description, defaultTab = 'invite' }: Props) => {
+    const [activeTab, setActiveTab] = useState<'invite' | 'temp'>(defaultTab);
     const [tempPassword, setTempPassword] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
 
@@ -40,10 +43,10 @@ export const PostRegisterModal = ({ user, onClose }: Props) => {
                             <span className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
                                 <Check size={18} />
                             </span>
-                            Registration Complete
+                            {title || 'Registration Complete'}
                         </h3>
                         <p className="text-xs text-gray-500 font-medium ml-10 mt-1">
-                            {user.name} ({user.employeeId}) has been created
+                            {description || `${user.name} (${user.employeeId}) has been created`}
                         </p>
                     </div>
                     <button
@@ -60,8 +63,8 @@ export const PostRegisterModal = ({ user, onClose }: Props) => {
                         <button
                             onClick={() => setActiveTab('invite')}
                             className={`flex-1 py-3 px-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 ${activeTab === 'invite'
-                                    ? 'bg-white shadow-sm text-emerald-600 ring-1 ring-gray-100'
-                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100/50'
+                                ? 'bg-white shadow-sm text-emerald-600 ring-1 ring-gray-100'
+                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100/50'
                                 }`}
                         >
                             <Mail size={14} />
@@ -70,8 +73,8 @@ export const PostRegisterModal = ({ user, onClose }: Props) => {
                         <button
                             onClick={() => setActiveTab('temp')}
                             className={`flex-1 py-3 px-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 ${activeTab === 'temp'
-                                    ? 'bg-white shadow-sm text-emerald-600 ring-1 ring-gray-100'
-                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100/50'
+                                ? 'bg-white shadow-sm text-emerald-600 ring-1 ring-gray-100'
+                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100/50'
                                 }`}
                         >
                             <Key size={14} />

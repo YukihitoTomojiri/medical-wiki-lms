@@ -28,4 +28,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<String> findDistinctFacilities();
 
     Optional<User> findByInvitationToken(String invitationToken);
+
+    Optional<User> findByEmail(String email);
+
+    Optional<User> findByResetToken(String resetToken);
 }

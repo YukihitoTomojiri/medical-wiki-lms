@@ -16,6 +16,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final LoggingService loggingService;
     private final SecurityAnomalyService securityAnomalyService;
+    private final EmailService emailService;
 
     @org.springframework.transaction.annotation.Transactional
     public void changePassword(Long userId, String newPassword) {
@@ -26,6 +27,50 @@ public class AuthService {
         user.setUpdatedAt(java.time.LocalDateTime.now());
         userRepository.save(user);
         loggingService.log("PASSWORD_CHANGE", user.getName(), "Password changed", user.getEmployeeId());
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void forgotPassword(String email) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            String token = java.util.UUID.randomUUID().toString();
+            user.setResetToken(token);
+            user.setResetTokenExpiry(java.time.LocalDateTime.now().plusHours(1));
+            userRepository.save(user);
+            emailService.sendPasswordResetEmail(email, token);
+            loggingService.log("PASSWORD_RESET_REQUEST", user.getName(), "Reset requested", user.getEmployeeId());
+        });
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void resetPassword(String token, String newPassword) {
+        User user = userRepository.findByResetToken(token)
+                .filter(u -> u.getResetTokenExpiry().isAfter(java.time.LocalDateTime.now()))
+                .orElseThrow(() -> new RuntimeException("Invalid or expired reset token"));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+        user.setMustChangePassword(false);
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        userRepository.save(user);
+
+        loggingService.log("PASSWORD_RESET_COMPLETE", user.getName(), "Password reset via token", user.getEmployeeId());
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public String adminResetPassword(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String tempPassword = java.util.UUID.randomUUID().toString().substring(0, 8);
+        user.setPassword(passwordEncoder.encode(tempPassword));
+        user.setMustChangePassword(true);
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        userRepository.save(user);
+
+        loggingService.log("ADMIN_PASSWORD_RESET", "ADMIN", "Reset password for " + user.getName(),
+                user.getEmployeeId());
+        return tempPassword;
     }
 
     @org.springframework.transaction.annotation.Transactional

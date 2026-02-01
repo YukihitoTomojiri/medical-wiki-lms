@@ -10,6 +10,7 @@ export interface User {
     updatedAt?: string;
     mustChangePassword?: boolean;
     invitationToken?: string;
+    email?: string;
 }
 
 export interface Manual {
@@ -59,6 +60,7 @@ export interface UserUpdateRequest {
     role?: 'ADMIN' | 'USER' | 'DEVELOPER';
     facility?: string;
     department?: string;
+    email?: string;
 }
 
 export interface UserCreateRequest {
@@ -68,5 +70,6 @@ export interface UserCreateRequest {
     facility: string;
     department: string;
     role: 'ADMIN' | 'USER' | 'DEVELOPER';
+    email?: string;
 }
 

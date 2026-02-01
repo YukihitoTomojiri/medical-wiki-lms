@@ -44,6 +44,8 @@ public class UserService {
             user.setFacility(dto.facility());
         if (dto.department() != null)
             user.setDepartment(dto.department());
+        if (dto.email() != null)
+            user.setEmail(dto.email());
 
         User updatedUser = userRepository.save(user);
 
@@ -55,8 +57,8 @@ public class UserService {
         loggingService.log(
                 "USER_UPDATE",
                 user.getName() + " (" + user.getEmployeeId() + ")",
-                String.format("Updated Role: %s, Facility: %s, Department: %s", dto.role(), dto.facility(),
-                        dto.department()),
+                String.format("Updated Role: %s, Facility: %s, Department: %s, Email: %s", dto.role(), dto.facility(),
+                        dto.department(), dto.email()),
                 executorName);
 
         return UserDto.fromEntity(updatedUser);
@@ -98,6 +100,7 @@ public class UserService {
                 .facility(dto.facility())
                 .department(dto.department())
                 .role(dto.role())
+                .email(dto.email())
                 .createdAt(java.time.LocalDateTime.now())
                 .updatedAt(java.time.LocalDateTime.now())
                 .mustChangePassword(true)

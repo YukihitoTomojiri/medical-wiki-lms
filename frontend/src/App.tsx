@@ -12,6 +12,8 @@ import ManualEdit from './pages/ManualEdit';
 import Layout from './components/Layout';
 import ChangePassword from './pages/ChangePassword';
 import SetupAccount from './pages/SetupAccount';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
     const [user, setUser] = useState<User | null>(() => {
@@ -41,6 +43,8 @@ function App() {
                 <Routes>
                     <Route path="/login" element={<Login onLogin={handleLogin} />} />
                     <Route path="/setup" element={<SetupAccount onLogin={handleLogin} />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
             </BrowserRouter>
