@@ -17,7 +17,7 @@ public class LoggingService {
     @Transactional
     public void log(String action, String target, String description, String performedBy) {
         String ipAddress = request.getRemoteAddr();
-        
+
         SystemLog log = SystemLog.builder()
                 .timestamp(LocalDateTime.now())
                 .action(action)

@@ -55,7 +55,6 @@ public class ManualController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-
     @GetMapping("/categories")
     public ResponseEntity<List<String>> getCategories() {
         return ResponseEntity.ok(manualService.getAllCategories());
@@ -72,8 +71,12 @@ public class ManualController {
     }
 
     @GetMapping("/{id}/pdf")
-    public ResponseEntity<Resource> getPdf(@PathVariable Long id) {
-        return manualService.getPdfResource(id)
+    public ResponseEntity<Resource> getPdf(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            jakarta.servlet.http.HttpServletRequest request) {
+        String ipAddress = request.getRemoteAddr();
+        return manualService.getPdfResource(id, userId, ipAddress)
                 .map(resource -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_PDF)
                         .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")

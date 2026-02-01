@@ -22,7 +22,12 @@ import {
     AlertCircle,
     FileDown,
     Building2,
-    Calendar
+    Calendar,
+    AlertTriangle,
+    ShieldAlert,
+    Clock,
+    Eye,
+    CheckCircle2
 } from 'lucide-react';
 
 
@@ -67,6 +72,8 @@ export default function DeveloperDashboard() {
         memoryTotal: 0,
         dbPing: 0
     });
+    const [securityAlerts, setSecurityAlerts] = useState<any[]>([]);
+    const [alertStats, setAlertStats] = useState({ totalOpen: 0, criticalOpen: 0, alerts24h: 0 });
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -98,6 +105,37 @@ export default function DeveloperDashboard() {
         } catch (e) { console.error(e); }
     };
 
+    const fetchSecurityAlerts = async () => {
+        try {
+            const [alerts, stats] = await Promise.all([
+                api.getSecurityAlerts(1),
+                api.getSecurityAlertStats(1)
+            ]);
+            setSecurityAlerts(alerts);
+            setAlertStats(stats);
+        } catch (e) { console.error(e); }
+    };
+
+    const handleAcknowledgeAlert = async (id: number) => {
+        try {
+            await api.acknowledgeSecurityAlert(1, id);
+            addLog(`Alert ${id} acknowledged`, 'success');
+            fetchSecurityAlerts();
+        } catch (e) {
+            addLog('Failed to acknowledge alert', 'error');
+        }
+    };
+
+    const handleResolveAlert = async (id: number) => {
+        try {
+            await api.resolveSecurityAlert(1, id);
+            addLog(`Alert ${id} resolved`, 'success');
+            fetchSecurityAlerts();
+        } catch (e) {
+            addLog('Failed to resolve alert', 'error');
+        }
+    };
+
     const fetchSystemLogs = async () => {
         try {
             const data = await api.getAuditLogs(1);
@@ -114,7 +152,8 @@ export default function DeveloperDashboard() {
                 api.getManuals(1).catch(() => []),
                 api.getAllUsersProgress().catch(() => []),
                 fetchDiagnostics(),
-                fetchSystemLogs()
+                fetchSystemLogs(),
+                fetchSecurityAlerts()
             ]);
             setUserList(usersData);
             setLastSync(new Date().toLocaleTimeString());
@@ -500,7 +539,7 @@ export default function DeveloperDashboard() {
                 {activeTab === 'system' ? (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {/* Status Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                             {/* DB Status */}
                             <div className={`p-5 rounded-2xl border flex items-center gap-4 shadow-sm transition-all ${stats.dbStatus === 'Connected'
                                 ? 'bg-emerald-50 border-emerald-100'
@@ -555,6 +594,147 @@ export default function DeveloperDashboard() {
                                     <p className="text-sm text-gray-500 font-medium">Facilities</p>
                                     <p className="font-bold text-2xl text-gray-800">{computedStats.facilities}</p>
                                 </div>
+                            </div>
+
+                            {/* 24h Alerts Widget */}
+                            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                                <div className={`p-3 rounded-xl ${alertStats.alerts24h === 0 ? 'bg-emerald-100 text-emerald-600' :
+                                    alertStats.alerts24h < 5 ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'}`}>
+                                    <Activity size={24} />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500 font-medium">Alerts (24h)</p>
+                                    <p className={`font-bold text-2xl ${alertStats.alerts24h === 0 ? 'text-emerald-600' :
+                                        alertStats.alerts24h < 5 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                        {alertStats.alerts24h}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Security Alerts Section */}
+                        <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl shadow-gray-200/50 overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-red-50/30">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-3 bg-red-100 text-red-600 rounded-xl">
+                                        <ShieldAlert size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-black text-gray-800 tracking-tight">
+                                            Security Alerts
+                                        </h3>
+                                        <p className="text-sm text-gray-500 font-medium">異常行動の検知とアラート管理</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    {alertStats.criticalOpen > 0 && (
+                                        <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-black animate-pulse">
+                                            {alertStats.criticalOpen} Critical
+                                        </span>
+                                    )}
+                                    <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-black">
+                                        {alertStats.totalOpen} Open
+                                    </span>
+                                    <button
+                                        onClick={fetchSecurityAlerts}
+                                        className="p-2 hover:bg-gray-100 rounded-xl transition-all"
+                                    >
+                                        <RefreshCw size={18} className="text-gray-400" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="p-6">
+                                {securityAlerts.length === 0 ? (
+                                    <div className="text-center py-12 text-gray-400">
+                                        <ShieldAlert size={48} className="mx-auto mb-4 opacity-30" />
+                                        <p className="font-medium">セキュリティアラートはありません</p>
+                                        <p className="text-sm">システムは正常に稼働しています</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3 max-h-80 overflow-y-auto">
+                                        {securityAlerts.slice(0, 10).map((alert) => (
+                                            <div
+                                                key={alert.id}
+                                                className={`p-4 rounded-2xl border flex items-center gap-4 transition-all ${alert.status === 'RESOLVED'
+                                                    ? 'bg-gray-50 border-gray-100 opacity-60'
+                                                    : alert.severity === 'CRITICAL'
+                                                        ? 'bg-red-50 border-red-200'
+                                                        : alert.severity === 'HIGH'
+                                                            ? 'bg-orange-50 border-orange-200'
+                                                            : alert.severity === 'MEDIUM'
+                                                                ? 'bg-yellow-50 border-yellow-200'
+                                                                : 'bg-blue-50 border-blue-200'
+                                                    }`}
+                                            >
+                                                <div className={`p-2 rounded-xl ${alert.severity === 'CRITICAL' ? 'bg-red-100 text-red-600' :
+                                                    alert.severity === 'HIGH' ? 'bg-orange-100 text-orange-600' :
+                                                        alert.severity === 'MEDIUM' ? 'bg-yellow-100 text-yellow-600' :
+                                                            'bg-blue-100 text-blue-600'
+                                                    }`}>
+                                                    {alert.type === 'LATE_NIGHT_ACCESS' ? <Clock size={20} /> :
+                                                        alert.type === 'RAPID_ACCESS' ? <AlertTriangle size={20} /> :
+                                                            alert.type === 'MASS_DOWNLOAD' ? <FileDown size={20} /> :
+                                                                <ShieldAlert size={20} />}
+                                                </div>
+                                                <div className="flex-grow">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-black text-sm text-gray-800">
+                                                            {alert.typeDisplayName}
+                                                        </span>
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${alert.severity === 'CRITICAL' ? 'bg-red-200 text-red-800' :
+                                                            alert.severity === 'HIGH' ? 'bg-orange-200 text-orange-800' :
+                                                                alert.severity === 'MEDIUM' ? 'bg-yellow-200 text-yellow-800' :
+                                                                    'bg-blue-200 text-blue-800'
+                                                            }`}>
+                                                            {alert.severity}
+                                                        </span>
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${alert.status === 'OPEN' ? 'bg-red-100 text-red-600' :
+                                                            alert.status === 'ACKNOWLEDGED' ? 'bg-yellow-100 text-yellow-600' :
+                                                                'bg-green-100 text-green-600'
+                                                            }`}>
+                                                            {alert.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        {alert.description}
+                                                    </p>
+                                                    <div className="flex items-center gap-3 mt-1 text-[10px] text-gray-400">
+                                                        <span>{alert.userName || alert.userEmployeeId || 'Unknown'}</span>
+                                                        <span>•</span>
+                                                        <span>{new Date(alert.detectedAt).toLocaleString('ja-JP')}</span>
+                                                        {alert.ipAddress && (
+                                                            <>
+                                                                <span>•</span>
+                                                                <span>{alert.ipAddress}</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {alert.status !== 'RESOLVED' && (
+                                                    <div className="flex gap-2">
+                                                        {alert.status === 'OPEN' && (
+                                                            <button
+                                                                onClick={() => handleAcknowledgeAlert(alert.id)}
+                                                                className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-yellow-600"
+                                                                title="Acknowledge"
+                                                            >
+                                                                <Eye size={16} />
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={() => handleResolveAlert(alert.id)}
+                                                            className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-green-600"
+                                                            title="Resolve"
+                                                        >
+                                                            <CheckCircle2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -848,7 +1028,7 @@ export default function DeveloperDashboard() {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div >
                 ) : activeTab === 'logs' ? (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                         {/* Audit Logs View */}
@@ -1086,7 +1266,8 @@ export default function DeveloperDashboard() {
                     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                         <AllUsersAdmin />
                     </div>
-                )}
+                )
+                }
 
 
                 {/* System Log Footer with Integrated Diagnostics */}
