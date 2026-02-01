@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.List;
 import java.util.stream.Collectors;
+import java.util.UUID;
+import java.security.SecureRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -83,15 +86,22 @@ public class UserService {
             throw new RuntimeException("職員番号 [" + dto.employeeId() + "] は既に登録されています。");
         }
 
+        String rawPassword = (dto.password() == null || dto.password().isBlank())
+                ? UUID.randomUUID().toString().substring(0, 8)
+                : dto.password();
+        String invitationToken = UUID.randomUUID().toString();
+
         User user = User.builder()
                 .employeeId(dto.employeeId())
                 .name(normalizedName)
-                .password(passwordEncoder.encode(dto.password()))
+                .password(passwordEncoder.encode(rawPassword))
                 .facility(dto.facility())
                 .department(dto.department())
                 .role(dto.role())
                 .createdAt(java.time.LocalDateTime.now())
                 .updatedAt(java.time.LocalDateTime.now())
+                .mustChangePassword(true)
+                .invitationToken(invitationToken)
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -281,4 +291,32 @@ public class UserService {
             return "ADMIN";
         return userRepository.findById(executorId).map(User::getName).orElse("ADMIN");
     }
+
+    @Transactional
+    public String issueTempPassword(Long userId, Long executorId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String tempPassword = generateRandomPassword(8);
+        user.setPassword(passwordEncoder.encode(tempPassword));
+        user.setMustChangePassword(true);
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        userRepository.save(user);
+
+        String executorName = resolveExecutorName(executorId);
+        loggingService.log("ISSUE_TEMP_PW", user.getName(), "Temporary password issued", executorName);
+
+        return tempPassword;
+    }
+
+    private String generateRandomPassword(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
+    }
+
 }

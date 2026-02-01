@@ -17,6 +17,8 @@ public class UserDto {
     private java.time.LocalDateTime createdAt;
     private java.time.LocalDateTime updatedAt;
     private java.time.LocalDateTime deletedAt;
+    private Boolean mustChangePassword;
+    private String invitationToken;
 
     public static UserDto fromEntity(User user) {
         return UserDto.builder()
@@ -29,6 +31,8 @@ public class UserDto {
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .deletedAt(user.getDeletedAt())
+                .mustChangePassword(user.getMustChangePassword())
+                .invitationToken(user.getInvitationToken())
                 .build();
     }
 }

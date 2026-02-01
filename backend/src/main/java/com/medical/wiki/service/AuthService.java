@@ -17,6 +17,32 @@ public class AuthService {
     private final LoggingService loggingService;
     private final SecurityAnomalyService securityAnomalyService;
 
+    @org.springframework.transaction.annotation.Transactional
+    public void changePassword(Long userId, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setMustChangePassword(false);
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        userRepository.save(user);
+        loggingService.log("PASSWORD_CHANGE", user.getName(), "Password changed", user.getEmployeeId());
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public UserDto setupAccount(String token, String password) {
+        User user = userRepository.findByInvitationToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired invitation token"));
+
+        user.setPassword(passwordEncoder.encode(password));
+        user.setMustChangePassword(false);
+        user.setInvitationToken(null);
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        userRepository.save(user);
+
+        loggingService.log("ACCOUNT_SETUP", user.getName(), "Account setup via invitation", user.getEmployeeId());
+        return UserDto.fromEntity(user);
+    }
+
     public Optional<UserDto> authenticate(LoginRequest request, String ipAddress) {
         Optional<User> userOpt = userRepository.findByEmployeeId(request.getEmployeeId());
 
