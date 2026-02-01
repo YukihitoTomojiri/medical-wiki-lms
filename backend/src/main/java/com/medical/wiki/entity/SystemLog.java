@@ -30,4 +30,7 @@ public class SystemLog {
 
     @Column(name = "performed_by")
     private String performedBy;
+
+    @Column(name = "ip_address")
+    private String ipAddress;
 }

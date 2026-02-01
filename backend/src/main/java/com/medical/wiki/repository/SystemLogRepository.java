@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface SystemLogRepository extends JpaRepository<SystemLog, Long> {
     List<SystemLog> findTop100ByOrderByTimestampDesc();
+    List<SystemLog> findAllByOrderByTimestampDesc();
 }

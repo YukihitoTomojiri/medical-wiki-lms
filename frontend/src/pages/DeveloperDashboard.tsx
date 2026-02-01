@@ -37,7 +37,7 @@ export default function DeveloperDashboard() {
         version: '1.0.0',
     });
 
-    const [activeTab, setActiveTab] = useState<'system' | 'archive'>('system');
+    const [activeTab, setActiveTab] = useState<'system' | 'logs' | 'archive'>('system');
 
     // Data States
     const [userList, setUserList] = useState<User[]>([]);
@@ -90,7 +90,7 @@ export default function DeveloperDashboard() {
 
     const fetchSystemLogs = async () => {
         try {
-            const data = await api.getLogs(1);
+            const data = await api.getAuditLogs(1);
             setSystemLogs(data);
         } catch (e) { console.error(e); }
     };
@@ -453,7 +453,15 @@ export default function DeveloperDashboard() {
                             ? 'bg-white text-gray-800 shadow-sm ring-1 ring-black/5'
                             : 'text-gray-500 hover:text-gray-700'}`}
                     >
-                        System Dashboard
+                        System Stats
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('logs')}
+                        className={`px-6 py-2.5 rounded-lg text-sm font-black tracking-wide transition-all ${activeTab === 'logs'
+                            ? 'bg-white text-gray-800 shadow-sm ring-1 ring-black/5'
+                            : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        Audit Logs
                     </button>
                     <button
                         onClick={() => setActiveTab('archive')}
@@ -470,18 +478,18 @@ export default function DeveloperDashboard() {
                         {/* Status Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             {/* DB Status */}
-                            <div className={`p - 5 rounded - 2xl border flex items - center gap - 4 shadow - sm transition - all ${stats.dbStatus === 'Connected'
+                            <div className={`p-5 rounded-2xl border flex items-center gap-4 shadow-sm transition-all ${stats.dbStatus === 'Connected'
                                 ? 'bg-emerald-50 border-emerald-100'
                                 : 'bg-red-50 border-red-100'
                                 } `}>
-                                <div className={`p - 3 rounded - xl ${stats.dbStatus === 'Connected' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'
+                                <div className={`p-3 rounded-xl ${stats.dbStatus === 'Connected' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'
                                     } `}>
                                     <Database size={24} />
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium opacity-70">Database</p>
                                     <div className="flex items-center gap-2">
-                                        <span className={`w - 2.5 h - 2.5 rounded - full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500' : 'bg-red-500'
+                                        <span className={`w-2.5 h-2.5 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500' : 'bg-red-500'
                                             } `} />
                                         <p className="font-bold text-lg">{stats.dbStatus}</p>
                                     </div>
@@ -693,8 +701,8 @@ export default function DeveloperDashboard() {
                             <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl shadow-gray-200/50 overflow-hidden">
                                 <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                                     <div>
-                                        <h3 className="text-xl font-black text-gray-800 tracking-tight">User Administration</h3>
-                                        <p className="text-sm text-gray-500 font-medium">Control access and audit operations</p>
+                                        <h3 className="text-xl font-black text-gray-800 tracking-tight">Active Nodes Control</h3>
+                                        <p className="text-sm text-gray-500 font-medium">Control access and user privileges</p>
                                     </div>
 
                                     {/* Bulk Action Menu */}
@@ -870,61 +878,92 @@ export default function DeveloperDashboard() {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* System Operational Logs */}
-                            <div className="bg-slate-900 rounded-[2.5rem] border border-slate-800 shadow-2xl overflow-hidden mb-12">
-                                <div className="p-8 border-b border-slate-800 flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-xl font-black text-white tracking-tight">System Operational Logs</h3>
-                                        <p className="text-sm text-slate-500 font-medium">Audit trail of administrative actions</p>
-                                    </div>
+                        </div>
+                    </div>
+                ) : activeTab === 'logs' ? (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                        {/* Audit Logs View */}
+                        <div className="bg-slate-900 rounded-[2.5rem] border border-slate-800 shadow-2xl overflow-hidden mb-12">
+                            <div className="p-8 border-b border-slate-800 flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-xl font-black text-white tracking-tight flex items-center gap-3">
+                                        <Activity className="text-emerald-500" />
+                                        Audit Records (JST)
+                                    </h3>
+                                    <p className="text-sm text-slate-500 font-medium">Immutable audit trail of all system actions</p>
+                                </div>
+                                <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-2xl border border-slate-700 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                         <Shield size={14} className="text-emerald-500" />
-                                        Immutable Audit Trail
+                                        Secured Logs
                                     </div>
+                                    <button
+                                        onClick={fetchSystemLogs}
+                                        className="p-2 bg-slate-800 text-slate-400 rounded-xl hover:bg-slate-700 transition-all border border-slate-700"
+                                    >
+                                        <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                                    </button>
                                 </div>
-                                <div className="h-[400px] overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
-                                    <div className="space-y-2">
-                                        {Array.isArray(systemLogs) && systemLogs.map((log) => (
-                                            <div key={log.id} className="group flex items-start gap-4 p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all duration-300">
-                                                <div className="flex-shrink-0 w-24 pt-1">
-                                                    <p className="text-[10px] font-black text-slate-600 font-mono tracking-tighter">
-                                                        {new Date(log.timestamp).toLocaleTimeString('ja-JP')}
-                                                    </p>
-                                                    <p className="text-[9px] font-bold text-slate-500 mt-1 uppercase tracking-widest">
-                                                        {new Date(log.timestamp).toLocaleDateString('ja-JP')}
-                                                    </p>
-                                                </div>
-                                                <div className="flex-grow">
-                                                    <div className="flex items-center gap-3">
-                                                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest ${log.action === 'LOGIN' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                            </div>
+                            <div className="h-[600px] overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
+                                <div className="space-y-4 max-w-5xl mx-auto py-4">
+                                    {Array.isArray(systemLogs) && systemLogs.map((log) => (
+                                        <div key={log.id} className="group relative flex items-start gap-6 p-5 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all duration-300">
+                                            {/* Timeline indicator */}
+                                            <div className="absolute left-[111px] top-0 bottom-0 w-px bg-slate-800 group-hover:bg-emerald-500/20 transition-colors" />
+
+                                            <div className="flex-shrink-0 w-24 pt-1 relative z-10 bg-slate-900 pr-4">
+                                                <p className="text-[11px] font-black text-slate-400 font-mono tracking-tighter">
+                                                    {log.timestamp.split(' ')[1]}
+                                                </p>
+                                                <p className="text-[9px] font-bold text-slate-600 mt-1 uppercase tracking-widest">
+                                                    {log.timestamp.split(' ')[0]}
+                                                </p>
+                                            </div>
+
+                                            <div className="relative z-10 flex-shrink-0 mt-1.5">
+                                                <div className="w-3 h-3 rounded-full bg-slate-800 border-2 border-slate-700 group-hover:bg-emerald-500 group-hover:border-emerald-400/30 transition-all" />
+                                            </div>
+
+                                            <div className="flex-grow min-w-0">
+                                                <div className="flex items-center gap-3">
+                                                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest ${log.action === 'LOGIN' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
                                                             log.action === 'USER_UPDATE' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                                                                log.action.includes('BULK') ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
-                                                                    'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                                            }`}>
-                                                            {log.action}
-                                                        </span>
-                                                        <span className="text-sm font-black text-slate-200 tracking-tight">{log.target}</span>
-                                                    </div>
-                                                    <p className="text-xs text-slate-500 mt-1.5 font-medium leading-relaxed group-hover:text-slate-400 transition-colors">
-                                                        {log.description}
-                                                    </p>
-                                                </div>
-                                                <div className="flex-shrink-0 text-right">
-                                                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1">Executor</p>
-                                                    <span className="px-2 py-1 bg-slate-800 text-slate-400 rounded-lg text-[10px] font-bold border border-slate-700">
-                                                        @{log.performedBy}
+                                                                log.action === 'USER_DELETE' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                                                                    log.action.includes('BULK') ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
+                                                                        'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                                        }`}>
+                                                        {log.action}
                                                     </span>
+                                                    <span className="text-sm font-black text-white truncate">{log.target}</span>
+                                                </div>
+                                                <p className="text-xs text-slate-400 mt-2 font-medium leading-relaxed">
+                                                    {log.description}
+                                                </p>
+                                                <div className="flex items-center gap-4 mt-3">
+                                                    <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-800/50 rounded-lg border border-white/5">
+                                                        <Users size={12} className="text-slate-500" />
+                                                        <span className="text-[10px] font-bold text-slate-500">{log.performedBy}</span>
+                                                    </div>
+                                                    {log.ipAddress && (
+                                                        <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-800/50 rounded-lg border border-white/5">
+                                                            <Terminal size={12} className="text-slate-500" />
+                                                            <span className="text-[10px] font-mono text-slate-500">{log.ipAddress}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-                                        ))}
-                                        {systemLogs.length === 0 && (
-                                            <div className="text-center py-20">
-                                                <Shield size={48} className="mx-auto text-slate-800 mb-4" />
-                                                <p className="text-slate-600 font-bold uppercase tracking-widest text-xs">No entries found in audit vault</p>
+                                        </div>
+                                    ))}
+                                    {systemLogs.length === 0 && (
+                                        <div className="text-center py-20 px-4">
+                                            <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                                <Shield size={40} className="text-slate-700" />
                                             </div>
-                                        )}
-                                    </div>
+                                            <p className="text-slate-500 font-black uppercase tracking-[.2em] text-xs">No entries found in audit vault</p>
+                                            <p className="text-slate-600 text-[10px] mt-2 font-medium">System activity logs will appear here</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

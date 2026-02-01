@@ -35,27 +35,29 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (dto.role() != null) user.setRole(dto.role());
-        if (dto.facility() != null) user.setFacility(dto.facility());
-        if (dto.department() != null) user.setDepartment(dto.department());
+        if (dto.role() != null)
+            user.setRole(dto.role());
+        if (dto.facility() != null)
+            user.setFacility(dto.facility());
+        if (dto.department() != null)
+            user.setDepartment(dto.department());
 
         User updatedUser = userRepository.save(user);
-        
+
         String executorName = "ADMIN";
         if (executorId != null) {
             executorName = userRepository.findById(executorId).map(u -> u.getName()).orElse("ADMIN");
         }
 
         loggingService.log(
-            "USER_UPDATE", 
-            user.getName() + " (" + user.getEmployeeId() + ")",
-            String.format("Updated Role: %s, Facility: %s, Department: %s", dto.role(), dto.facility(), dto.department()),
-            executorName
-        );
+                "USER_UPDATE",
+                user.getName() + " (" + user.getEmployeeId() + ")",
+                String.format("Updated Role: %s, Facility: %s, Department: %s", dto.role(), dto.facility(),
+                        dto.department()),
+                executorName);
 
         return UserDto.fromEntity(updatedUser);
     }
-
 
     @Transactional
     public void deleteUser(Long id) {
@@ -76,7 +78,8 @@ public class UserService {
         String normalizedName = validateAndNormalizeName(dto.name(), "登録者名");
 
         if (userRepository.findByEmployeeIdAndDeletedAtIsNull(dto.employeeId()).isPresent()) {
-            loggingService.log("USER_REGISTER_FAIL", dto.employeeId(), "Registration failed: Duplicate ID [" + dto.employeeId() + "]", executorName);
+            loggingService.log("USER_REGISTER_FAIL", dto.employeeId(),
+                    "Registration failed: Duplicate ID [" + dto.employeeId() + "]", executorName);
             throw new RuntimeException("職員番号 [" + dto.employeeId() + "] は既に登録されています。");
         }
 
@@ -92,7 +95,8 @@ public class UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
-        loggingService.log("USER_REGISTER_SUCCESS", savedUser.getName() + " (" + savedUser.getEmployeeId() + ")", "New user registered", executorName);
+        loggingService.log("USER_REGISTER_SUCCESS", savedUser.getName() + " (" + savedUser.getEmployeeId() + ")",
+                "New user registered", executorName);
         return UserDto.fromEntity(savedUser);
     }
 
@@ -102,16 +106,17 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setDeletedAt(null);
         userRepository.save(user);
-        
+
         String executorName = resolveExecutorName(executorId);
-        loggingService.log("USER_RECOVERY", user.getName() + " (" + user.getEmployeeId() + ")", "User restored from archive", executorName);
+        loggingService.log("USER_RECOVERY", user.getName() + " (" + user.getEmployeeId() + ")",
+                "User restored from archive", executorName);
     }
 
     public java.util.Map<String, Object> validateBulkCsv(List<com.medical.wiki.dto.UserCreateDto> dtos) {
         List<String> errors = new java.util.ArrayList<>();
         List<com.medical.wiki.dto.UserDto> restorableUsers = new java.util.ArrayList<>();
         List<com.medical.wiki.dto.UserCreateDto> validNewUsers = new java.util.ArrayList<>();
-        
+
         java.util.Set<String> seenIds = new java.util.HashSet<>();
         List<String> validFacilities = java.util.Arrays.asList("本館", "南棟", "ひまわりの里病院", "あおぞら中央クリニック");
 
@@ -147,7 +152,7 @@ public class UserService {
                 errors.add(e.getMessage());
             }
         }
-        
+
         java.util.Map<String, Object> result = new java.util.HashMap<>();
         result.put("isValid", errors.isEmpty());
         result.put("errors", errors);
@@ -157,12 +162,14 @@ public class UserService {
     }
 
     @Transactional
-    public void bulkRegisterUsers(List<com.medical.wiki.dto.UserCreateDto> dtos, Long executorId, List<String> restoreIds) {
+    public void bulkRegisterUsers(List<com.medical.wiki.dto.UserCreateDto> dtos, Long executorId,
+            List<String> restoreIds) {
         String executorName = resolveExecutorName(executorId);
         List<String> errors = new java.util.ArrayList<>();
         java.util.Set<String> seenIds = new java.util.HashSet<>();
-        java.util.Set<String> restoreIdSet = restoreIds == null ? new java.util.HashSet<>() : new java.util.HashSet<>(restoreIds);
-        
+        java.util.Set<String> restoreIdSet = restoreIds == null ? new java.util.HashSet<>()
+                : new java.util.HashSet<>(restoreIds);
+
         List<String> validFacilities = java.util.Arrays.asList("本館", "南棟", "ひまわりの里病院", "あおぞら中央クリニック");
 
         // 1. Validation Logic
@@ -177,7 +184,7 @@ public class UserService {
             seenIds.add(dto.employeeId());
 
             java.util.Optional<User> existing = userRepository.findByEmployeeIdIncludingDeleted(dto.employeeId());
-            
+
             if (existing.isPresent()) {
                 User user = existing.get();
                 if (user.getDeletedAt() == null) {
@@ -212,7 +219,7 @@ public class UserService {
         for (com.medical.wiki.dto.UserCreateDto dto : dtos) {
             String normalizedName = validateAndNormalizeName(dto.name(), "");
             java.util.Optional<User> existing = userRepository.findByEmployeeIdIncludingDeleted(dto.employeeId());
-            
+
             if (existing.isPresent() && restoreIdSet.contains(dto.employeeId())) {
                 // Restore an existing deleted user
                 User user = existing.get();
@@ -224,51 +231,54 @@ public class UserService {
                 user.setPassword(passwordEncoder.encode(dto.password()));
                 user.setUpdatedAt(java.time.LocalDateTime.now());
                 userRepository.save(user);
-                
-                loggingService.log("USER_RECOVERY", user.getName() + " (" + user.getEmployeeId() + ")", "User restored via bulk import", executorName);
+
+                loggingService.log("USER_RECOVERY", user.getName() + " (" + user.getEmployeeId() + ")",
+                        "User restored via bulk import", executorName);
                 restoreCount++;
             } else if (existing.isEmpty()) {
                 // Create new user
                 User user = User.builder()
-                    .employeeId(dto.employeeId())
-                    .name(normalizedName)
-                    .password(passwordEncoder.encode(dto.password()))
-                    .facility(dto.facility())
-                    .department(dto.department())
-                    .role(dto.role())
-                    .createdAt(java.time.LocalDateTime.now())
-                    .updatedAt(java.time.LocalDateTime.now())
-                    .build();
+                        .employeeId(dto.employeeId())
+                        .name(normalizedName)
+                        .password(passwordEncoder.encode(dto.password()))
+                        .facility(dto.facility())
+                        .department(dto.department())
+                        .role(dto.role())
+                        .createdAt(java.time.LocalDateTime.now())
+                        .updatedAt(java.time.LocalDateTime.now())
+                        .build();
                 userRepository.save(user);
                 newCount++;
             }
         }
-        
-        loggingService.log("USER_BULK_REGISTER", (newCount + restoreCount) + " users", 
-            String.format("Bulk registration completed: %d new, %d restored", newCount, restoreCount), executorName);
+
+        loggingService.log("USER_BULK_REGISTER", (newCount + restoreCount) + " users",
+                String.format("Bulk registration completed: %d new, %d restored", newCount, restoreCount),
+                executorName);
     }
 
     private String validateAndNormalizeName(String name, String context) {
         if (name == null || name.trim().isEmpty()) {
             throw new RuntimeException(context + "が入力されていません。");
         }
-        
+
         // 全角スペースを半角に置換
         String normalized = name.replace("　", " ").trim();
-        
+
         // スペースで分割して2つ以上（姓と名）あるか確認。かつスペースが1つだけであることを推奨するが、
         // 連続するスペースは1つにまとめる
         normalized = normalized.replaceAll("\\s+", " ");
-        
+
         if (!normalized.contains(" ")) {
             throw new RuntimeException(context + " [" + name + "] に姓と名の間のスペースがありません。「姓 名」の形式で入力してください。");
         }
-        
+
         return normalized;
     }
 
     private String resolveExecutorName(Long executorId) {
-        if (executorId == null) return "ADMIN";
+        if (executorId == null)
+            return "ADMIN";
         return userRepository.findById(executorId).map(User::getName).orElse("ADMIN");
     }
 }

@@ -130,6 +130,14 @@ export const api = {
         return Array.isArray(data) ? data : [];
     },
 
+    getAuditLogs: async (userId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/admin/audit-logs`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
 
     bulkDeleteUsers: async (userId: number, ids: number[]): Promise<any> => {
         const res = await fetch(`${API_BASE}/admin/users/bulk-delete`, {

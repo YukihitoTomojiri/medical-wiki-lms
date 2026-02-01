@@ -27,24 +27,23 @@ public class SystemController {
     @GetMapping("/system")
     public ResponseEntity<?> getSystemStats() {
         return ResponseEntity.ok(Map.of(
-            "status", "UP",
-            "database", "Connected",
-            "version", "1.1.0"
-        ));
+                "status", "UP",
+                "database", "Connected",
+                "version", "1.1.0"));
     }
 
     @GetMapping("/system/diagnostics")
     public ResponseEntity<?> getDiagnostics() {
         long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
         Runtime runtime = Runtime.getRuntime();
-        
+
         Map<String, Object> data = new HashMap<>();
         data.put("uptime", uptime);
         data.put("memoryTotal", runtime.totalMemory());
         data.put("memoryFree", runtime.freeMemory());
         data.put("memoryUsed", runtime.totalMemory() - runtime.freeMemory());
         data.put("dbPing", 5); // Mocked latency in ms for now
-        
+
         return ResponseEntity.ok(data);
     }
 
@@ -54,7 +53,8 @@ public class SystemController {
     }
 
     @PostMapping("/users/bulk-delete")
-    public ResponseEntity<?> bulkDelete(@RequestBody List<Long> ids, @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
+    public ResponseEntity<?> bulkDelete(@RequestBody List<Long> ids,
+            @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
         String executorName = "ADMIN";
         if (executorId != null) {
             executorName = userService.getUserById(executorId).map(UserDto::getName).orElse("ADMIN");
@@ -65,7 +65,8 @@ public class SystemController {
     }
 
     @PostMapping("/users/bulk-reset-progress")
-    public ResponseEntity<?> bulkResetProgress(@RequestBody List<Long> ids, @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
+    public ResponseEntity<?> bulkResetProgress(@RequestBody List<Long> ids,
+            @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
         String executorName = "ADMIN";
         if (executorId != null) {
             executorName = userService.getUserById(executorId).map(UserDto::getName).orElse("ADMIN");
@@ -76,7 +77,8 @@ public class SystemController {
     }
 
     @PostMapping("/users/register")
-    public ResponseEntity<?> registerUser(@RequestBody com.medical.wiki.dto.UserCreateDto dto, @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
+    public ResponseEntity<?> registerUser(@RequestBody com.medical.wiki.dto.UserCreateDto dto,
+            @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
         try {
             UserDto created = userService.registerUser(dto, executorId);
             return ResponseEntity.ok(created);
@@ -86,7 +88,8 @@ public class SystemController {
     }
 
     @PostMapping("/users/bulk-register")
-    public ResponseEntity<?> bulkRegister(@RequestBody List<com.medical.wiki.dto.UserCreateDto> dtos, @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
+    public ResponseEntity<?> bulkRegister(@RequestBody List<com.medical.wiki.dto.UserCreateDto> dtos,
+            @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
         try {
             // Backward compatibility: passing null for restoreIds
             userService.bulkRegisterUsers(dtos, executorId, null);
@@ -97,7 +100,8 @@ public class SystemController {
     }
 
     @PostMapping("/users/bulk-register-v2")
-    public ResponseEntity<?> bulkRegisterV2(@RequestBody BulkRegisterRequest request, @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
+    public ResponseEntity<?> bulkRegisterV2(@RequestBody BulkRegisterRequest request,
+            @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
         try {
             userService.bulkRegisterUsers(request.users, executorId, request.restoreIds);
             return ResponseEntity.ok(Map.of("success", true));
@@ -115,24 +119,8 @@ public class SystemController {
         }
     }
 
-    @PostMapping("/users/{id}/restore")
-    public ResponseEntity<?> restoreUser(@PathVariable Long id, @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
-        try {
-            userService.restoreUser(id, executorId);
-            return ResponseEntity.ok(Map.of("success", true));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-        }
-    }
-
-    @GetMapping("/users/all-including-deleted")
-    public ResponseEntity<?> getAllUsersIncludingDeleted() {
-        return ResponseEntity.ok(userService.getAllUsersIncludingDeleted());
-    }
-
     public static class BulkRegisterRequest {
         public List<com.medical.wiki.dto.UserCreateDto> users;
         public List<String> restoreIds;
     }
 }
-
