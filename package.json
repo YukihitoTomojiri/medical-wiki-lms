@@ -1,0 +1,9 @@
+{
+    "name": "medical-wiki-lms",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "test": "npm --prefix frontend test",
+        "dev": "docker compose up"
+    }
+}

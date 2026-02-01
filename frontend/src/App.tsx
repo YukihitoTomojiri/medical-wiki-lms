@@ -1,0 +1,74 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { User } from './types';
+import Login from './pages/Login';
+import ManualList from './pages/ManualList';
+import ManualDetail from './pages/ManualDetail';
+import MyPage from './pages/MyPage';
+import AdminDashboard from './pages/AdminDashboard';
+import DeveloperDashboard from './pages/DeveloperDashboard';
+import AllUsersAdmin from './pages/AllUsersAdmin';
+import ManualEdit from './pages/ManualEdit';
+import Layout from './components/Layout';
+
+function App() {
+    const [user, setUser] = useState<User | null>(() => {
+        const saved = localStorage.getItem('user');
+        return saved ? JSON.parse(saved) : null;
+    });
+
+    useEffect(() => {
+        if (user) {
+            localStorage.setItem('user', JSON.stringify(user));
+        } else {
+            localStorage.removeItem('user');
+        }
+    }, [user]);
+
+    const handleLogin = (loggedInUser: User) => {
+        setUser(loggedInUser);
+    };
+
+    const handleLogout = () => {
+        setUser(null);
+    };
+
+    if (!user) {
+        return (
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/login" element={<Login onLogin={handleLogin} />} />
+                    <Route path="*" element={<Navigate to="/login" replace />} />
+                </Routes>
+            </BrowserRouter>
+        );
+    }
+
+    return (
+        <BrowserRouter>
+            <Layout user={user} onLogout={handleLogout}>
+                <Routes>
+                    <Route path="/" element={<Navigate to="/manuals" replace />} />
+                    <Route path="/manuals" element={<ManualList user={user} />} />
+                    <Route path="/manuals/:id" element={<ManualDetail user={user} />} />
+                    <Route path="/mypage" element={<MyPage user={user} />} />
+                    {user.role === 'DEVELOPER' && (
+                        <Route path="/developer" element={<DeveloperDashboard />} />
+                    )}
+                    {(user.role === 'ADMIN' || user.role === 'DEVELOPER') && (
+                        <>
+                            <Route path="/admin" element={<AdminDashboard />} />
+                            <Route path="/admin/manuals/new" element={<ManualEdit user={user} />} />
+                            <Route path="/admin/manuals/new" element={<ManualEdit user={user} />} />
+                            <Route path="/admin/manuals/edit/:id" element={<ManualEdit user={user} />} />
+                            <Route path="/admin/all-users" element={<AllUsersAdmin />} />
+                        </>
+                    )}
+                    <Route path="*" element={<Navigate to="/manuals" replace />} />
+                </Routes>
+            </Layout>
+        </BrowserRouter>
+    );
+}
+
+export default App;

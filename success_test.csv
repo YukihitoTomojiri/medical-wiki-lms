@@ -1,0 +1,6 @@
+employeeId,name,facility,department,role
+user-001,山田 太郎,本館,管理部,USER
+user-002,田中 花子,南棟,2階病棟,USER
+user-003,伊藤 健一,ひまわりの里病院,外来,USER
+admin-001,中村 一郎,本館,事務部,ADMIN
+nurse-001,林 結衣,ひまわりの里病院,薬局,USER
