@@ -60,6 +60,10 @@ export default function DeveloperDashboard() {
     // Data States
     const [userList, setUserList] = useState<User[]>([]);
 
+    // Organization Master Data (from API)
+    const [orgFacilities, setOrgFacilities] = useState<{ id: number, name: string }[]>([]);
+    const [orgDepartments, setOrgDepartments] = useState<{ id: number, name: string, facilityId: number }[]>([]);
+
 
     // UI States
     const [editingUserId, setEditingUserId] = useState<number | null>(null);
@@ -162,6 +166,25 @@ export default function DeveloperDashboard() {
                 fetchSecurityAlerts()
             ]);
             setUserList(usersData);
+            // Load organization master for dropdowns
+            try {
+                const facs = await api.getFacilities();
+                const depts = await api.getDepartments();
+                setOrgFacilities(facs);
+                setOrgDepartments(depts);
+                // Auto-set initial register form values if data exists
+                if (facs.length > 0) {
+                    const firstFac = facs[0];
+                    const firstDept = depts.find((d: any) => d.facilityId === firstFac.id);
+                    setRegisterForm(prev => ({
+                        ...prev,
+                        facility: firstFac.name,
+                        department: firstDept?.name || ''
+                    }));
+                }
+            } catch (e) {
+                console.error('Failed to load organization data', e);
+            }
             setLastSync(new Date().toLocaleTimeString());
             addLog(`Loaded ${usersData.length} users and checked system health`, 'success');
         } catch (error) {
@@ -297,16 +320,17 @@ export default function DeveloperDashboard() {
         }
     };
 
-    // Dynamic Department Options based on Facility
-    const getDepartments = (facility?: string) => {
-        const mapping: Record<string, string[]> = {
-            '本館': ['3階病棟', '4階病棟', 'リハビリテーション', '事務部', '栄養課'],
-            '南棟': ['2階病棟', '3階病棟', '透析室'],
-            'ひまわりの里病院': ['外来', '薬局', '検査室'],
-            'あおぞら中央クリニック': ['診療外来', '訪問看護']
-        };
-        return (facility && mapping[facility]) || [];
+    // Dynamic Department Options based on Facility (from API) with deduplication
+    const getDepartmentsForFacility = (facilityName?: string) => {
+        if (!facilityName) return [];
+        const fac = orgFacilities.find(f => f.name === facilityName);
+        if (!fac) return [];
+        const deptNames = orgDepartments.filter(d => d.facilityId === fac.id).map(d => d.name);
+        // Deduplicate department names
+        return Array.from(new Set(deptNames));
     };
+    // Legacy alias for compatibility
+    const getDepartments = getDepartmentsForFacility;
 
     // Registration States
     const [registerForm, setRegisterForm] = useState({
@@ -843,10 +867,12 @@ export default function DeveloperDashboard() {
                                                 onChange={e => setRegisterForm({ ...registerForm, facility: e.target.value, department: getDepartments(e.target.value)[0] || '' })}
                                                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-black focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                             >
-                                                <option value="本館">本館</option>
-                                                <option value="南棟">南棟</option>
-                                                <option value="ひまわりの里病院">ひまわりの里病院</option>
-                                                <option value="あおぞら中央クリニック">あおぞら中央クリニック</option>
+                                                {orgFacilities.length === 0 && (
+                                                    <option value="">施設を登録してください</option>
+                                                )}
+                                                {orgFacilities.map(f => (
+                                                    <option key={f.id} value={f.name}>{f.name}</option>
+                                                ))}
                                             </select>
                                         </div>
                                         <div className="md:col-span-1">
@@ -986,13 +1012,12 @@ export default function DeveloperDashboard() {
                                                                 {isEditing ? (
                                                                     <select
                                                                         value={editForm.facility}
-                                                                        onChange={e => setEditForm({ ...editForm, facility: e.target.value })}
+                                                                        onChange={e => setEditForm({ ...editForm, facility: e.target.value, department: getDepartments(e.target.value)[0] || '' })}
                                                                         className="w-full p-2 border-2 border-orange-200 rounded-xl text-sm bg-white focus:border-orange-500 outline-none transition-all font-bold"
                                                                     >
-                                                                        <option value="本館">本館</option>
-                                                                        <option value="南棟">南棟</option>
-                                                                        <option value="ひまわりの里病院">ひまわりの里病院</option>
-                                                                        <option value="あおぞら中央クリニック">あおぞら中央クリニック</option>
+                                                                        {orgFacilities.map(f => (
+                                                                            <option key={f.id} value={f.name}>{f.name}</option>
+                                                                        ))}
                                                                     </select>
                                                                 ) : (
                                                                     <span className="px-3 py-1 bg-white border border-gray-200 text-gray-600 rounded-full text-[11px] font-black uppercase tracking-wider">
