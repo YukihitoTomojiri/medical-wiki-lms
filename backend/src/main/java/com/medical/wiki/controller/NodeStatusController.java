@@ -5,8 +5,6 @@ import com.medical.wiki.entity.User;
 import com.medical.wiki.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.actuate.health.HealthEndpoint;
-import org.springframework.boot.actuate.health.Status;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +25,6 @@ import java.util.Random;
 public class NodeStatusController {
 
     private final UserRepository userRepository;
-    private final HealthEndpoint healthEndpoint;
     private final JdbcTemplate jdbcTemplate;
 
     // Simulated last activity timestamps (in production, this would come from
@@ -41,7 +38,7 @@ public class NodeStatusController {
 
     /**
      * Get health status of all nodes (users).
-     * Combines actuator health with real DB/memory metrics.
+     * Combines system health with real DB/memory metrics.
      */
     @GetMapping("/status")
     public ResponseEntity<List<NodeStatusDto>> getAllNodeStatus() {
@@ -49,8 +46,8 @@ public class NodeStatusController {
 
         // Get real system health metrics
         NodeStatusDto.HealthMetrics systemMetrics = getSystemHealthMetrics();
-        Status systemHealth = healthEndpoint.health().getStatus();
-        boolean systemUp = systemHealth.equals(Status.UP);
+        // Use DB connection as a proxy for system health
+        boolean systemUp = Boolean.TRUE.equals(systemMetrics.getDbConnected());
 
         List<NodeStatusDto> nodeStatuses = users.stream()
                 .map(user -> buildNodeStatus(user, systemUp, systemMetrics))
@@ -68,8 +65,7 @@ public class NodeStatusController {
                 .filter(u -> u.getDeletedAt() == null)
                 .map(user -> {
                     NodeStatusDto.HealthMetrics systemMetrics = getSystemHealthMetrics();
-                    Status systemHealth = healthEndpoint.health().getStatus();
-                    boolean systemUp = systemHealth.equals(Status.UP);
+                    boolean systemUp = Boolean.TRUE.equals(systemMetrics.getDbConnected());
                     return ResponseEntity.ok(buildNodeStatus(user, systemUp, systemMetrics));
                 })
                 .orElse(ResponseEntity.notFound().build());
@@ -142,7 +138,7 @@ public class NodeStatusController {
         String statusDetail;
 
         // Determine status based on system health and user activity
-        if (!systemUp || !metrics.getDbConnected()) {
+        if (!systemUp || !Boolean.TRUE.equals(metrics.getDbConnected())) {
             status = "DOWN";
             statusDetail = "通信途絶";
         } else if (metrics.getWarningReason() != null) {
