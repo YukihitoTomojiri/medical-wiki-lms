@@ -35,6 +35,7 @@ public class ComplianceExportService {
     private final UserRepository userRepository;
     private final ManualRepository manualRepository;
     private final ProgressRepository progressRepository;
+    private final com.medical.wiki.repository.FacilityRepository facilityRepository;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -43,7 +44,9 @@ public class ComplianceExportService {
      * Get distinct facility list
      */
     public List<String> getDistinctFacilities() {
-        return userRepository.findDistinctFacilities();
+        return facilityRepository.findByDeletedAtIsNullOrderByNameAsc().stream()
+                .map(com.medical.wiki.entity.Facility::getName)
+                .collect(Collectors.toList());
     }
 
     /**

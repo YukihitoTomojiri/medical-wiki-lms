@@ -164,6 +164,22 @@ export default function DeveloperDashboard() {
         return () => clearInterval(pollInterval);
     }, []);
 
+    // Fetch compliance facilities when tab is switched to compliance
+    const fetchComplianceFacilities = async () => {
+        try {
+            const data = await api.getComplianceFacilities(1);
+            setComplianceFacilities(data);
+        } catch (e) {
+            console.error('Failed to fetch compliance facilities:', e);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'compliance') {
+            fetchComplianceFacilities();
+        }
+    }, [activeTab]);
+
     const handleAcknowledgeAlert = async (id: number) => {
         try {
             await api.acknowledgeSecurityAlert(1, id);
@@ -1322,32 +1338,36 @@ export default function DeveloperDashboard() {
                         </div>
                     </div>
                 ) : activeTab === 'compliance' ? (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-6">
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-4">
                         {/* Header */}
-                        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                            <div className="flex items-center gap-3 mb-2">
-                                <FileDown className="text-blue-600" size={24} />
-                                <h2 className="text-xl font-black text-gray-800">Compliance Export</h2>
+                        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm relative overflow-hidden">
+                            <div className="flex items-center gap-3 mb-1">
+                                <div className="p-2 bg-blue-100 text-blue-600 rounded-xl">
+                                    <FileDown size={20} />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-black text-gray-800 tracking-tight">Compliance Export</h2>
+                                    <p className="text-xs text-gray-500 font-medium">
+                                        施設・期間を選択して、学習進捗データをCSV/PDF形式でエクスポートします。
+                                    </p>
+                                </div>
                             </div>
-                            <p className="text-sm text-gray-500">
-                                施設・期間を選択して、学習進捗データをCSV/PDF形式でエクスポートします。
-                            </p>
                         </div>
 
                         {/* Filter Section */}
-                        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                            <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
-                                <Building2 size={16} />
+                        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <Building2 size={14} />
                                 フィルター設定
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {/* Facility Dropdown */}
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">施設</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5">施設</label>
                                     <select
                                         value={selectedFacility}
                                         onChange={(e) => setSelectedFacility(e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-xs font-bold text-gray-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all cursor-pointer"
                                     >
                                         <option value="all">全施設</option>
                                         {complianceFacilities.map(f => (
@@ -1358,7 +1378,7 @@ export default function DeveloperDashboard() {
 
                                 {/* Start Date */}
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                                         <Calendar size={12} />
                                         開始日
                                     </label>
@@ -1366,13 +1386,13 @@ export default function DeveloperDashboard() {
                                         type="date"
                                         value={startDate}
                                         onChange={(e) => setStartDate(e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-xs font-bold text-gray-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                                     />
                                 </div>
 
                                 {/* End Date */}
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                                         <Calendar size={12} />
                                         終了日
                                     </label>
@@ -1380,16 +1400,16 @@ export default function DeveloperDashboard() {
                                         type="date"
                                         value={endDate}
                                         onChange={(e) => setEndDate(e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-xs font-bold text-gray-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* Export Buttons */}
-                        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                            <h3 className="text-sm font-bold text-gray-700 mb-4">エクスポート</h3>
-                            <div className="flex gap-4">
+                        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">エクスポート</h3>
+                            <div className="flex gap-3">
                                 <button
                                     onClick={async () => {
                                         setExporting(true);
@@ -1414,10 +1434,10 @@ export default function DeveloperDashboard() {
                                         }
                                     }}
                                     disabled={exporting}
-                                    className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-sm"
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all hover:shadow-md hover:shadow-emerald-200 active:scale-95 disabled:opacity-50"
                                 >
-                                    <FileDown size={18} />
-                                    {exporting ? 'Exporting...' : 'CSV ダウンロード'}
+                                    <FileDown size={16} />
+                                    {exporting ? '処理中...' : 'CSV ダウンロード'}
                                 </button>
 
                                 <button
@@ -1444,10 +1464,10 @@ export default function DeveloperDashboard() {
                                         }
                                     }}
                                     disabled={exporting}
-                                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors disabled:opacity-50 shadow-sm"
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all hover:shadow-md hover:shadow-blue-200 active:scale-95 disabled:opacity-50"
                                 >
-                                    <FileText size={18} />
-                                    {exporting ? 'Exporting...' : 'PDF ダウンロード'}
+                                    <FileText size={16} />
+                                    {exporting ? '処理中...' : 'PDF ダウンロード'}
                                 </button>
                             </div>
                         </div>
