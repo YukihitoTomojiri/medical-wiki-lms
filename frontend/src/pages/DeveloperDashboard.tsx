@@ -1006,76 +1006,77 @@ export default function DeveloperDashboard() {
                                     )}
                                 </div>
 
-                                {/* Filter Controls */}
-                                <div className="px-8 pb-4 pt-2 flex flex-wrap items-center gap-4 border-b border-gray-100 bg-gray-50/30">
-                                    {/* Search Input */}
-                                    <div className="flex-1 min-w-[200px]">
-                                        <div className="relative">
+                                {/* Filtering Section */}
+                                <div className="px-8 pb-8 pt-6 bg-gray-50/30 border-b border-gray-100">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <div className="p-1.5 bg-orange-50 text-orange-600 rounded-lg">
+                                            <Search size={16} />
+                                        </div>
+                                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">FILTERING</span>
+                                    </div>
+
+                                    <div className="flex flex-col lg:flex-row gap-4">
+                                        {/* Search Input */}
+                                        <div className="flex-1 relative">
                                             <input
                                                 type="text"
                                                 value={nodeSearchQuery}
                                                 onChange={(e) => setNodeSearchQuery(e.target.value)}
                                                 placeholder="施設名・ユーザー名・部署で検索..."
-                                                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                                                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
                                             />
-                                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                            </svg>
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                        </div>
+
+                                        {/* Filters Group */}
+                                        <div className="flex flex-wrap gap-3">
+                                            {/* Facility Filter */}
+                                            <select
+                                                value={activeNodesFacilityFilter}
+                                                onChange={(e) => setActiveNodesFacilityFilter(e.target.value)}
+                                                className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none cursor-pointer transition-all min-w-[160px]"
+                                            >
+                                                <option value="all">全施設を表示</option>
+                                                {orgFacilities.map(f => (
+                                                    <option key={f.id} value={f.name}>{f.name}</option>
+                                                ))}
+                                            </select>
+
+                                            {/* Status Filter */}
+                                            <div className="flex bg-white border border-gray-200 rounded-xl p-1">
+                                                {[
+                                                    { key: 'all', label: 'すべて', color: 'bg-gray-600' },
+                                                    { key: 'UP', label: '稼働中', color: 'bg-green-500' },
+                                                    { key: 'DOWN', label: '停止中', color: 'bg-gray-400' },
+                                                    { key: 'WARNING', label: '警告', color: 'bg-yellow-500' }
+                                                ].map(({ key, label, color }) => (
+                                                    <button
+                                                        key={key}
+                                                        onClick={() => setNodeStatusFilter(key as 'all' | 'UP' | 'DOWN' | 'WARNING')}
+                                                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${nodeStatusFilter === key
+                                                            ? `${color} text-white shadow-md`
+                                                            : 'text-gray-400 hover:bg-gray-50'
+                                                            }`}
+                                                    >
+                                                        {label}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
 
-                                    {/* Status Filter Toggles */}
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">状態フィルタ:</span>
-                                        <div className="flex bg-gray-100 rounded-xl p-1">
-                                            {[
-                                                { key: 'all', label: 'すべて', color: 'bg-gray-600' },
-                                                { key: 'UP', label: '稼働中', color: 'bg-green-500' },
-                                                { key: 'DOWN', label: '停止中', color: 'bg-gray-400' },
-                                                { key: 'WARNING', label: '警告あり', color: 'bg-yellow-500' }
-                                            ].map(({ key, label, color }) => (
-                                                <button
-                                                    key={key}
-                                                    onClick={() => setNodeStatusFilter(key as 'all' | 'UP' | 'DOWN' | 'WARNING')}
-                                                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${nodeStatusFilter === key
-                                                        ? `${color} text-white shadow-md`
-                                                        : 'text-gray-500 hover:bg-gray-200'
-                                                        }`}
-                                                >
-                                                    {label}
-                                                </button>
-                                            ))}
-                                        </div>
+                                    {/* Filter Results Count */}
+                                    <div className="mt-3 text-xs text-gray-400 font-medium text-right">
+                                        表示中: <span className="font-bold text-gray-600">{filteredNodes.length}</span> / {userList.length} 件
                                     </div>
-
-                                    {/* Facility Filter */}
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">施設:</span>
-                                        <select
-                                            value={activeNodesFacilityFilter}
-                                            onChange={(e) => setActiveNodesFacilityFilter(e.target.value)}
-                                            className="px-3 py-1.5 bg-gray-100 border-none rounded-xl text-xs font-bold text-gray-700 focus:ring-0 cursor-pointer"
-                                        >
-                                            <option value="all">全施設を表示</option>
-                                            {orgFacilities.map(f => (
-                                                <option key={f.id} value={f.name}>{f.name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-
-                                {/* Filter Results Count */}
-                                <div className="text-xs text-gray-400">
-                                    表示中: <span className="font-bold text-gray-600">{filteredNodes.length}</span> / {userList.length} 件
                                 </div>
                             </div>
-
                             <div className="p-8">
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left border-collapse">
                                         <thead>
                                             <tr className="border-b border-gray-100">
-                                                <th className="px-4 py-4 w-10">
+                                                <th className="px-6 py-4 w-10 bg-white">
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedUsers.length === userList.length && userList.length > 0}
@@ -1083,14 +1084,14 @@ export default function DeveloperDashboard() {
                                                         className="w-4 h-4 rounded-md border-gray-300 text-orange-600 focus:ring-orange-500 cursor-pointer"
                                                     />
                                                 </th>
-                                                <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">ID</th>
-                                                <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Identity Name</th>
-                                                <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Email</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white">ID</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white">Identity Name</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white">Email</th>
 
-                                                <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Facility / Status</th>
-                                                <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Department</th>
-                                                <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Role</th>
-                                                <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white">Facility / Status</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white">Department</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white">Role</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right bg-white">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-50">
@@ -1157,9 +1158,9 @@ export default function DeveloperDashboard() {
                                                                 </select>
                                                             ) : (
                                                                 <div className="flex flex-col gap-1.5 align-top">
-                                                                    <span className="px-3 py-1 bg-white border border-gray-200 text-gray-600 rounded-full text-[11px] font-black uppercase tracking-wider w-max">
+                                                                    <div className="px-2 py-0.5 bg-gray-50 border border-gray-200 text-gray-500 rounded-md text-[10px] font-bold w-max max-w-[120px] truncate" title={user.facility}>
                                                                         {user.facility}
-                                                                    </span>
+                                                                    </div>
 
                                                                     {/* Status Badge */}
                                                                     {(() => {
@@ -1304,343 +1305,343 @@ export default function DeveloperDashboard() {
                             </div>
                         </div>
                     </div>
-                    </div >
-            ) : activeTab === 'logs' ? (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-                {/* Audit Logs View */}
-                <div className="bg-slate-900 rounded-[2.5rem] border border-slate-800 shadow-2xl overflow-hidden mb-12">
-                    <div className="p-8 border-b border-slate-800 flex items-center justify-between">
-                        <div>
-                            <h3 className="text-xl font-black text-white tracking-tight flex items-center gap-3">
-                                <Activity className="text-emerald-500" />
-                                Audit Records (JST)
-                            </h3>
-                            <p className="text-sm text-slate-500 font-medium">Immutable audit trail of all system actions</p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-2xl border border-slate-700 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                <Shield size={14} className="text-emerald-500" />
-                                Secured Logs
+
+                ) : activeTab === 'logs' ? (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                        {/* Audit Logs View */}
+                        <div className="bg-slate-900 rounded-[2.5rem] border border-slate-800 shadow-2xl overflow-hidden mb-12">
+                            <div className="p-8 border-b border-slate-800 flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-xl font-black text-white tracking-tight flex items-center gap-3">
+                                        <Activity className="text-emerald-500" />
+                                        Audit Records (JST)
+                                    </h3>
+                                    <p className="text-sm text-slate-500 font-medium">Immutable audit trail of all system actions</p>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-2xl border border-slate-700 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                        <Shield size={14} className="text-emerald-500" />
+                                        Secured Logs
+                                    </div>
+                                    <button
+                                        onClick={fetchSystemLogs}
+                                        className="p-2 bg-slate-800 text-slate-400 rounded-xl hover:bg-slate-700 transition-all border border-slate-700"
+                                    >
+                                        <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                                    </button>
+                                </div>
                             </div>
-                            <button
-                                onClick={fetchSystemLogs}
-                                className="p-2 bg-slate-800 text-slate-400 rounded-xl hover:bg-slate-700 transition-all border border-slate-700"
-                            >
-                                <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                            </button>
-                        </div>
-                    </div>
-                    <div className="h-[600px] overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
-                        <div className="space-y-4 max-w-5xl mx-auto py-4">
-                            {Array.isArray(systemLogs) && systemLogs.map((log) => (
-                                <div key={log.id} className="group relative flex items-start gap-6 p-5 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all duration-300">
-                                    {/* Timeline indicator */}
-                                    <div className="absolute left-[111px] top-0 bottom-0 w-px bg-slate-800 group-hover:bg-emerald-500/20 transition-colors" />
+                            <div className="h-[600px] overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
+                                <div className="space-y-4 max-w-5xl mx-auto py-4">
+                                    {Array.isArray(systemLogs) && systemLogs.map((log) => (
+                                        <div key={log.id} className="group relative flex items-start gap-6 p-5 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all duration-300">
+                                            {/* Timeline indicator */}
+                                            <div className="absolute left-[111px] top-0 bottom-0 w-px bg-slate-800 group-hover:bg-emerald-500/20 transition-colors" />
 
-                                    <div className="flex-shrink-0 w-24 pt-1 relative z-10 bg-slate-900 pr-4">
-                                        <p className="text-[11px] font-black text-slate-400 font-mono tracking-tighter">
-                                            {log.timestamp.split(' ')[1]}
-                                        </p>
-                                        <p className="text-[9px] font-bold text-slate-600 mt-1 uppercase tracking-widest">
-                                            {log.timestamp.split(' ')[0]}
-                                        </p>
-                                    </div>
-
-                                    <div className="relative z-10 flex-shrink-0 mt-1.5">
-                                        <div className="w-3 h-3 rounded-full bg-slate-800 border-2 border-slate-700 group-hover:bg-emerald-500 group-hover:border-emerald-400/30 transition-all" />
-                                    </div>
-
-                                    <div className="flex-grow min-w-0">
-                                        <div className="flex items-center gap-3">
-                                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest ${log.action === 'LOGIN' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
-                                                log.action === 'USER_UPDATE' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                                                    log.action === 'USER_DELETE' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                                                        log.action.includes('BULK') ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
-                                                            'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                                }`}>
-                                                {log.action}
-                                            </span>
-                                            <span className="text-sm font-black text-white truncate">{log.target}</span>
-                                        </div>
-                                        <p className="text-xs text-slate-400 mt-2 font-medium leading-relaxed">
-                                            {log.description}
-                                        </p>
-                                        <div className="flex items-center gap-4 mt-3">
-                                            <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-800/50 rounded-lg border border-white/5">
-                                                <Users size={12} className="text-slate-500" />
-                                                <span className="text-[10px] font-bold text-slate-500">{log.performedBy}</span>
+                                            <div className="flex-shrink-0 w-24 pt-1 relative z-10 bg-slate-900 pr-4">
+                                                <p className="text-[11px] font-black text-slate-400 font-mono tracking-tighter">
+                                                    {log.timestamp.split(' ')[1]}
+                                                </p>
+                                                <p className="text-[9px] font-bold text-slate-600 mt-1 uppercase tracking-widest">
+                                                    {log.timestamp.split(' ')[0]}
+                                                </p>
                                             </div>
-                                            {log.ipAddress && (
-                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-800/50 rounded-lg border border-white/5">
-                                                    <Terminal size={12} className="text-slate-500" />
-                                                    <span className="text-[10px] font-mono text-slate-500">{log.ipAddress}</span>
+
+                                            <div className="relative z-10 flex-shrink-0 mt-1.5">
+                                                <div className="w-3 h-3 rounded-full bg-slate-800 border-2 border-slate-700 group-hover:bg-emerald-500 group-hover:border-emerald-400/30 transition-all" />
+                                            </div>
+
+                                            <div className="flex-grow min-w-0">
+                                                <div className="flex items-center gap-3">
+                                                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest ${log.action === 'LOGIN' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                                                        log.action === 'USER_UPDATE' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                                                            log.action === 'USER_DELETE' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                                                                log.action.includes('BULK') ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
+                                                                    'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                                        }`}>
+                                                        {log.action}
+                                                    </span>
+                                                    <span className="text-sm font-black text-white truncate">{log.target}</span>
                                                 </div>
-                                            )}
+                                                <p className="text-xs text-slate-400 mt-2 font-medium leading-relaxed">
+                                                    {log.description}
+                                                </p>
+                                                <div className="flex items-center gap-4 mt-3">
+                                                    <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-800/50 rounded-lg border border-white/5">
+                                                        <Users size={12} className="text-slate-500" />
+                                                        <span className="text-[10px] font-bold text-slate-500">{log.performedBy}</span>
+                                                    </div>
+                                                    {log.ipAddress && (
+                                                        <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-800/50 rounded-lg border border-white/5">
+                                                            <Terminal size={12} className="text-slate-500" />
+                                                            <span className="text-[10px] font-mono text-slate-500">{log.ipAddress}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    ))}
+                                    {systemLogs.length === 0 && (
+                                        <div className="text-center py-20 px-4">
+                                            <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                                <Shield size={40} className="text-slate-700" />
+                                            </div>
+                                            <p className="text-slate-500 font-black uppercase tracking-[.2em] text-xs">No entries found in audit vault</p>
+                                            <p className="text-slate-600 text-[10px] mt-2 font-medium">System activity logs will appear here</p>
+                                        </div>
+                                    )}
                                 </div>
-                            ))}
-                            {systemLogs.length === 0 && (
-                                <div className="text-center py-20 px-4">
-                                    <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                        <Shield size={40} className="text-slate-700" />
-                                    </div>
-                                    <p className="text-slate-500 font-black uppercase tracking-[.2em] text-xs">No entries found in audit vault</p>
-                                    <p className="text-slate-600 text-[10px] mt-2 font-medium">System activity logs will appear here</p>
+                            </div>
+                        </div>
+                    </div>
+                ) : activeTab === 'compliance' ? (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-6">
+                        {/* Header */}
+                        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                            <div className="flex items-center gap-3 mb-2">
+                                <FileDown className="text-blue-600" size={24} />
+                                <h2 className="text-xl font-black text-gray-800">Compliance Export</h2>
+                            </div>
+                            <p className="text-sm text-gray-500">
+                                施設・期間を選択して、学習進捗データをCSV/PDF形式でエクスポートします。
+                            </p>
+                        </div>
+
+                        {/* Filter Section */}
+                        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                            <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+                                <Building2 size={16} />
+                                フィルター設定
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* Facility Dropdown */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">施設</label>
+                                    <select
+                                        value={selectedFacility}
+                                        onChange={(e) => setSelectedFacility(e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                        <option value="all">全施設</option>
+                                        {complianceFacilities.map(f => (
+                                            <option key={f} value={f}>{f}</option>
+                                        ))}
+                                    </select>
                                 </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            ) : activeTab === 'compliance' ? (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-6">
-                {/* Header */}
-                <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                    <div className="flex items-center gap-3 mb-2">
-                        <FileDown className="text-blue-600" size={24} />
-                        <h2 className="text-xl font-black text-gray-800">Compliance Export</h2>
-                    </div>
-                    <p className="text-sm text-gray-500">
-                        施設・期間を選択して、学習進捗データをCSV/PDF形式でエクスポートします。
-                    </p>
-                </div>
 
-                {/* Filter Section */}
-                <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                    <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
-                        <Building2 size={16} />
-                        フィルター設定
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {/* Facility Dropdown */}
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-500 mb-1.5">施設</label>
-                            <select
-                                value={selectedFacility}
-                                onChange={(e) => setSelectedFacility(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                                <option value="all">全施設</option>
-                                {complianceFacilities.map(f => (
-                                    <option key={f} value={f}>{f}</option>
-                                ))}
-                            </select>
+                                {/* Start Date */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
+                                        <Calendar size={12} />
+                                        開始日
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                {/* End Date */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
+                                        <Calendar size={12} />
+                                        終了日
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Start Date */}
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
-                                <Calendar size={12} />
-                                開始日
-                            </label>
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
+                        {/* Export Buttons */}
+                        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                            <h3 className="text-sm font-bold text-gray-700 mb-4">エクスポート</h3>
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={async () => {
+                                        setExporting(true);
+                                        try {
+                                            const blob = await api.exportComplianceCsv(1, selectedFacility, startDate, endDate);
+                                            const url = window.URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.style.display = 'none';
+                                            a.href = url;
+                                            const filename = `compliance_report_${new Date().toISOString().split('T')[0]}.csv`;
+                                            a.download = filename;
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            document.body.removeChild(a);
+                                            window.URL.revokeObjectURL(url);
+                                            addLog('CSV exported successfully', 'success');
+                                        } catch (e) {
+                                            console.error(e);
+                                            addLog('CSV export failed', 'error');
+                                        } finally {
+                                            setExporting(false);
+                                        }
+                                    }}
+                                    disabled={exporting}
+                                    className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-sm"
+                                >
+                                    <FileDown size={18} />
+                                    {exporting ? 'Exporting...' : 'CSV ダウンロード'}
+                                </button>
+
+                                <button
+                                    onClick={async () => {
+                                        setExporting(true);
+                                        try {
+                                            const blob = await api.exportCompliancePdf(1, selectedFacility, startDate, endDate);
+                                            const url = window.URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.style.display = 'none';
+                                            a.href = url;
+                                            const filename = `compliance_report_${new Date().toISOString().split('T')[0]}.pdf`;
+                                            a.download = filename;
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            document.body.removeChild(a);
+                                            window.URL.revokeObjectURL(url);
+                                            addLog('PDF exported successfully', 'success');
+                                        } catch (e) {
+                                            console.error(e);
+                                            addLog('PDF export failed', 'error');
+                                        } finally {
+                                            setExporting(false);
+                                        }
+                                    }}
+                                    disabled={exporting}
+                                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors disabled:opacity-50 shadow-sm"
+                                >
+                                    <FileText size={18} />
+                                    {exporting ? 'Exporting...' : 'PDF ダウンロード'}
+                                </button>
+                            </div>
                         </div>
 
-                        {/* End Date */}
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
-                                <Calendar size={12} />
-                                終了日
-                            </label>
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
+                        {/* Info Card */}
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                            <div className="flex gap-3">
+                                <AlertCircle className="text-blue-600 shrink-0" size={20} />
+                                <div className="text-sm text-blue-800">
+                                    <p className="font-bold mb-1">エクスポート内容</p>
+                                    <ul className="list-disc list-inside text-blue-700 space-y-1">
+                                        <li>CSV: ユーザー × マニュアル進捗マトリクス（Excel対応）</li>
+                                        <li>PDF: サマリーレポート（完了率統計、ユーザー一覧）</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                {/* Export Buttons */}
-                <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                    <h3 className="text-sm font-bold text-gray-700 mb-4">エクスポート</h3>
-                    <div className="flex gap-4">
-                        <button
-                            onClick={async () => {
-                                setExporting(true);
-                                try {
-                                    const blob = await api.exportComplianceCsv(1, selectedFacility, startDate, endDate);
-                                    const url = window.URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.style.display = 'none';
-                                    a.href = url;
-                                    const filename = `compliance_report_${new Date().toISOString().split('T')[0]}.csv`;
-                                    a.download = filename;
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    document.body.removeChild(a);
-                                    window.URL.revokeObjectURL(url);
-                                    addLog('CSV exported successfully', 'success');
-                                } catch (e) {
-                                    console.error(e);
-                                    addLog('CSV export failed', 'error');
-                                } finally {
-                                    setExporting(false);
-                                }
-                            }}
-                            disabled={exporting}
-                            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-sm"
-                        >
-                            <FileDown size={18} />
-                            {exporting ? 'Exporting...' : 'CSV ダウンロード'}
-                        </button>
-
-                        <button
-                            onClick={async () => {
-                                setExporting(true);
-                                try {
-                                    const blob = await api.exportCompliancePdf(1, selectedFacility, startDate, endDate);
-                                    const url = window.URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.style.display = 'none';
-                                    a.href = url;
-                                    const filename = `compliance_report_${new Date().toISOString().split('T')[0]}.pdf`;
-                                    a.download = filename;
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    document.body.removeChild(a);
-                                    window.URL.revokeObjectURL(url);
-                                    addLog('PDF exported successfully', 'success');
-                                } catch (e) {
-                                    console.error(e);
-                                    addLog('PDF export failed', 'error');
-                                } finally {
-                                    setExporting(false);
-                                }
-                            }}
-                            disabled={exporting}
-                            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors disabled:opacity-50 shadow-sm"
-                        >
-                            <FileText size={18} />
-                            {exporting ? 'Exporting...' : 'PDF ダウンロード'}
-                        </button>
+                ) : activeTab === 'organization' ? (
+                    <OrganizationManagement />
+                ) : (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                        <AllUsersAdmin />
                     </div>
-                </div>
-
-                {/* Info Card */}
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                    <div className="flex gap-3">
-                        <AlertCircle className="text-blue-600 shrink-0" size={20} />
-                        <div className="text-sm text-blue-800">
-                            <p className="font-bold mb-1">エクスポート内容</p>
-                            <ul className="list-disc list-inside text-blue-700 space-y-1">
-                                <li>CSV: ユーザー × マニュアル進捗マトリクス（Excel対応）</li>
-                                <li>PDF: サマリーレポート（完了率統計、ユーザー一覧）</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            ) : activeTab === 'organization' ? (
-            <OrganizationManagement />
-            ) : (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-                <AllUsersAdmin />
-            </div>
-            )
+                )
                 }
 
 
-            {/* System Log Footer with Integrated Diagnostics */}
-            <div className="fixed bottom-0 left-0 right-0 bg-slate-900 text-slate-300 border-t border-slate-700 shadow-2xl transition-transform duration-300 ease-out transform translate-y-[calc(100%-88px)] hover:translate-y-0 z-50 backdrop-blur-sm">
-                {/* Diagnostics Bar - Always visible */}
-                <div className="bg-slate-900/95 px-4 py-2 flex items-center justify-between border-b border-slate-800">
-                    <div className="flex items-center gap-3 flex-wrap">
-                        {/* System Status */}
-                        <div className="flex items-center gap-2 pr-3 border-r border-slate-700">
-                            <div className={`w-2 h-2 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-                            <span className={`text-[10px] font-black uppercase tracking-widest ${stats.dbStatus === 'Connected' ? 'text-emerald-400' : 'text-red-400'}`}>
-                                {stats.dbStatus === 'Connected' ? 'Operational' : 'Degraded'}
-                            </span>
-                        </div>
+                {/* System Log Footer with Integrated Diagnostics */}
+                <div className="fixed bottom-0 left-0 right-0 bg-slate-900 text-slate-300 border-t border-slate-700 shadow-2xl transition-transform duration-300 ease-out transform translate-y-[calc(100%-88px)] hover:translate-y-0 z-50 backdrop-blur-sm">
+                    {/* Diagnostics Bar - Always visible */}
+                    <div className="bg-slate-900/95 px-4 py-2 flex items-center justify-between border-b border-slate-800">
+                        <div className="flex items-center gap-3 flex-wrap">
+                            {/* System Status */}
+                            <div className="flex items-center gap-2 pr-3 border-r border-slate-700">
+                                <div className={`w-2 h-2 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${stats.dbStatus === 'Connected' ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {stats.dbStatus === 'Connected' ? 'Operational' : 'Degraded'}
+                                </span>
+                            </div>
 
-                        {/* DB Latency */}
-                        <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
-                            <Database size={12} className="text-slate-500" />
-                            <span className={`text-[10px] font-bold ${diagnostics.dbPing < 50 ? 'text-emerald-400' : diagnostics.dbPing < 100 ? 'text-amber-400' : 'text-red-400'}`}>
-                                {diagnostics.dbPing}ms
-                            </span>
-                        </div>
+                            {/* DB Latency */}
+                            <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
+                                <Database size={12} className="text-slate-500" />
+                                <span className={`text-[10px] font-bold ${diagnostics.dbPing < 50 ? 'text-emerald-400' : diagnostics.dbPing < 100 ? 'text-amber-400' : 'text-red-400'}`}>
+                                    {diagnostics.dbPing}ms
+                                </span>
+                            </div>
 
-                        {/* Uptime */}
-                        <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
-                            <Activity size={12} className="text-slate-500" />
-                            <span className="text-[10px] font-bold text-orange-400">
-                                {Math.floor(diagnostics.uptime / 3600000)}h {Math.floor((diagnostics.uptime % 3600000) / 60000)}m
-                            </span>
-                        </div>
+                            {/* Uptime */}
+                            <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
+                                <Activity size={12} className="text-slate-500" />
+                                <span className="text-[10px] font-bold text-orange-400">
+                                    {Math.floor(diagnostics.uptime / 3600000)}h {Math.floor((diagnostics.uptime % 3600000) / 60000)}m
+                                </span>
+                            </div>
 
-                        {/* Memory Usage */}
-                        <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
-                            <Shield size={12} className="text-slate-500" />
-                            <span className="text-[10px] font-bold text-blue-400">
-                                {Math.round(diagnostics.memoryUsed / 1024 / 1024)}
-                            </span>
-                            <span className="text-[9px] text-slate-500">/ {Math.round(diagnostics.memoryTotal / 1024 / 1024)} MB</span>
-                        </div>
+                            {/* Memory Usage */}
+                            <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
+                                <Shield size={12} className="text-slate-500" />
+                                <span className="text-[10px] font-bold text-blue-400">
+                                    {Math.round(diagnostics.memoryUsed / 1024 / 1024)}
+                                </span>
+                                <span className="text-[9px] text-slate-500">/ {Math.round(diagnostics.memoryTotal / 1024 / 1024)} MB</span>
+                            </div>
 
-                        {/* Node Name */}
-                        <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
-                            <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded text-[9px] font-black uppercase tracking-widest border border-orange-500/30">
-                                medical-wiki-backend
-                            </span>
-                        </div>
+                            {/* Node Name */}
+                            <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
+                                <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded text-[9px] font-black uppercase tracking-widest border border-orange-500/30">
+                                    medical-wiki-backend
+                                </span>
+                            </div>
 
-                        {/* Soft-deleted Users Count */}
-                        <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] text-slate-500">🗑️</span>
-                            <span className="text-[10px] font-bold text-slate-400">
-                                {userList.filter(u => u.deletedAt).length}
-                            </span>
+                            {/* Soft-deleted Users Count */}
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] text-slate-500">🗑️</span>
+                                <span className="text-[10px] font-bold text-slate-400">
+                                    {userList.filter(u => u.deletedAt).length}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Console Header */}
-                <div className="bg-slate-800/95 px-4 py-2 flex items-center justify-between cursor-pointer group">
-                    <div className="flex items-center gap-3">
-                        <div className="p-1 bg-slate-700 rounded group-hover:bg-slate-600 transition-colors">
-                            <Terminal size={14} className="text-orange-500" />
+                    {/* Console Header */}
+                    <div className="bg-slate-800/95 px-4 py-2 flex items-center justify-between cursor-pointer group">
+                        <div className="flex items-center gap-3">
+                            <div className="p-1 bg-slate-700 rounded group-hover:bg-slate-600 transition-colors">
+                                <Terminal size={14} className="text-orange-500" />
+                            </div>
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 group-hover:text-slate-200 transition-colors">System Log Console</span>
+                            <span className="px-1.5 py-0.5 bg-slate-700 rounded text-[10px] text-slate-300">{logs.length} events</span>
                         </div>
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400 group-hover:text-slate-200 transition-colors">System Log Console</span>
-                        <span className="px-1.5 py-0.5 bg-slate-700 rounded text-[10px] text-slate-300">{logs.length} events</span>
+                        <div className="flex gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
+                            <div className="w-2 h-2 rounded-full bg-red-500" />
+                            <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                            <div className="w-2 h-2 rounded-full bg-green-500" />
+                        </div>
                     </div>
-                    <div className="flex gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                        <div className="w-2 h-2 rounded-full bg-red-500" />
-                        <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                    </div>
-                </div>
 
-                {/* Log Entries */}
-                <div className="h-48 overflow-y-auto p-4 font-mono text-xs space-y-1 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
-                    {logs.map(log => (
-                        <div key={log.id} className="flex gap-3 hover:bg-white/5 p-0.5 rounded px-2 border-l-2 border-transparent hover:border-orange-500 transition-all items-center">
-                            {/* Environment Badge */}
-                            <span className="px-1.5 py-0.5 bg-slate-800 text-slate-500 rounded text-[8px] font-bold uppercase tracking-wider border border-slate-700 flex-shrink-0">
-                                ENV
-                            </span>
-                            <span className="text-slate-500 select-none w-20 flex-shrink-0">{log.timestamp}</span>
-                            <span className={`font-bold w-16 uppercase flex-shrink-0 ${log.type === 'error' ? 'text-red-400' :
-                                log.type === 'success' ? 'text-emerald-400' : 'text-blue-400'
-                                }`}>
-                                {log.type}
-                            </span>
-                            <span className="text-slate-300 truncate">{log.message}</span>
-                        </div>
-                    ))}
-                    {logs.length === 0 && <span className="text-slate-600 italic px-2">System initialized. Waiting for events...</span>}
+                    {/* Log Entries */}
+                    <div className="h-48 overflow-y-auto p-4 font-mono text-xs space-y-1 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
+                        {logs.map(log => (
+                            <div key={log.id} className="flex gap-3 hover:bg-white/5 p-0.5 rounded px-2 border-l-2 border-transparent hover:border-orange-500 transition-all items-center">
+                                {/* Environment Badge */}
+                                <span className="px-1.5 py-0.5 bg-slate-800 text-slate-500 rounded text-[8px] font-bold uppercase tracking-wider border border-slate-700 flex-shrink-0">
+                                    ENV
+                                </span>
+                                <span className="text-slate-500 select-none w-20 flex-shrink-0">{log.timestamp}</span>
+                                <span className={`font-bold w-16 uppercase flex-shrink-0 ${log.type === 'error' ? 'text-red-400' :
+                                    log.type === 'success' ? 'text-emerald-400' : 'text-blue-400'
+                                    }`}>
+                                    {log.type}
+                                </span>
+                                <span className="text-slate-300 truncate">{log.message}</span>
+                            </div>
+                        ))}
+                        {logs.length === 0 && <span className="text-slate-600 italic px-2">System initialized. Waiting for events...</span>}
+                    </div>
                 </div>
-            </div>
-        </div >
-            { showPostRegisterModal && registeredUser && (
+            </div >
+            {showPostRegisterModal && registeredUser && (
                 <PostRegisterModal
                     user={registeredUser}
                     onClose={() => setShowPostRegisterModal(false)}
@@ -1648,7 +1649,7 @@ export default function DeveloperDashboard() {
                     defaultTab={modalConfig.defaultTab}
                 />
             )
-}
+            }
         </>
     );
 }
