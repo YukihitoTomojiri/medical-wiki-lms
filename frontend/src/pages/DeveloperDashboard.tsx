@@ -320,12 +320,14 @@ export default function DeveloperDashboard() {
         }
     };
 
-    // Dynamic Department Options based on Facility (from API)
+    // Dynamic Department Options based on Facility (from API) with deduplication
     const getDepartmentsForFacility = (facilityName?: string) => {
         if (!facilityName) return [];
         const fac = orgFacilities.find(f => f.name === facilityName);
         if (!fac) return [];
-        return orgDepartments.filter(d => d.facilityId === fac.id).map(d => d.name);
+        const deptNames = orgDepartments.filter(d => d.facilityId === fac.id).map(d => d.name);
+        // Deduplicate department names
+        return Array.from(new Set(deptNames));
     };
     // Legacy alias for compatibility
     const getDepartments = getDepartmentsForFacility;
