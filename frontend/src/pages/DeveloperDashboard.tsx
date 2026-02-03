@@ -22,11 +22,8 @@ import {
     Key,
     AlertTriangle,
     Clock,
-    Server,
-    Download,
-    Upload,
-    Trash2,
     Terminal,
+    Upload,
     Plus,
     AlertCircle,
     FileDown,
@@ -571,16 +568,16 @@ export default function DeveloperDashboard() {
                 }}
                 isLoading={isRegistering}
             />
-            <div className="space-y-8 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="space-y-4 pb-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between pt-2">
                     <div>
-                        <h2 className="text-3xl font-black text-gray-800 tracking-tight bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+                        <h2 className="text-xl font-black text-gray-800 tracking-tight bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
                             Developer Console
                         </h2>
-                        <div className="flex items-center gap-4 mt-2">
-                            <p className="text-gray-500 font-medium text-sm flex items-center gap-2">
-                                <Activity size={16} className="text-green-500" />
+                        <div className="flex items-center gap-4 mt-1">
+                            <p className="text-gray-500 font-medium text-xs flex items-center gap-2">
+                                <Activity size={14} className="text-green-500" />
                                 System v{stats.version} Running
                             </p>
                             <p className="text-gray-400 text-sm flex items-center gap-2 border-l pl-4 border-gray-200">
@@ -600,61 +597,30 @@ export default function DeveloperDashboard() {
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="flex p-1 bg-gray-100 rounded-xl w-fit mb-8 border border-gray-200">
-                    <button
-                        onClick={() => setActiveTab('system')}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-black tracking-wide transition-all ${activeTab === 'system'
-                            ? 'bg-white text-gray-800 shadow-sm ring-1 ring-black/5'
-                            : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        System Stats
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('logs')}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-black tracking-wide transition-all ${activeTab === 'logs'
-                            ? 'bg-white text-gray-800 shadow-sm ring-1 ring-black/5'
-                            : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        Audit Logs
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('archive')}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-black tracking-wide transition-all ${activeTab === 'archive'
-                            ? 'bg-white text-gray-800 shadow-sm ring-1 ring-black/5'
-                            : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        User Archive
-                    </button>
-                    <button
-                        onClick={() => {
-                            setActiveTab('compliance');
-                            // Fetch facilities when tab is selected
-                            api.getComplianceFacilities(1)
-                                .then(data => setComplianceFacilities(data))
-                                .catch(console.error);
-                        }}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-black tracking-wide transition-all ${activeTab === 'compliance'
-                            ? 'bg-white text-gray-800 shadow-sm ring-1 ring-black/5'
-                            : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        Compliance Export
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('organization')}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-black tracking-wide transition-all ${activeTab === 'organization'
-                            ? 'bg-white text-gray-800 shadow-sm ring-1 ring-black/5'
-                            : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        組織管理
-                    </button>
+                <div className="flex p-1 bg-gray-100/50 rounded-xl w-fit mb-2 border border-gray-200/50 backdrop-blur-sm">
+                    {['system', 'logs', 'archive', 'compliance', 'organization'].map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab as any)}
+                            className={`px-5 py-2 rounded-lg text-xs font-black tracking-wide transition-all ${activeTab === tab
+                                ? 'bg-white text-gray-800 shadow-sm ring-1 ring-black/5'
+                                : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            {tab === 'system' ? 'System Stats' :
+                                tab === 'logs' ? 'Audit Logs' :
+                                    tab === 'archive' ? 'User Archive' :
+                                        tab === 'compliance' ? 'Compliance Export' :
+                                            '組織管理'}
+                        </button>
+                    ))}
                 </div>
 
                 {activeTab === 'system' ? (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {/* Status Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                             {/* DB Status */}
-                            <div className={`p-5 rounded-2xl border flex items-center gap-4 shadow-sm transition-all ${stats.dbStatus === 'Connected'
+                            <div className={`p-4 rounded-xl border flex items-center gap-3 shadow-sm transition-all ${stats.dbStatus === 'Connected'
                                 ? 'bg-emerald-50 border-emerald-100'
                                 : 'bg-red-50 border-red-100'
                                 } `}>
@@ -673,51 +639,51 @@ export default function DeveloperDashboard() {
                             </div>
 
                             {/* Users Count */}
-                            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className="p-3 bg-orange-100 text-orange-600 rounded-xl">
-                                    <Users size={24} />
+                            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                                <div className="p-2.5 bg-orange-100 text-orange-600 rounded-xl">
+                                    <Users size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 font-medium">総ユーザー数</p>
-                                    <p className="font-bold text-2xl text-gray-800">{userList.length}</p>
+                                    <p className="text-xs text-gray-500 font-medium leading-tight">総ユーザー数</p>
+                                    <p className="font-bold text-xl text-gray-800 leading-tight">{userList.length}</p>
                                 </div>
                             </div>
 
                             {/* Role Breakdown */}
-                            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className="p-3 bg-purple-100 text-purple-600 rounded-xl">
-                                    <Shield size={24} />
+                            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                                <div className="p-2.5 bg-purple-100 text-purple-600 rounded-xl">
+                                    <Shield size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 font-medium">権限内訳</p>
-                                    <div className="flex flex-wrap gap-1 text-xs font-semibold mt-1">
-                                        <span className="text-purple-600 bg-purple-50 px-2 py-0.5 rounded">Dev:{computedStats.developers}</span>
-                                        <span className="text-red-600 bg-red-50 px-2 py-0.5 rounded">Adm:{computedStats.admins}</span>
-                                        <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded">Usr:{computedStats.users}</span>
+                                    <p className="text-xs text-gray-500 font-medium leading-tight">権限内訳</p>
+                                    <div className="flex flex-wrap gap-1 text-[10px] font-bold mt-0.5">
+                                        <span className="text-purple-600 bg-purple-50 px-1.5 py-0.25 rounded">Dev:{computedStats.developers}</span>
+                                        <span className="text-red-600 bg-red-50 px-1.5 py-0.25 rounded">Adm:{computedStats.admins}</span>
+                                        <span className="text-green-600 bg-green-50 px-1.5 py-0.25 rounded">Usr:{computedStats.users}</span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Facilities */}
-                            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
-                                    <FileText size={24} />
+                            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                                <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl">
+                                    <FileText size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 font-medium">施設数</p>
-                                    <p className="font-bold text-2xl text-gray-800">{computedStats.facilities}</p>
+                                    <p className="text-xs text-gray-500 font-medium leading-tight">施設数</p>
+                                    <p className="font-bold text-xl text-gray-800 leading-tight">{computedStats.facilities}</p>
                                 </div>
                             </div>
 
                             {/* 24h Alerts Widget */}
-                            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className={`p-3 rounded-xl ${alertStats.alerts24h === 0 ? 'bg-emerald-100 text-emerald-600' :
+                            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                                <div className={`p-2.5 rounded-xl ${alertStats.alerts24h === 0 ? 'bg-emerald-100 text-emerald-600' :
                                     alertStats.alerts24h < 5 ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'}`}>
-                                    <Activity size={24} />
+                                    <Activity size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 font-medium">アラート (24時間)</p>
-                                    <p className={`font-bold text-2xl ${alertStats.alerts24h === 0 ? 'text-emerald-600' :
+                                    <p className="text-xs text-gray-500 font-medium leading-tight">アラート (24時間)</p>
+                                    <p className={`font-bold text-xl leading-tight ${alertStats.alerts24h === 0 ? 'text-emerald-600' :
                                         alertStats.alerts24h < 5 ? 'text-yellow-600' : 'text-red-600'}`}>
                                         {alertStats.alerts24h}
                                     </p>
@@ -726,8 +692,8 @@ export default function DeveloperDashboard() {
                         </div>
 
                         {/* Security Alerts Section */}
-                        <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl shadow-gray-200/50 overflow-hidden">
-                            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-red-50/30">
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-red-50/30">
                                 <div className="flex items-center gap-3">
                                     <div className="p-3 bg-red-100 text-red-600 rounded-xl">
                                         <ShieldAlert size={24} />
@@ -757,7 +723,7 @@ export default function DeveloperDashboard() {
                                 </div>
                             </div>
 
-                            <div className="p-6">
+                            <div className="p-4">
                                 {securityAlerts.length === 0 ? (
                                     <div className="text-center py-12 text-gray-400">
                                         <ShieldAlert size={48} className="mx-auto mb-4 opacity-30" />
@@ -852,10 +818,10 @@ export default function DeveloperDashboard() {
                         </div>
 
                         {/* Main Content Area */}
-                        <div className="max-w-6xl mx-auto w-full space-y-8">
+                        <div className="grid grid-cols-1 gap-4">
                             {/* User Registration Section */}
-                            <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl shadow-gray-200/50 overflow-hidden">
-                                <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-emerald-50/30">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                                <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-emerald-50/30">
                                     <div>
                                         <h3 className="text-xl font-black text-gray-800 tracking-tight flex items-center gap-2">
                                             <Plus className="text-emerald-500" size={24} />
@@ -872,7 +838,7 @@ export default function DeveloperDashboard() {
                                     </div>
                                 </div>
 
-                                <div className="p-8">
+                                <div className="p-5">
                                     {csvError && (
                                         <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
                                             <AlertCircle className="text-red-500 mt-0.5 flex-shrink-0" size={20} />
@@ -972,11 +938,11 @@ export default function DeveloperDashboard() {
                             </div>
 
                             {/* User Management Section */}
-                            <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl shadow-gray-200/50 overflow-hidden">
-                                <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                                <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                                     <div>
-                                        <h3 className="text-xl font-black text-gray-800 tracking-tight">Active Nodes Control</h3>
-                                        <p className="text-sm text-gray-500 font-medium">Control access and user privileges</p>
+                                        <h3 className="text-lg font-black text-gray-800 tracking-tight">Active Nodes Control</h3>
+                                        <p className="text-xs text-gray-500 font-medium">Control access and user privileges</p>
                                     </div>
 
                                     {/* Bulk Action Menu */}
@@ -1013,54 +979,54 @@ export default function DeveloperDashboard() {
                                 {/* Main Content Area with Fixed Height and Scroll */}
                                 <div className="h-[70vh] flex flex-col">
                                     {/* Filtering Section - Sticky / Fixed part */}
-                                    <div className="flex-none px-8 pb-8 pt-6 bg-gray-50/30 border-b border-gray-100">
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <div className="p-1.5 bg-orange-50 text-orange-600 rounded-lg">
-                                                <Search size={16} />
+                                    <div className="flex-none px-5 py-3 bg-gray-50/30 border-b border-gray-100 flex items-center gap-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="p-1 bg-orange-50 text-orange-600 rounded-md">
+                                                <Search size={14} />
                                             </div>
-                                            <span className="text-xs font-black text-gray-400 uppercase tracking-widest">FILTERING</span>
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">FILTERING</span>
                                         </div>
 
-                                        <div className="flex flex-col lg:flex-row gap-4">
+                                        <div className="flex-1 flex gap-4 items-center">
                                             {/* Search Input */}
-                                            <div className="flex-1 relative">
+                                            <div className="flex-1 relative max-w-sm">
                                                 <input
                                                     type="text"
                                                     value={nodeSearchQuery}
                                                     onChange={(e) => setNodeSearchQuery(e.target.value)}
-                                                    placeholder="施設名・ユーザー名・部署で検索..."
-                                                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
+                                                    placeholder="検索..."
+                                                    className="w-full pl-9 pr-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
                                                 />
-                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                                             </div>
 
                                             {/* Filters Group */}
-                                            <div className="flex flex-wrap gap-3">
+                                            <div className="flex items-center gap-2">
                                                 {/* Facility Filter */}
                                                 <select
                                                     value={activeNodesFacilityFilter}
                                                     onChange={(e) => setActiveNodesFacilityFilter(e.target.value)}
-                                                    className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none cursor-pointer transition-all min-w-[160px]"
+                                                    className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none cursor-pointer transition-all"
                                                 >
-                                                    <option value="all">全施設を表示</option>
+                                                    <option value="all">全施設</option>
                                                     {orgFacilities.map(f => (
                                                         <option key={f.id} value={f.name}>{f.name}</option>
                                                     ))}
                                                 </select>
 
                                                 {/* Status Filter */}
-                                                <div className="flex bg-white border border-gray-200 rounded-xl p-1">
+                                                <div className="flex bg-white border border-gray-200 rounded-lg p-0.5">
                                                     {[
-                                                        { key: 'all', label: 'すべて', color: 'bg-gray-600' },
-                                                        { key: 'UP', label: '稼働中', color: 'bg-green-500' },
-                                                        { key: 'DOWN', label: '停止中', color: 'bg-gray-400' },
-                                                        { key: 'WARNING', label: '警告', color: 'bg-yellow-500' }
+                                                        { key: 'all', label: 'All', color: 'bg-gray-600' },
+                                                        { key: 'UP', label: 'UP', color: 'bg-green-500' },
+                                                        { key: 'DOWN', label: 'DOWN', color: 'bg-gray-400' },
+                                                        { key: 'WARNING', label: 'WARN', color: 'bg-yellow-500' }
                                                     ].map(({ key, label, color }) => (
                                                         <button
                                                             key={key}
                                                             onClick={() => setNodeStatusFilter(key as 'all' | 'UP' | 'DOWN' | 'WARNING')}
-                                                            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${nodeStatusFilter === key
-                                                                ? `${color} text-white shadow-md`
+                                                            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${nodeStatusFilter === key
+                                                                ? `${color} text-white shadow-sm`
                                                                 : 'text-gray-400 hover:bg-gray-50'
                                                                 }`}
                                                         >
@@ -1069,11 +1035,6 @@ export default function DeveloperDashboard() {
                                                     ))}
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        {/* Filter Results Count */}
-                                        <div className="mt-3 text-xs text-gray-400 font-medium text-right">
-                                            表示中: <span className="font-bold text-gray-600">{filteredNodes.length}</span> / {userList.length} 件
                                         </div>
                                     </div>
 

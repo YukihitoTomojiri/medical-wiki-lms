@@ -131,8 +131,11 @@ export const api = {
         return res.json();
     },
     // Users
-    getUsers: async (userId: number): Promise<User[]> => {
-        const res = await fetch(`${API_BASE}/users`, {
+    getUsers: async (userId: number, facility?: string): Promise<User[]> => {
+        const url = facility && facility !== 'all'
+            ? `${API_BASE}/users?facility=${encodeURIComponent(facility)}`
+            : `${API_BASE}/users`;
+        const res = await fetch(url, {
             headers: getHeaders(userId),
         });
         return res.json();
@@ -144,6 +147,12 @@ export const api = {
             headers: getHeaders(userId),
             body: JSON.stringify(data),
         });
+        return res.json();
+    },
+
+    getDistinctFacilities: async (): Promise<string[]> => {
+        const res = await fetch(`${API_BASE}/users/facilities`);
+        if (!res.ok) return [];
         return res.json();
     },
 
@@ -249,8 +258,11 @@ export const api = {
         return res.json();
     },
 
-    getAllUsersIncludingDeleted: async (userId: number): Promise<any> => {
-        const res = await fetch(`${API_BASE}/admin/users/all-including-deleted`, {
+    getAllUsersIncludingDeleted: async (userId: number, facility?: string): Promise<any> => {
+        const url = facility && facility !== 'all'
+            ? `${API_BASE}/admin/users/all-including-deleted?facility=${encodeURIComponent(facility)}`
+            : `${API_BASE}/admin/users/all-including-deleted`;
+        const res = await fetch(url, {
             method: 'GET',
             headers: getHeaders(userId),
         });

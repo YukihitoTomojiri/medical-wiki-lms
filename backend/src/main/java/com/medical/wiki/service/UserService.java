@@ -37,8 +37,8 @@ public class UserService {
         return userRepository.findDistinctFacilities();
     }
 
-    public List<UserDto> getAllUsersIncludingDeleted() {
-        return userRepository.findAllIncludingDeleted().stream()
+    public List<UserDto> getAllUsersIncludingDeleted(String facility) {
+        return userRepository.findAllIncludingDeleted(facility).stream()
                 .map(UserDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -302,7 +302,10 @@ public class UserService {
     private String resolveExecutorName(Long executorId) {
         if (executorId == null)
             return "ADMIN";
-        return userRepository.findById(executorId).map(User::getName).orElse("ADMIN");
+        return userRepository.findById(executorId)
+                .map(User::getName)
+                .filter(name -> name != null && !name.isBlank())
+                .orElse("ADMIN");
     }
 
     @Transactional
