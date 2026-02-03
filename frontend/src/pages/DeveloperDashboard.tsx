@@ -87,7 +87,13 @@ export default function DeveloperDashboard() {
     // Active Nodes Filter States
     const [nodeSearchQuery, setNodeSearchQuery] = useState('');
     const [nodeStatusFilter, setNodeStatusFilter] = useState<'all' | 'UP' | 'DOWN' | 'WARNING'>('all');
-    const [nodeStatuses, setNodeStatuses] = useState<Map<number, { status: string, statusLabel: string }>>(new Map());
+    const [nodeStatuses, setNodeStatuses] = useState<Map<number, {
+        status: string;
+        statusLabel: string;
+        statusDetail?: string;
+        isAlert?: boolean;
+        healthMetrics?: any;
+    }>>(new Map());
 
     // Reset to default tab when location changes (e.g. clicking "Developer Menu" in sidebar)
     const location = useLocation();
@@ -135,9 +141,15 @@ export default function DeveloperDashboard() {
     const fetchNodeStatuses = async () => {
         try {
             const statuses = await api.getNodeStatuses();
-            const statusMap = new Map<number, { status: string, statusLabel: string }>();
+            const statusMap = new Map();
             statuses.forEach((node: any) => {
-                statusMap.set(node.userId, { status: node.status, statusLabel: node.statusLabel });
+                statusMap.set(node.userId, {
+                    status: node.status,
+                    statusLabel: node.statusLabel,
+                    statusDetail: node.statusDetail,
+                    isAlert: node.isAlert,
+                    healthMetrics: node.healthMetrics
+                });
             });
             setNodeStatuses(statusMap);
         } catch (e) { console.error('Failed to fetch node statuses:', e); }
@@ -1055,7 +1067,7 @@ export default function DeveloperDashboard() {
                                                     <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Identity Name</th>
                                                     <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Email</th>
 
-                                                    <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Facility</th>
+                                                    <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Facility / Status</th>
                                                     <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Department</th>
                                                     <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Role</th>
                                                     <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
@@ -1111,7 +1123,7 @@ export default function DeveloperDashboard() {
                                                                 )}
                                                             </td>
 
-                                                            {/* Facility */}
+                                                            {/* Facility & Status */}
                                                             <td className="px-4 py-4 text-sm">
                                                                 {isEditing ? (
                                                                     <select
@@ -1124,9 +1136,45 @@ export default function DeveloperDashboard() {
                                                                         ))}
                                                                     </select>
                                                                 ) : (
-                                                                    <span className="px-3 py-1 bg-white border border-gray-200 text-gray-600 rounded-full text-[11px] font-black uppercase tracking-wider">
-                                                                        {user.facility}
-                                                                    </span>
+                                                                    <div className="flex flex-col gap-1.5 align-top">
+                                                                        <span className="px-3 py-1 bg-white border border-gray-200 text-gray-600 rounded-full text-[11px] font-black uppercase tracking-wider w-max">
+                                                                            {user.facility}
+                                                                        </span>
+
+                                                                        {/* Status Badge */}
+                                                                        {(() => {
+                                                                            const statusInfo = nodeStatuses.get(user.id);
+                                                                            const status = statusInfo?.status || 'UP';
+                                                                            const label = statusInfo?.statusLabel || '稼働中';
+                                                                            const detail = statusInfo?.statusDetail;
+
+                                                                            let colorClass = 'bg-green-100 text-green-700 border-green-200';
+                                                                            let dotClass = 'bg-green-500';
+                                                                            let animationClass = '';
+
+                                                                            if (status === 'DOWN') {
+                                                                                colorClass = 'bg-red-50 text-red-700 border-red-200 shadow-sm';
+                                                                                dotClass = 'bg-red-500';
+                                                                                animationClass = 'animate-pulse';
+                                                                            } else if (status === 'WARNING') {
+                                                                                colorClass = 'bg-yellow-50 text-yellow-700 border-yellow-200 shadow-sm';
+                                                                                dotClass = 'bg-yellow-500';
+                                                                                animationClass = 'animate-pulse';
+                                                                            }
+
+                                                                            return (
+                                                                                <div className={`flex items-center gap-2 px-2 py-1 rounded-md border ${colorClass} w-max transition-all`}>
+                                                                                    <span className={`w-2 h-2 rounded-full ${dotClass} ${animationClass}`}></span>
+                                                                                    <div className="flex flex-col leading-none">
+                                                                                        <span className="text-[10px] font-bold opacity-90">{label}</span>
+                                                                                        {detail && status !== 'UP' && (
+                                                                                            <span className="text-[9px] font-medium opacity-80 mt-0.5">{detail}</span>
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+                                                                            );
+                                                                        })()}
+                                                                    </div>
                                                                 )}
                                                             </td>
 
