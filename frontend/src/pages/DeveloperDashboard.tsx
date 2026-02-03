@@ -18,19 +18,23 @@ import {
     Edit2,
     Check,
     X as XIcon,
+    Search,
+    Key,
+    AlertTriangle,
+    Clock,
+    Server,
+    Download,
+    Upload,
+    Trash2,
     Terminal,
     Plus,
-    Upload,
     AlertCircle,
     FileDown,
     Building2,
     Calendar,
-    AlertTriangle,
     ShieldAlert,
-    Clock,
     Eye,
-    CheckCircle2,
-    Key
+    CheckCircle2
 } from 'lucide-react';
 
 
@@ -84,6 +88,18 @@ export default function DeveloperDashboard() {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
+    // Active Nodes Filter States
+    const [nodeSearchQuery, setNodeSearchQuery] = useState('');
+    const [nodeStatusFilter, setNodeStatusFilter] = useState<'all' | 'UP' | 'DOWN' | 'WARNING'>('all');
+    const [activeNodesFacilityFilter, setActiveNodesFacilityFilter] = useState<string>('all');
+    const [nodeStatuses, setNodeStatuses] = useState<Map<number, {
+        status: string;
+        statusLabel: string;
+        statusDetail?: string;
+        isAlert?: boolean;
+        healthMetrics?: any;
+    }>>(new Map());
+
     // Reset to default tab when location changes (e.g. clicking "Developer Menu" in sidebar)
     const location = useLocation();
     useEffect(() => {
@@ -125,6 +141,31 @@ export default function DeveloperDashboard() {
             setAlertStats(stats);
         } catch (e) { console.error(e); }
     };
+
+    // Fetch node statuses from API
+    const fetchNodeStatuses = async () => {
+        try {
+            const statuses = await api.getNodeStatuses();
+            const statusMap = new Map();
+            statuses.forEach((node: any) => {
+                statusMap.set(node.userId, {
+                    status: node.status,
+                    statusLabel: node.statusLabel,
+                    statusDetail: node.statusDetail,
+                    isAlert: node.isAlert,
+                    healthMetrics: node.healthMetrics
+                });
+            });
+            setNodeStatuses(statusMap);
+        } catch (e) { console.error('Failed to fetch node statuses:', e); }
+    };
+
+    // Polling interval for node statuses (every 5 seconds)
+    useEffect(() => {
+        fetchNodeStatuses(); // Initial fetch
+        const pollInterval = setInterval(fetchNodeStatuses, 5000);
+        return () => clearInterval(pollInterval);
+    }, []);
 
     const handleAcknowledgeAlert = async (id: number) => {
         try {
@@ -331,6 +372,24 @@ export default function DeveloperDashboard() {
     };
     // Legacy alias for compatibility
     const getDepartments = getDepartmentsForFacility;
+
+    // Filtered nodes based on search and status
+    const filteredNodes = userList.filter(user => {
+        // Search filter: facility name
+        const matchesSearch = nodeSearchQuery === '' ||
+            user.facility?.toLowerCase().includes(nodeSearchQuery.toLowerCase()) ||
+            user.name?.toLowerCase().includes(nodeSearchQuery.toLowerCase()) ||
+            user.department?.toLowerCase().includes(nodeSearchQuery.toLowerCase());
+
+        // Status filter using API-provided status
+        const userStatus = nodeStatuses.get(user.id)?.status || 'UP';
+        const matchesStatus = nodeStatusFilter === 'all' || userStatus === nodeStatusFilter;
+
+        // Facility filter
+        const matchesFacility = activeNodesFacilityFilter === 'all' || user.facility === activeNodesFacilityFilter;
+
+        return matchesSearch && matchesStatus && matchesFacility;
+    });
 
     // Registration States
     const [registerForm, setRegisterForm] = useState({
@@ -951,12 +1010,79 @@ export default function DeveloperDashboard() {
                                     )}
                                 </div>
 
-                                <div className="p-8">
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-left border-collapse">
-                                            <thead>
-                                                <tr className="border-b border-gray-100">
-                                                    <th className="px-4 py-4 w-10">
+                                {/* Main Content Area with Fixed Height and Scroll */}
+                                <div className="h-[70vh] flex flex-col">
+                                    {/* Filtering Section - Sticky / Fixed part */}
+                                    <div className="flex-none px-8 pb-8 pt-6 bg-gray-50/30 border-b border-gray-100">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <div className="p-1.5 bg-orange-50 text-orange-600 rounded-lg">
+                                                <Search size={16} />
+                                            </div>
+                                            <span className="text-xs font-black text-gray-400 uppercase tracking-widest">FILTERING</span>
+                                        </div>
+
+                                        <div className="flex flex-col lg:flex-row gap-4">
+                                            {/* Search Input */}
+                                            <div className="flex-1 relative">
+                                                <input
+                                                    type="text"
+                                                    value={nodeSearchQuery}
+                                                    onChange={(e) => setNodeSearchQuery(e.target.value)}
+                                                    placeholder="施設名・ユーザー名・部署で検索..."
+                                                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
+                                                />
+                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                            </div>
+
+                                            {/* Filters Group */}
+                                            <div className="flex flex-wrap gap-3">
+                                                {/* Facility Filter */}
+                                                <select
+                                                    value={activeNodesFacilityFilter}
+                                                    onChange={(e) => setActiveNodesFacilityFilter(e.target.value)}
+                                                    className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none cursor-pointer transition-all min-w-[160px]"
+                                                >
+                                                    <option value="all">全施設を表示</option>
+                                                    {orgFacilities.map(f => (
+                                                        <option key={f.id} value={f.name}>{f.name}</option>
+                                                    ))}
+                                                </select>
+
+                                                {/* Status Filter */}
+                                                <div className="flex bg-white border border-gray-200 rounded-xl p-1">
+                                                    {[
+                                                        { key: 'all', label: 'すべて', color: 'bg-gray-600' },
+                                                        { key: 'UP', label: '稼働中', color: 'bg-green-500' },
+                                                        { key: 'DOWN', label: '停止中', color: 'bg-gray-400' },
+                                                        { key: 'WARNING', label: '警告', color: 'bg-yellow-500' }
+                                                    ].map(({ key, label, color }) => (
+                                                        <button
+                                                            key={key}
+                                                            onClick={() => setNodeStatusFilter(key as 'all' | 'UP' | 'DOWN' | 'WARNING')}
+                                                            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${nodeStatusFilter === key
+                                                                ? `${color} text-white shadow-md`
+                                                                : 'text-gray-400 hover:bg-gray-50'
+                                                                }`}
+                                                        >
+                                                            {label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Filter Results Count */}
+                                        <div className="mt-3 text-xs text-gray-400 font-medium text-right">
+                                            表示中: <span className="font-bold text-gray-600">{filteredNodes.length}</span> / {userList.length} 件
+                                        </div>
+                                    </div>
+
+                                    {/* Scrollable Table Area */}
+                                    <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent p-0">
+                                        <table className="w-full text-left border-collapse relative">
+                                            <thead className="sticky top-0 z-10">
+                                                <tr className="border-b border-gray-100 shadow-sm shadow-gray-100/50">
+                                                    <th className="px-6 py-4 w-10 bg-white/95 backdrop-blur-sm">
                                                         <input
                                                             type="checkbox"
                                                             checked={selectedUsers.length === userList.length && userList.length > 0}
@@ -964,22 +1090,37 @@ export default function DeveloperDashboard() {
                                                             className="w-4 h-4 rounded-md border-gray-300 text-orange-600 focus:ring-orange-500 cursor-pointer"
                                                         />
                                                     </th>
-                                                    <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">ID</th>
-                                                    <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Identity Name</th>
-                                                    <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Email</th>
-
-                                                    <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Facility</th>
-                                                    <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Department</th>
-                                                    <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Role</th>
-                                                    <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+                                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white/95 backdrop-blur-sm">IDENTITY NAME</th>
+                                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white/95 backdrop-blur-sm">ID (EMP)</th>
+                                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white/95 backdrop-blur-sm">FACILITY / DEPARTMENT</th>
+                                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white/95 backdrop-blur-sm">STATUS</th>
+                                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white/95 backdrop-blur-sm">ROLE</th>
+                                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right bg-white/95 backdrop-blur-sm">ACTION</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-50">
-                                                {userList.map(user => {
+                                                {filteredNodes.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan={8} className="px-4 py-16 text-center">
+                                                            <div className="flex flex-col items-center gap-3 animate-in fade-in duration-300">
+                                                                <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                                                </svg>
+                                                                <p className="text-gray-400 font-medium">該当するノードが見つかりません</p>
+                                                                <button
+                                                                    onClick={() => { setNodeSearchQuery(''); setNodeStatusFilter('all'); }}
+                                                                    className="text-xs text-orange-500 hover:text-orange-600 font-bold"
+                                                                >
+                                                                    フィルタをクリア
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ) : filteredNodes.map(user => {
                                                     const isEditing = editingUserId === user.id;
                                                     const isSelected = selectedUsers.includes(user.id);
                                                     return (
-                                                        <tr key={user.id} className={`transition-all group ${isEditing ? 'bg-orange-50/50' : (isSelected ? 'bg-blue-50/30' : 'hover:bg-gray-50/80')} `}>
+                                                        <tr key={user.id} className={`transition-all group animate-in fade-in slide-in-from-bottom-2 duration-200 ${isEditing ? 'bg-orange-50/50' : (isSelected ? 'bg-blue-50/30' : 'hover:bg-gray-50/80')} `}>
                                                             <td className="px-4 py-4 w-10">
                                                                 {!isEditing && (
                                                                     <input
@@ -990,80 +1131,91 @@ export default function DeveloperDashboard() {
                                                                     />
                                                                 )}
                                                             </td>
-                                                            <td className="px-4 py-4 text-sm font-mono text-gray-400">{user.employeeId}</td>
-                                                            <td className="px-4 py-4 text-sm font-extrabold text-gray-800">{user.name}</td>
+                                                            <td className="px-6 py-4">
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-sm font-black text-gray-800 tracking-tight">{user.name}</span>
+                                                                    {isEditing ? (
+                                                                        <input
+                                                                            type="email"
+                                                                            value={editForm.email || ''}
+                                                                            onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                                                                            className="mt-1 w-full p-1 border border-orange-200 rounded text-xs bg-white focus:border-orange-500 outline-none"
+                                                                            placeholder="Email"
+                                                                        />
+                                                                    ) : (
+                                                                        <span className="text-[10px] text-gray-400 font-mono">{user.email || 'No Email'}</span>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-xs font-mono text-gray-400 font-bold">{user.employeeId}</td>
 
-                                                            <td className="px-4 py-4 text-sm">
+                                                            {/* Facility/Dept */}
+                                                            <td className="px-6 py-4">
                                                                 {isEditing ? (
-                                                                    <input
-                                                                        type="email"
-                                                                        value={editForm.email || ''}
-                                                                        onChange={e => setEditForm({ ...editForm, email: e.target.value })}
-                                                                        className="w-full p-2 border-2 border-orange-200 rounded-xl text-sm bg-white focus:border-orange-500 outline-none transition-all font-bold"
-                                                                        placeholder="Email"
-                                                                    />
+                                                                    <div className="flex flex-col gap-1">
+                                                                        <select
+                                                                            value={editForm.facility}
+                                                                            onChange={e => setEditForm({ ...editForm, facility: e.target.value, department: getDepartments(e.target.value)[0] || '' })}
+                                                                            className="p-1 border border-orange-200 rounded text-xs"
+                                                                        >
+                                                                            {orgFacilities.map(f => (
+                                                                                <option key={f.id} value={f.name}>{f.name}</option>
+                                                                            ))}
+                                                                        </select>
+                                                                        <select
+                                                                            value={editForm.department}
+                                                                            onChange={e => setEditForm({ ...editForm, department: e.target.value })}
+                                                                            className="p-1 border border-orange-200 rounded text-xs"
+                                                                        >
+                                                                            {getDepartments(editForm.facility).map(dept => (
+                                                                                <option key={dept} value={dept}>{dept}</option>
+                                                                            ))}
+                                                                        </select>
+                                                                    </div>
                                                                 ) : (
-                                                                    <span className="text-gray-500 font-mono text-xs">{user.email || '-'}</span>
+                                                                    <div className="flex flex-col gap-0.5">
+                                                                        <span className="text-xs font-bold text-gray-600 truncate max-w-[140px]" title={user.facility}>{user.facility}</span>
+                                                                        <span className="text-[10px] text-gray-400">{user.department}</span>
+                                                                    </div>
                                                                 )}
                                                             </td>
 
-                                                            {/* Facility */}
-                                                            <td className="px-4 py-4 text-sm">
-                                                                {isEditing ? (
-                                                                    <select
-                                                                        value={editForm.facility}
-                                                                        onChange={e => setEditForm({ ...editForm, facility: e.target.value, department: getDepartments(e.target.value)[0] || '' })}
-                                                                        className="w-full p-2 border-2 border-orange-200 rounded-xl text-sm bg-white focus:border-orange-500 outline-none transition-all font-bold"
-                                                                    >
-                                                                        {orgFacilities.map(f => (
-                                                                            <option key={f.id} value={f.name}>{f.name}</option>
-                                                                        ))}
-                                                                    </select>
-                                                                ) : (
-                                                                    <span className="px-3 py-1 bg-white border border-gray-200 text-gray-600 rounded-full text-[11px] font-black uppercase tracking-wider">
-                                                                        {user.facility}
-                                                                    </span>
-                                                                )}
-                                                            </td>
+                                                            {/* Status */}
+                                                            <td className="px-6 py-4">
+                                                                {(() => {
+                                                                    const statusInfo = nodeStatuses.get(user.id);
+                                                                    const status = statusInfo?.status || 'UP';
+                                                                    const label = status === 'UP' ? '稼働中' : status === 'DOWN' ? '停止中' : '警告';
 
-                                                            {/* Department */}
-                                                            <td className="px-4 py-4 text-sm">
-                                                                {isEditing ? (
-                                                                    <select
-                                                                        value={editForm.department}
-                                                                        onChange={e => setEditForm({ ...editForm, department: e.target.value })}
-                                                                        className="w-full p-2 border-2 border-orange-200 rounded-xl text-sm bg-white focus:border-orange-500 outline-none transition-all font-bold"
-                                                                        disabled={!editForm.facility}
-                                                                    >
-                                                                        {getDepartments(editForm.facility).map(dept => (
-                                                                            <option key={dept} value={dept}>{dept}</option>
-                                                                        ))}
-                                                                    </select>
-                                                                ) : (
-                                                                    <span className="text-gray-600 font-medium">{user.department}</span>
-                                                                )}
+                                                                    let colorClass = 'bg-emerald-500 text-white shadow-emerald-200';
+                                                                    if (status === 'DOWN') colorClass = 'bg-gray-400 text-white shadow-gray-200';
+                                                                    if (status === 'WARNING') colorClass = 'bg-amber-400 text-white shadow-amber-200';
+
+                                                                    return (
+                                                                        <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold tracking-wide shadow-sm ${colorClass}`}>
+                                                                            {label}
+                                                                        </span>
+                                                                    );
+                                                                })()}
                                                             </td>
 
                                                             {/* Role */}
-                                                            <td className="px-4 py-4 text-sm">
+                                                            <td className="px-6 py-4">
                                                                 {isEditing ? (
                                                                     <select
                                                                         value={editForm.role}
                                                                         onChange={e => setEditForm({ ...editForm, role: e.target.value as any })}
-                                                                        className={`w-full p-2 border-2 rounded-xl text-sm bg-white focus:ring-0 outline-none transition-all font-black tracking-tight ${editForm.role === 'DEVELOPER' ? 'text-purple-700 border-purple-200 focus:border-purple-500' :
-                                                                            editForm.role === 'ADMIN' ? 'text-red-700 border-red-200 focus:border-red-500' :
-                                                                                'text-emerald-700 border-emerald-200 focus:border-emerald-500'
-                                                                            } `}
+                                                                        className="p-1 border rounded text-xs"
                                                                     >
                                                                         <option value="USER">USER</option>
                                                                         <option value="ADMIN">ADMIN</option>
                                                                         <option value="DEVELOPER">DEVELOPER</option>
                                                                     </select>
                                                                 ) : (
-                                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${user.role === 'DEVELOPER' ? 'bg-purple-100/50 text-purple-700 border border-purple-200' :
-                                                                        user.role === 'ADMIN' ? 'bg-red-100/50 text-red-700 border border-red-200' :
-                                                                            'bg-emerald-100/50 text-emerald-700 border border-emerald-200'
-                                                                        } `}>
+                                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${user.role === 'DEVELOPER' ? 'text-purple-600' :
+                                                                        user.role === 'ADMIN' ? 'text-red-500' :
+                                                                            'text-gray-400'
+                                                                        }`}>
                                                                         {user.role}
                                                                     </span>
                                                                 )}
@@ -1118,7 +1270,8 @@ export default function DeveloperDashboard() {
                                 </div>
                             </div>
                         </div>
-                    </div >
+                    </div>
+
                 ) : activeTab === 'logs' ? (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                         {/* Audit Logs View */}

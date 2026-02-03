@@ -16,8 +16,13 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<List<UserDto>> getAllUsers(@RequestParam(required = false) String facility) {
+        return ResponseEntity.ok(userService.getAllUsers(facility));
+    }
+
+    @GetMapping("/facilities")
+    public ResponseEntity<List<String>> getDistinctFacilities() {
+        return ResponseEntity.ok(userService.getDistinctFacilities());
     }
 
     @PutMapping("/{id}")

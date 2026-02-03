@@ -392,5 +392,12 @@ export const api = {
         });
         return res.json();
     },
+
+    // Node Status Monitoring
+    getNodeStatuses: async (): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/nodes/status`);
+        if (!res.ok) return [];
+        return res.json();
+    },
 };
 
