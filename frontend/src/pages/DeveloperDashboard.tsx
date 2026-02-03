@@ -571,11 +571,11 @@ export default function DeveloperDashboard() {
                                     <Database size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium opacity-70">Database</p>
+                                    <p className="text-sm font-medium opacity-70">データベース</p>
                                     <div className="flex items-center gap-2">
                                         <span className={`w-2.5 h-2.5 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500' : 'bg-red-500'
                                             } `} />
-                                        <p className="font-bold text-lg">{stats.dbStatus}</p>
+                                        <p className="font-bold text-lg">{stats.dbStatus === 'Connected' ? '接続中' : '切断'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -586,7 +586,7 @@ export default function DeveloperDashboard() {
                                     <Users size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 font-medium">Total Users</p>
+                                    <p className="text-sm text-gray-500 font-medium">総ユーザー数</p>
                                     <p className="font-bold text-2xl text-gray-800">{userList.length}</p>
                                 </div>
                             </div>
@@ -597,8 +597,8 @@ export default function DeveloperDashboard() {
                                     <Shield size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 font-medium">Privileges</p>
-                                    <div className="flex gap-2 text-xs font-semibold mt-1">
+                                    <p className="text-sm text-gray-500 font-medium">権限内訳</p>
+                                    <div className="flex flex-wrap gap-1 text-xs font-semibold mt-1">
                                         <span className="text-purple-600 bg-purple-50 px-2 py-0.5 rounded">Dev:{computedStats.developers}</span>
                                         <span className="text-red-600 bg-red-50 px-2 py-0.5 rounded">Adm:{computedStats.admins}</span>
                                         <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded">Usr:{computedStats.users}</span>
@@ -612,7 +612,7 @@ export default function DeveloperDashboard() {
                                     <FileText size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 font-medium">Facilities</p>
+                                    <p className="text-sm text-gray-500 font-medium">施設数</p>
                                     <p className="font-bold text-2xl text-gray-800">{computedStats.facilities}</p>
                                 </div>
                             </div>
@@ -624,7 +624,7 @@ export default function DeveloperDashboard() {
                                     <Activity size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 font-medium">Alerts (24h)</p>
+                                    <p className="text-sm text-gray-500 font-medium">アラート (24時間)</p>
                                     <p className={`font-bold text-2xl ${alertStats.alerts24h === 0 ? 'text-emerald-600' :
                                         alertStats.alerts24h < 5 ? 'text-yellow-600' : 'text-red-600'}`}>
                                         {alertStats.alerts24h}
