@@ -28,7 +28,7 @@ public class UserDto {
                 .name(user.getName())
                 .facility(user.getFacility())
                 .department(user.getDepartment())
-                .role(user.getRole().name())
+                .role(user.getRole() != null ? user.getRole().name() : "USER")
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .deletedAt(user.getDeletedAt())

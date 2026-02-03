@@ -22,11 +22,8 @@ import {
     Key,
     AlertTriangle,
     Clock,
-    Server,
-    Download,
-    Upload,
-    Trash2,
     Terminal,
+    Upload,
     Plus,
     AlertCircle,
     FileDown,
@@ -573,9 +570,9 @@ export default function DeveloperDashboard() {
             />
             <div className="space-y-4 pb-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
-                <div className="flex items-center justify-between pt-4">
+                <div className="flex items-center justify-between pt-2">
                     <div>
-                        <h2 className="text-2xl font-black text-gray-800 tracking-tight bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+                        <h2 className="text-xl font-black text-gray-800 tracking-tight bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
                             Developer Console
                         </h2>
                         <div className="flex items-center gap-4 mt-1">
@@ -600,7 +597,7 @@ export default function DeveloperDashboard() {
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="flex p-1 bg-gray-100/50 rounded-xl w-fit mb-4 border border-gray-200/50 backdrop-blur-sm">
+                <div className="flex p-1 bg-gray-100/50 rounded-xl w-fit mb-2 border border-gray-200/50 backdrop-blur-sm">
                     {['system', 'logs', 'archive', 'compliance', 'organization'].map((tab) => (
                         <button
                             key={tab}
@@ -642,51 +639,51 @@ export default function DeveloperDashboard() {
                             </div>
 
                             {/* Users Count */}
-                            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className="p-3 bg-orange-100 text-orange-600 rounded-xl">
-                                    <Users size={24} />
+                            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                                <div className="p-2.5 bg-orange-100 text-orange-600 rounded-xl">
+                                    <Users size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 font-medium">総ユーザー数</p>
-                                    <p className="font-bold text-2xl text-gray-800">{userList.length}</p>
+                                    <p className="text-xs text-gray-500 font-medium leading-tight">総ユーザー数</p>
+                                    <p className="font-bold text-xl text-gray-800 leading-tight">{userList.length}</p>
                                 </div>
                             </div>
 
                             {/* Role Breakdown */}
-                            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className="p-3 bg-purple-100 text-purple-600 rounded-xl">
-                                    <Shield size={24} />
+                            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                                <div className="p-2.5 bg-purple-100 text-purple-600 rounded-xl">
+                                    <Shield size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 font-medium">権限内訳</p>
-                                    <div className="flex flex-wrap gap-1 text-xs font-semibold mt-1">
-                                        <span className="text-purple-600 bg-purple-50 px-2 py-0.5 rounded">Dev:{computedStats.developers}</span>
-                                        <span className="text-red-600 bg-red-50 px-2 py-0.5 rounded">Adm:{computedStats.admins}</span>
-                                        <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded">Usr:{computedStats.users}</span>
+                                    <p className="text-xs text-gray-500 font-medium leading-tight">権限内訳</p>
+                                    <div className="flex flex-wrap gap-1 text-[10px] font-bold mt-0.5">
+                                        <span className="text-purple-600 bg-purple-50 px-1.5 py-0.25 rounded">Dev:{computedStats.developers}</span>
+                                        <span className="text-red-600 bg-red-50 px-1.5 py-0.25 rounded">Adm:{computedStats.admins}</span>
+                                        <span className="text-green-600 bg-green-50 px-1.5 py-0.25 rounded">Usr:{computedStats.users}</span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Facilities */}
-                            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
-                                    <FileText size={24} />
+                            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                                <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl">
+                                    <FileText size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 font-medium">施設数</p>
-                                    <p className="font-bold text-2xl text-gray-800">{computedStats.facilities}</p>
+                                    <p className="text-xs text-gray-500 font-medium leading-tight">施設数</p>
+                                    <p className="font-bold text-xl text-gray-800 leading-tight">{computedStats.facilities}</p>
                                 </div>
                             </div>
 
                             {/* 24h Alerts Widget */}
-                            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className={`p-3 rounded-xl ${alertStats.alerts24h === 0 ? 'bg-emerald-100 text-emerald-600' :
+                            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                                <div className={`p-2.5 rounded-xl ${alertStats.alerts24h === 0 ? 'bg-emerald-100 text-emerald-600' :
                                     alertStats.alerts24h < 5 ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'}`}>
-                                    <Activity size={24} />
+                                    <Activity size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 font-medium">アラート (24時間)</p>
-                                    <p className={`font-bold text-2xl ${alertStats.alerts24h === 0 ? 'text-emerald-600' :
+                                    <p className="text-xs text-gray-500 font-medium leading-tight">アラート (24時間)</p>
+                                    <p className={`font-bold text-xl leading-tight ${alertStats.alerts24h === 0 ? 'text-emerald-600' :
                                         alertStats.alerts24h < 5 ? 'text-yellow-600' : 'text-red-600'}`}>
                                         {alertStats.alerts24h}
                                     </p>

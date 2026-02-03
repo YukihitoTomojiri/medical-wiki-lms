@@ -25,13 +25,14 @@ public class AdminController {
     }
 
     @PostMapping("/users/{id}/restore")
-    public UserDto restoreUser(@PathVariable Long id, @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
+    public UserDto restoreUser(@PathVariable Long id,
+            @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
         userService.restoreUser(id, executorId);
         return userService.getUserById(id).orElseThrow(() -> new RuntimeException("User not found after restore"));
     }
 
     @GetMapping("/users/all-including-deleted")
-    public List<UserDto> getAllUsersIncludingDeleted() {
-        return userService.getAllUsersIncludingDeleted();
+    public List<UserDto> getAllUsersIncludingDeleted(@RequestParam(required = false) String facility) {
+        return userService.getAllUsersIncludingDeleted(facility);
     }
 }
