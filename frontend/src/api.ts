@@ -323,5 +323,74 @@ export const api = {
         });
         return res.json();
     },
+
+    // Organization Management
+    getFacilities: async (): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/facilities`);
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    createFacility: async (name: string): Promise<any> => {
+        const res = await fetch(`${API_BASE}/facilities`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name }),
+        });
+        return res.json();
+    },
+
+    updateFacility: async (id: number, name: string): Promise<any> => {
+        const res = await fetch(`${API_BASE}/facilities/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name }),
+        });
+        return res.json();
+    },
+
+    deleteFacility: async (id: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/facilities/${id}`, {
+            method: 'DELETE',
+        });
+        return res.json();
+    },
+
+    getDepartments: async (): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/departments`);
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    getDepartmentsByFacility: async (facilityId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/departments/by-facility/${facilityId}`);
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    createDepartment: async (name: string, facilityId: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/departments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, facilityId }),
+        });
+        return res.json();
+    },
+
+    updateDepartment: async (id: number, name: string): Promise<any> => {
+        const res = await fetch(`${API_BASE}/departments/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name }),
+        });
+        return res.json();
+    },
+
+    deleteDepartment: async (id: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/departments/${id}`, {
+            method: 'DELETE',
+        });
+        return res.json();
+    },
 };
 
