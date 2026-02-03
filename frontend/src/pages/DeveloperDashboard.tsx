@@ -589,16 +589,16 @@ export default function DeveloperDashboard() {
                 <div className="flex items-center justify-between pt-2">
                     <div>
                         <h2 className="text-xl font-black text-gray-800 tracking-tight bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-                            Developer Console
+                            開発者ダッシュボード
                         </h2>
                         <div className="flex items-center gap-4 mt-1">
                             <p className="text-gray-500 font-medium text-xs flex items-center gap-2">
                                 <Activity size={14} className="text-green-500" />
-                                System v{stats.version} Running
+                                システム v{stats.version} 稼働中
                             </p>
                             <p className="text-gray-400 text-sm flex items-center gap-2 border-l pl-4 border-gray-200">
                                 <RefreshCw size={14} />
-                                Last Sync: {lastSync}
+                                最終同期: {lastSync}
                             </p>
                         </div>
                     </div>
@@ -608,7 +608,7 @@ export default function DeveloperDashboard() {
                         className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 font-medium shadow-sm transition-all active:scale-95"
                     >
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                        Refresh
+                        更新
                     </button>
                 </div>
 
@@ -618,14 +618,14 @@ export default function DeveloperDashboard() {
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
-                            className={`px-5 py-2 rounded-lg text-xs font-black tracking-wide transition-all ${activeTab === tab
-                                ? 'bg-white text-gray-800 shadow-sm ring-1 ring-black/5'
-                                : 'text-gray-500 hover:text-gray-700'}`}
+                            className={`px-6 py-2 rounded-lg text-[11px] font-black tracking-widest transition-all ${activeTab === tab
+                                ? 'bg-white text-orange-600 shadow-sm ring-1 ring-black/5'
+                                : 'text-gray-500 hover:text-gray-800 hover:bg-white/50'}`}
                         >
-                            {tab === 'system' ? 'System Stats' :
-                                tab === 'logs' ? 'Audit Logs' :
-                                    tab === 'archive' ? 'User Archive' :
-                                        tab === 'compliance' ? 'Compliance Export' :
+                            {tab === 'system' ? 'システム統計' :
+                                tab === 'logs' ? '操作履歴' :
+                                    tab === 'archive' ? '全ユーザー管理' :
+                                        tab === 'compliance' ? 'レポート出力' :
                                             '組織管理'}
                         </button>
                     ))}
@@ -715,20 +715,19 @@ export default function DeveloperDashboard() {
                                         <ShieldAlert size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-black text-gray-800 tracking-tight">
-                                            Security Alerts
-                                        </h3>
-                                        <p className="text-sm text-gray-500 font-medium">異常行動の検知とアラート管理</p>
+                                        <h3 className="text-lg font-black text-gray-800 tracking-tight">セキュリティアラート</h3>
+                                        <p className="text-xs text-gray-500 font-medium">システムの異常行動をリアルタイムで監視・報告します</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
                                     {alertStats.criticalOpen > 0 && (
                                         <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-black animate-pulse">
                                             {alertStats.criticalOpen} Critical
                                         </span>
                                     )}
-                                    <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-black">
-                                        {alertStats.totalOpen} Open
+                                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-red-200">
+                                        <AlertTriangle size={12} />
+                                        {alertStats.totalOpen} 件の未解決
                                     </span>
                                     <button
                                         onClick={fetchSecurityAlerts}
@@ -1257,14 +1256,14 @@ export default function DeveloperDashboard() {
                                 <div>
                                     <h3 className="text-xl font-black text-white tracking-tight flex items-center gap-3">
                                         <Activity className="text-emerald-500" />
-                                        Audit Records (JST)
+                                        操作履歴 (JST)
                                     </h3>
-                                    <p className="text-sm text-slate-500 font-medium">Immutable audit trail of all system actions</p>
+                                    <p className="text-sm text-slate-500 font-medium">システムの全操作に対する変更不可能な証跡</p>
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-2xl border border-slate-700 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                         <Shield size={14} className="text-emerald-500" />
-                                        Secured Logs
+                                        保護されたログ
                                     </div>
                                     <button
                                         onClick={fetchSystemLogs}
@@ -1329,8 +1328,8 @@ export default function DeveloperDashboard() {
                                             <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6">
                                                 <Shield size={40} className="text-slate-700" />
                                             </div>
-                                            <p className="text-slate-500 font-black uppercase tracking-[.2em] text-xs">No entries found in audit vault</p>
-                                            <p className="text-slate-600 text-[10px] mt-2 font-medium">System activity logs will appear here</p>
+                                            <p className="text-slate-500 font-black uppercase tracking-[.2em] text-xs">監査履歴が見つかりません</p>
+                                            <p className="text-slate-600 text-[10px] mt-2 font-medium">システムの操作ログがここに表示されます</p>
                                         </div>
                                     )}
                                 </div>
@@ -1346,7 +1345,7 @@ export default function DeveloperDashboard() {
                                     <FileDown size={20} />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-black text-gray-800 tracking-tight">Compliance Export</h2>
+                                    <h2 className="text-lg font-black text-gray-800 tracking-tight">レポート出力（コンプライアンス）</h2>
                                     <p className="text-xs text-gray-500 font-medium">
                                         施設・期間を選択して、学習進捗データをCSV/PDF形式でエクスポートします。
                                     </p>
