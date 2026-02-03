@@ -86,7 +86,8 @@ export default function DeveloperDashboard() {
 
     // Active Nodes Filter States
     const [nodeSearchQuery, setNodeSearchQuery] = useState('');
-    const [nodeStatusFilter, setNodeStatusFilter] = useState<'all' | 'online' | 'offline' | 'warning'>('all');
+    const [nodeStatusFilter, setNodeStatusFilter] = useState<'all' | 'UP' | 'DOWN' | 'WARNING'>('all');
+    const [nodeStatuses, setNodeStatuses] = useState<Map<number, { status: string, statusLabel: string }>>(new Map());
 
     // Reset to default tab when location changes (e.g. clicking "Developer Menu" in sidebar)
     const location = useLocation();
@@ -129,6 +130,25 @@ export default function DeveloperDashboard() {
             setAlertStats(stats);
         } catch (e) { console.error(e); }
     };
+
+    // Fetch node statuses from API
+    const fetchNodeStatuses = async () => {
+        try {
+            const statuses = await api.getNodeStatuses();
+            const statusMap = new Map<number, { status: string, statusLabel: string }>();
+            statuses.forEach((node: any) => {
+                statusMap.set(node.userId, { status: node.status, statusLabel: node.statusLabel });
+            });
+            setNodeStatuses(statusMap);
+        } catch (e) { console.error('Failed to fetch node statuses:', e); }
+    };
+
+    // Polling interval for node statuses (every 5 seconds)
+    useEffect(() => {
+        fetchNodeStatuses(); // Initial fetch
+        const pollInterval = setInterval(fetchNodeStatuses, 5000);
+        return () => clearInterval(pollInterval);
+    }, []);
 
     const handleAcknowledgeAlert = async (id: number) => {
         try {
@@ -344,15 +364,9 @@ export default function DeveloperDashboard() {
             user.name?.toLowerCase().includes(nodeSearchQuery.toLowerCase()) ||
             user.department?.toLowerCase().includes(nodeSearchQuery.toLowerCase());
 
-        // Status filter (simulated based on user ID for demo purposes)
-        // In production, this would be based on actual node status data
-        const getNodeStatus = (id: number): 'online' | 'offline' | 'warning' => {
-            if (id % 10 === 0) return 'warning';
-            if (id % 7 === 0) return 'offline';
-            return 'online';
-        };
-
-        const matchesStatus = nodeStatusFilter === 'all' || getNodeStatus(user.id) === nodeStatusFilter;
+        // Status filter using API-provided status
+        const userStatus = nodeStatuses.get(user.id)?.status || 'UP';
+        const matchesStatus = nodeStatusFilter === 'all' || userStatus === nodeStatusFilter;
 
         return matchesSearch && matchesStatus;
     });
@@ -1000,13 +1014,13 @@ export default function DeveloperDashboard() {
                                         <div className="flex bg-gray-100 rounded-xl p-1">
                                             {[
                                                 { key: 'all', label: 'すべて', color: 'bg-gray-600' },
-                                                { key: 'online', label: 'Online', color: 'bg-green-500' },
-                                                { key: 'offline', label: 'Offline', color: 'bg-gray-400' },
-                                                { key: 'warning', label: 'Warning', color: 'bg-yellow-500' }
+                                                { key: 'UP', label: '稼働中', color: 'bg-green-500' },
+                                                { key: 'DOWN', label: '停止中', color: 'bg-gray-400' },
+                                                { key: 'WARNING', label: '警告あり', color: 'bg-yellow-500' }
                                             ].map(({ key, label, color }) => (
                                                 <button
                                                     key={key}
-                                                    onClick={() => setNodeStatusFilter(key as 'all' | 'online' | 'offline' | 'warning')}
+                                                    onClick={() => setNodeStatusFilter(key as 'all' | 'UP' | 'DOWN' | 'WARNING')}
                                                     className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${nodeStatusFilter === key
                                                         ? `${color} text-white shadow-md`
                                                         : 'text-gray-500 hover:bg-gray-200'
