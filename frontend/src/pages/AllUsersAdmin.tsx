@@ -80,7 +80,7 @@ export default function AllUsersAdmin() {
                             <Shield className="text-slate-600" size={24} />
                         </div>
                         <div>
-                            <h1 className="text-xl font-black text-gray-800 tracking-tight">全データ管理 (アーカイブ)</h1>
+                            <h1 className="text-xl font-black text-gray-800 tracking-tight">全ユーザー管理</h1>
                             <p className="text-xs text-gray-500 font-medium">退職者を含む全ての職員データを管理・復元します</p>
                         </div>
                     </div>
@@ -105,7 +105,7 @@ export default function AllUsersAdmin() {
                             <CheckCircle size={20} />
                         </div>
                         <div>
-                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest leading-none mb-1">Active</p>
+                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest leading-none mb-1">在職中</p>
                             <p className="text-lg font-black text-gray-800 leading-none">{activeCount}</p>
                         </div>
                     </div>
@@ -114,7 +114,7 @@ export default function AllUsersAdmin() {
                             <XCircle size={20} />
                         </div>
                         <div>
-                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest leading-none mb-1">Archived</p>
+                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest leading-none mb-1">退職済み</p>
                             <p className="text-lg font-black text-gray-500 leading-none">{retiredCount}</p>
                         </div>
                     </div>
@@ -125,7 +125,7 @@ export default function AllUsersAdmin() {
                         <Search size={16} className="text-gray-400 mr-3" />
                         <input
                             type="text"
-                            placeholder="Name or ID..."
+                            placeholder="氏名またはIDで検索..."
                             className="w-full bg-transparent border-none focus:ring-0 text-sm font-bold placeholder-gray-400 p-0"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -148,7 +148,7 @@ export default function AllUsersAdmin() {
                     <button
                         onClick={fetchUsers}
                         className="p-3 bg-white border border-gray-100 text-gray-400 rounded-2xl hover:text-slate-600 hover:bg-gray-50 transition-all shadow-sm"
-                        title="Reload"
+                        title="再読み込み"
                     >
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                     </button>
@@ -161,11 +161,11 @@ export default function AllUsersAdmin() {
                     <table className="w-full text-left">
                         <thead className="bg-gray-50/50 border-b border-gray-100">
                             <tr>
-                                <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                                <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Employee Info</th>
-                                <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Facility / Dept</th>
-                                <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Role</th>
-                                <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                                <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">ステータス</th>
+                                <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">職員情報</th>
+                                <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">施設 / 部署</th>
+                                <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">権限</th>
+                                <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">操作</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
@@ -174,7 +174,7 @@ export default function AllUsersAdmin() {
                                     <td colSpan={5} className="px-6 py-12 text-center text-gray-400 font-bold text-sm">
                                         <div className="flex flex-col items-center gap-2">
                                             <RefreshCw className="animate-spin text-slate-300" size={32} />
-                                            <span>Loading data...</span>
+                                            <span>読み込み中...</span>
                                         </div>
                                     </td>
                                 </tr>
@@ -193,12 +193,12 @@ export default function AllUsersAdmin() {
                                                 {isDeleted ? (
                                                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-black uppercase tracking-wide border border-gray-200/50">
                                                         <XCircle size={10} />
-                                                        ARCHIVED
+                                                        退職済み
                                                     </span>
                                                 ) : (
                                                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600 text-[10px] font-black uppercase tracking-wide border border-emerald-200/50">
                                                         <CheckCircle size={10} />
-                                                        ACTIVE
+                                                        在職中
                                                     </span>
                                                 )}
                                             </td>
@@ -210,7 +210,7 @@ export default function AllUsersAdmin() {
                                                     <span>{user.employeeId}</span>
                                                     {isDeleted && (
                                                         <span className="text-red-400">
-                                                            (Deleted: {new Date(user.deletedAt!).toLocaleDateString('ja-JP')})
+                                                            (削除日: {new Date(user.deletedAt!).toLocaleDateString('ja-JP')})
                                                         </span>
                                                     )}
                                                 </div>
@@ -240,7 +240,7 @@ export default function AllUsersAdmin() {
                                                         ) : (
                                                             <RefreshCw size={12} />
                                                         )}
-                                                        Restore
+                                                        復元
                                                     </button>
                                                 )}
                                             </td>
