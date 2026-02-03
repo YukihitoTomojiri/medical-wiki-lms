@@ -7,6 +7,7 @@ import { ConfirmModal } from '../components/ConfirmModal';
 import { RestoreConfirmModal } from '../components/RestoreConfirmModal';
 import AllUsersAdmin from './AllUsersAdmin';
 import { PostRegisterModal } from '../components/PostRegisterModal';
+import OrganizationManagement from '../components/OrganizationManagement';
 import {
     Activity,
     Database,
@@ -47,7 +48,7 @@ export default function DeveloperDashboard() {
         version: '1.0.0',
     });
 
-    const [activeTab, setActiveTab] = useState<'system' | 'logs' | 'archive' | 'compliance'>('system');
+    const [activeTab, setActiveTab] = useState<'system' | 'logs' | 'archive' | 'compliance' | 'organization'>('system');
 
     // Compliance Export States
     const [complianceFacilities, setComplianceFacilities] = useState<string[]>([]);
@@ -554,6 +555,14 @@ export default function DeveloperDashboard() {
                             : 'text-gray-500 hover:text-gray-700'}`}
                     >
                         Compliance Export
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('organization')}
+                        className={`px-6 py-2.5 rounded-lg text-sm font-black tracking-wide transition-all ${activeTab === 'organization'
+                            ? 'bg-white text-gray-800 shadow-sm ring-1 ring-black/5'
+                            : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        組織管理
                     </button>
                 </div>
 
@@ -1318,6 +1327,8 @@ export default function DeveloperDashboard() {
                             </div>
                         </div>
                     </div>
+                ) : activeTab === 'organization' ? (
+                    <OrganizationManagement />
                 ) : (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                         <AllUsersAdmin />
