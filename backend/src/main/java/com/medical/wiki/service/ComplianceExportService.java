@@ -65,34 +65,40 @@ public class ComplianceExportService {
             List<Manual> manuals = manualRepository.findAll();
             Map<Long, Set<Long>> userProgressMap = buildUserProgressMap(users, startDate, endDate);
 
-            // Header row: 氏名, メールアドレス, 修了率, 施設, 部署
+            // Header row: 職員ID, 氏名, 施設, 部署, [マニュアル名...], 完了率
             List<String> header = new ArrayList<>();
+            header.add("職員ID");
             header.add("氏名");
-            header.add("メールアドレス");
-            header.add("修了率");
             header.add("施設");
             header.add("部署");
+            for (Manual manual : manuals) {
+                header.add(manual.getTitle());
+            }
+            header.add("完了率");
             writer.writeNext(header.toArray(new String[0]));
 
             // Data rows
             for (User user : users) {
                 List<String> row = new ArrayList<>();
+                row.add(user.getEmployeeId());
                 row.add(user.getName());
-                row.add(user.getEmail() != null ? user.getEmail() : "-");
+                row.add(user.getFacility());
+                row.add(user.getDepartment());
 
                 Set<Long> completedManualIds = userProgressMap.getOrDefault(user.getId(), Collections.emptySet());
                 int completedCount = 0;
+
                 for (Manual manual : manuals) {
                     if (completedManualIds.contains(manual.getId())) {
+                        row.add("✔");
                         completedCount++;
+                    } else {
+                        row.add("-");
                     }
                 }
 
                 double completionRate = manuals.isEmpty() ? 0 : (double) completedCount / manuals.size() * 100;
                 row.add(String.format("%.1f%%", completionRate));
-                row.add(user.getFacility());
-                row.add(user.getDepartment());
-
                 writer.writeNext(row.toArray(new String[0]));
             }
 
@@ -115,31 +121,36 @@ public class ComplianceExportService {
             PDPage page = new PDPage(PDRectangle.A4);
             document.addPage(page);
 
-            // Load Japanese font (Noto Sans JP)
+            // Load Japanese font (Noto Sans JP) from resources
             PDFont font;
             try {
-                // Try classpath first (standard for Spring Boot)
+                // Identity-H is handled by PDType0Font when loading Unicode fonts
                 try (InputStream fontStream = new ClassPathResource("fonts/NotoSansJP-Regular.ttf").getInputStream()) {
                     font = PDType0Font.load(document, fontStream);
                 }
-            } catch (Exception e1) {
-                try {
-                    // Try filesystem fallback (common in production containers)
-                    java.io.File fontFile = new java.io.File("/app/src/main/resources/fonts/NotoSansJP-Regular.ttf");
-                    if (fontFile.exists()) {
-                        try (java.io.FileInputStream fis = new java.io.FileInputStream(fontFile)) {
-                            font = PDType0Font.load(document, fis);
-                        }
-                    } else {
-                        throw new RuntimeException("Required Japanese font not found");
+            } catch (Exception e) {
+                // Secondary fallback for absolute path if classpath fails in some environments
+                java.io.File fontFile = new java.io.File("/app/src/main/resources/fonts/NotoSansJP-Regular.ttf");
+                if (fontFile.exists()) {
+                    try (java.io.FileInputStream fis = new java.io.FileInputStream(fontFile)) {
+                        font = PDType0Font.load(document, fis);
+                    } catch (Exception e2) {
+                        throw new RuntimeException(
+                                "CRITICAL: Failed to load Japanese font even from filesystem: " + e2.getMessage());
                     }
-                } catch (Exception e2) {
-                    // Critical failure if font cannot be loaded for Japanese report
-                    throw new RuntimeException("PDF Font loading failed: " + e2.getMessage());
+                } else {
+                    // Log and use a safe internal fallback if possible, but for Japanese, missing
+                    // font is usually fatal for rendering
+                    System.err.println("WARNING: NotoSansJP-Regular.ttf not found. PDF may contain broken characters.");
+                    // Last resort: Standard font (will not support JP characters properly)
+                    // We keep this only to prevent 0-byte file, but log the failure clearly
+                    font = org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA;
                 }
             }
 
             try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                // Explicitly manage contentStream to ensure it's closed before saving the
+                // document
                 try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
                     float yPosition = 750;
                     float margin = 50;
@@ -256,7 +267,9 @@ public class ComplianceExportService {
                         contentStream.endText();
                     }
                 }
+                // Ensure contentStream is closed before saving
                 document.save(baos);
+                baos.flush();
                 return baos.toByteArray();
             }
         } catch (Exception e) {
