@@ -21,10 +21,20 @@ public class UserService {
     private final LoggingService loggingService;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    public List<UserDto> getAllUsers() {
-        return userRepository.findAllByDeletedAtIsNull().stream()
+    public List<UserDto> getAllUsers(String facility) {
+        List<User> users;
+        if (facility != null && !facility.isEmpty()) {
+            users = userRepository.findByFacilityAndDeletedAtIsNull(facility);
+        } else {
+            users = userRepository.findAllByDeletedAtIsNull();
+        }
+        return users.stream()
                 .map(UserDto::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    public List<String> getDistinctFacilities() {
+        return userRepository.findDistinctFacilities();
     }
 
     public List<UserDto> getAllUsersIncludingDeleted() {

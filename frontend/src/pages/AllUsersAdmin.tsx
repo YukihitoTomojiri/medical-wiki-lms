@@ -7,23 +7,37 @@ export default function AllUsersAdmin() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [facilities, setFacilities] = useState<string[]>([]);
+    const [selectedFacility, setSelectedFacility] = useState('');
     const [restoringId, setRestoringId] = useState<number | null>(null);
 
     useEffect(() => {
-        fetchUsers();
+        fetchData();
     }, []);
 
-    const fetchUsers = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const data = await api.getAllUsersIncludingDeleted(1);
-            setUsers(data);
+            const [usersData, facilitiesData] = await Promise.all([
+                api.getAllUsersIncludingDeleted(1),
+                api.getDistinctFacilities()
+            ]);
+            setUsers(usersData);
+            setFacilities(facilitiesData);
         } catch (error) {
-            console.error('Failed to fetch users:', error);
-            alert('ユーザー一覧の取得に失敗しました');
+            console.error('Failed to fetch data:', error);
+            alert('データの取得に失敗しました');
         } finally {
             setLoading(false);
         }
+    };
+
+    const fetchUsers = async () => {
+        // Keeps compatibility with handleRestore logic
+        try {
+            const data = await api.getAllUsersIncludingDeleted(1);
+            setUsers(data);
+        } catch (e) { console.error(e); }
     };
 
     const handleRestore = async (user: User) => {
@@ -43,8 +57,9 @@ export default function AllUsersAdmin() {
     };
 
     const filteredUsers = users.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.employeeId.includes(searchTerm)
+        (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.employeeId.includes(searchTerm)) &&
+        (!selectedFacility || user.facility === selectedFacility)
     );
 
     const retiredCount = users.filter(u => u.deletedAt).length;
@@ -101,6 +116,22 @@ export default function AllUsersAdmin() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+            </div>
+
+            {/* Filters */}
+            <div className="flex justify-end">
+                <select
+                    className="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 font-medium shadow-sm"
+                    value={selectedFacility}
+                    onChange={(e) => setSelectedFacility(e.target.value)}
+                >
+                    <option value="">全施設を表示 (全ての拠点)</option>
+                    {facilities.map((facility) => (
+                        <option key={facility} value={facility}>
+                            {facility}
+                        </option>
+                    ))}
+                </select>
             </div>
 
             {/* Table */}

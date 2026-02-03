@@ -155,8 +155,8 @@ public class NodeStatusController {
                 statusDetail = "未接続";
             } else {
                 LocalDateTime now = LocalDateTime.now();
-                if (lastSeen.isAfter(now.minusMinutes(20))) {
-                    // Active within 20 mins
+                if (lastSeen.isAfter(now.minusMinutes(10))) {
+                    // Active within 10 mins
                     status = "UP";
                     statusLabel = "稼働中";
                     statusDetail = "オンライン";
