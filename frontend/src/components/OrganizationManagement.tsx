@@ -196,17 +196,17 @@ export default function OrganizationManagement() {
 
                             return (
                                 <div key={facility.id}>
-                                    {/* Facility Row */}
-                                    <div className="flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors">
-                                        <button
-                                            onClick={() => setExpandedFacility(isExpanded ? null : facility.id)}
-                                            className="p-1 hover:bg-gray-200 rounded-lg transition-colors"
-                                        >
+                                    {/* Facility Row - Entire row clickable */}
+                                    <div
+                                        className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                                        onClick={() => setExpandedFacility(isExpanded ? null : facility.id)}
+                                    >
+                                        <div className="p-1 text-gray-500">
                                             {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
-                                        </button>
+                                        </div>
 
                                         {editingFacilityId === facility.id ? (
-                                            <div className="flex-1 flex items-center gap-2">
+                                            <div className="flex-1 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                                 <input
                                                     type="text"
                                                     value={editFacilityName}
@@ -215,14 +215,14 @@ export default function OrganizationManagement() {
                                                     autoFocus
                                                 />
                                                 <button
-                                                    onClick={() => handleUpdateFacility(facility.id)}
-                                                    className="p-1.5 bg-green-500 text-white rounded-lg"
+                                                    onClick={(e) => { e.stopPropagation(); handleUpdateFacility(facility.id); }}
+                                                    className="p-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600"
                                                 >
                                                     <Save size={16} />
                                                 </button>
                                                 <button
-                                                    onClick={() => setEditingFacilityId(null)}
-                                                    className="p-1.5 bg-gray-200 text-gray-600 rounded-lg"
+                                                    onClick={(e) => { e.stopPropagation(); setEditingFacilityId(null); }}
+                                                    className="p-1.5 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300"
                                                 >
                                                     <X size={16} />
                                                 </button>
@@ -236,13 +236,13 @@ export default function OrganizationManagement() {
                                                     </span>
                                                 </div>
                                                 <button
-                                                    onClick={() => { setEditingFacilityId(facility.id); setEditFacilityName(facility.name); }}
+                                                    onClick={(e) => { e.stopPropagation(); setEditingFacilityId(facility.id); setEditFacilityName(facility.name); }}
                                                     className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                                 >
                                                     <Edit2 size={16} />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDeleteFacility(facility.id)}
+                                                    onClick={(e) => { e.stopPropagation(); handleDeleteFacility(facility.id); }}
                                                     className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                 >
                                                     <Trash2 size={16} />
