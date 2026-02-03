@@ -68,10 +68,10 @@ public class ComplianceExportService {
 
             // Header row
             List<String> header = new ArrayList<>();
-            header.add("社員ID");
+            header.add("職員ID");
             header.add("氏名");
             header.add("施設");
-            header.add("部門");
+            header.add("部署");
             for (Manual manual : manuals) {
                 header.add(manual.getTitle());
             }
@@ -124,19 +124,18 @@ public class ComplianceExportService {
             PDPage page = new PDPage(PDRectangle.A4);
             document.addPage(page);
 
-            // Load Japanese font - try multiple locations
+            // Load Japanese font
             PDFont font;
-            java.io.File fontFile = new java.io.File("/app/src/main/resources/fonts/NotoSansJP-Regular.ttf");
-            if (fontFile.exists()) {
-                try (java.io.FileInputStream fontStream = new java.io.FileInputStream(fontFile)) {
-                    font = PDType0Font.load(document, fontStream);
-                }
-            } else {
-                // Try classpath as fallback (for production)
-                try (InputStream fontStream = new ClassPathResource("fonts/NotoSansJP-Regular.ttf").getInputStream()) {
-                    font = PDType0Font.load(document, fontStream);
-                } catch (Exception e) {
-                    // Final fallback: Use Helvetica (will fail for Japanese characters)
+            try (InputStream fontStream = new ClassPathResource("fonts/NotoSansJP-Regular.ttf").getInputStream()) {
+                font = PDType0Font.load(document, fontStream);
+            } catch (Exception e) {
+                // Fallback for different environments
+                java.io.File fontFile = new java.io.File("/app/src/main/resources/fonts/NotoSansJP-Regular.ttf");
+                if (fontFile.exists()) {
+                    try (java.io.FileInputStream fis = new java.io.FileInputStream(fontFile)) {
+                        font = PDType0Font.load(document, fis);
+                    }
+                } else {
                     font = PDType1Font.HELVETICA;
                 }
             }
@@ -150,7 +149,11 @@ public class ComplianceExportService {
                 contentStream.beginText();
                 contentStream.setFont(font, 18);
                 contentStream.newLineAtOffset(margin, yPosition);
-                contentStream.showText("Compliance Report - " + (facility != null ? facility : "All Facilities"));
+                String title = "コンプライアンス遵守状況レポート";
+                if (facility != null && !facility.isBlank() && !"all".equalsIgnoreCase(facility)) {
+                    title += " - 対象施設: " + facility;
+                }
+                contentStream.showText(title);
                 contentStream.endText();
                 yPosition -= 30;
 
@@ -158,16 +161,16 @@ public class ComplianceExportService {
                 contentStream.beginText();
                 contentStream.setFont(font, 10);
                 contentStream.newLineAtOffset(margin, yPosition);
-                String dateRange = String.format("Period: %s to %s",
-                        startDate != null ? startDate.format(DATE_FORMATTER) : "Beginning",
-                        endDate != null ? endDate.format(DATE_FORMATTER) : "Present");
+                String dateRange = String.format("対象期間: %s 〜 %s",
+                        startDate != null ? startDate.format(DATE_FORMATTER) : "制限なし",
+                        endDate != null ? endDate.format(DATE_FORMATTER) : "現時点まで");
                 contentStream.showText(dateRange);
                 contentStream.endText();
                 yPosition -= lineHeight;
 
                 contentStream.beginText();
                 contentStream.newLineAtOffset(margin, yPosition);
-                contentStream.showText("Generated: " + LocalDateTime.now().format(DATETIME_FORMATTER));
+                contentStream.showText("出力日時: " + LocalDateTime.now().format(DATETIME_FORMATTER));
                 contentStream.endText();
                 yPosition -= 30;
 
@@ -191,15 +194,15 @@ public class ComplianceExportService {
                 contentStream.beginText();
                 contentStream.setFont(font, 12);
                 contentStream.newLineAtOffset(margin, yPosition);
-                contentStream.showText("=== Summary ===");
+                contentStream.showText("【集計サマリー】");
                 contentStream.endText();
                 yPosition -= lineHeight;
 
                 String[] summaryLines = {
-                        "Total Users: " + totalUsers,
-                        "Total Manuals: " + totalManuals,
-                        "Users with 100% Completion: " + completedUsers,
-                        "Overall Completion Rate: " + String.format("%.1f%%", overallCompletionRate)
+                        "全職員数: " + totalUsers + " 名",
+                        "全マニュアル数: " + totalManuals + " 項目",
+                        "全課程修了者数: " + completedUsers + " 名",
+                        "全体進捗率: " + String.format("%.1f%%", overallCompletionRate)
                 };
 
                 contentStream.setFont(font, 10);
@@ -213,11 +216,11 @@ public class ComplianceExportService {
 
                 yPosition -= 20;
 
-                // User list (simplified)
+                // User list
                 contentStream.beginText();
                 contentStream.setFont(font, 12);
                 contentStream.newLineAtOffset(margin, yPosition);
-                contentStream.showText("=== User Progress ===");
+                contentStream.showText("【職員別進捗詳細】");
                 contentStream.endText();
                 yPosition -= lineHeight;
 
@@ -232,7 +235,7 @@ public class ComplianceExportService {
                     Set<Long> completed = userProgressMap.getOrDefault(user.getId(), Collections.emptySet());
                     double rate = manuals.isEmpty() ? 0 : (double) completed.size() / manuals.size() * 100;
 
-                    String userLine = String.format("%s (%s) - %s - %.0f%%",
+                    String userLine = String.format("%s (%s) - %s - 進捗率: %.0f%%",
                             user.getName(),
                             user.getEmployeeId(),
                             user.getDepartment(),
@@ -249,7 +252,7 @@ public class ComplianceExportService {
                 if (users.size() > maxUsersPerPage) {
                     contentStream.beginText();
                     contentStream.newLineAtOffset(margin + 20, yPosition);
-                    contentStream.showText("... and " + (users.size() - maxUsersPerPage) + " more users");
+                    contentStream.showText("... 他 " + (users.size() - maxUsersPerPage) + " 名の職員");
                     contentStream.endText();
                 }
             }
