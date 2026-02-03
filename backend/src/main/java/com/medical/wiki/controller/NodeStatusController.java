@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -130,51 +131,51 @@ public class NodeStatusController {
      * Build NodeStatusDto for a user with health metrics.
      */
     private NodeStatusDto buildNodeStatus(User user, boolean systemUp, NodeStatusDto.HealthMetrics metrics) {
-        if (!lastActivityMap.containsKey(user.getId())) {
-            lastActivityMap.put(user.getId(), System.currentTimeMillis() - random.nextInt(86400000));
-        }
-
         String status;
         String statusDetail;
+        String statusLabel;
 
         // Determine status based on system health and user activity
         if (!systemUp || !Boolean.TRUE.equals(metrics.getDbConnected())) {
             status = "DOWN";
-            statusDetail = "通信途絶";
+            statusLabel = "停止中";
+            statusDetail = "通信途絶 (System Down)";
         } else if (metrics.getWarningReason() != null) {
             status = "WARNING";
+            statusLabel = "警告あり";
             statusDetail = metrics.getWarningReason();
         } else {
-            // Calculate based on last activity
-            Long lastActivity = lastActivityMap.get(user.getId());
-            if (lastActivity == null) {
-                int rand = random.nextInt(100);
-                if (rand < 70) {
-                    status = "UP";
-                    statusDetail = "正常稼働";
-                } else if (rand < 90) {
-                    status = "WARNING";
-                    statusDetail = "応答遅延";
-                } else {
-                    status = "DOWN";
-                    statusDetail = "通信途絶";
-                }
+            // Calculate based on last activity (lastSeenAt)
+            LocalDateTime lastSeen = user.getLastSeenAt();
+
+            if (lastSeen == null) {
+                // Never seen
+                status = "DOWN";
+                statusLabel = "停止中";
+                statusDetail = "未接続";
             } else {
-                long hoursSinceActivity = (System.currentTimeMillis() - lastActivity) / 3600000;
-                if (hoursSinceActivity < 1) {
+                LocalDateTime now = LocalDateTime.now();
+                if (lastSeen.isAfter(now.minusMinutes(20))) {
+                    // Active within 20 mins
                     status = "UP";
-                    statusDetail = "正常稼働";
-                } else if (hoursSinceActivity < 24) {
+                    statusLabel = "稼働中";
+                    statusDetail = "オンライン";
+                } else if (lastSeen.isBefore(now.minusDays(14))) {
+                    // Inactive for > 14 days
                     status = "WARNING";
-                    statusDetail = "長時間未接続";
+                    statusLabel = "長期未接続";
+                    statusDetail = "14日以上未接続";
                 } else {
-                    status = "DOWN";
-                    statusDetail = "通信途絶";
+                    // In between
+                    status = "DOWN"; // Or gray
+                    statusLabel = "離席中";
+                    statusDetail = "オフライン";
                 }
             }
         }
 
-        boolean isAlert = !"UP".equals(status);
+        boolean isAlert = "WARNING".equals(status)
+                || "DOWN".equals(status) && "通信途絶 (System Down)".equals(statusDetail);
 
         return NodeStatusDto.builder()
                 .userId(user.getId())
@@ -182,9 +183,12 @@ public class NodeStatusController {
                 .facility(user.getFacility())
                 .department(user.getDepartment())
                 .status(status)
-                .statusLabel(getStatusLabel(status))
+                .statusLabel(statusLabel)
                 .statusDetail(statusDetail)
-                .lastActivity(lastActivityMap.get(user.getId()))
+                // Convert LocalDateTime lastSeenAt to timestamp for frontend compatibility if
+                // needed, using simulated map as fallback if entity field null for demo
+                .lastActivity(user.getLastSeenAt() != null ? java.sql.Timestamp.valueOf(user.getLastSeenAt()).getTime()
+                        : null)
                 .isAlert(isAlert)
                 .healthMetrics(metrics)
                 .build();

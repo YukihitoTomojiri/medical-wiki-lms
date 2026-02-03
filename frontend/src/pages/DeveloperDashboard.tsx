@@ -1147,23 +1147,37 @@ export default function DeveloperDashboard() {
                                                                             const status = statusInfo?.status || 'UP';
                                                                             const label = statusInfo?.statusLabel || '稼働中';
                                                                             const detail = statusInfo?.statusDetail;
+                                                                            // @ts-ignore
+                                                                            const lastActivity = statusInfo?.lastActivity;
 
                                                                             let colorClass = 'bg-green-100 text-green-700 border-green-200';
                                                                             let dotClass = 'bg-green-500';
                                                                             let animationClass = '';
 
                                                                             if (status === 'DOWN') {
-                                                                                colorClass = 'bg-red-50 text-red-700 border-red-200 shadow-sm';
-                                                                                dotClass = 'bg-red-500';
-                                                                                animationClass = 'animate-pulse';
+                                                                                // Check if it's a system error (Red) or just Away (Gray)
+                                                                                if (detail?.includes('System Down') || detail?.includes('通信途絶')) {
+                                                                                    colorClass = 'bg-red-50 text-red-700 border-red-200 shadow-sm';
+                                                                                    dotClass = 'bg-red-500';
+                                                                                    animationClass = 'animate-pulse';
+                                                                                } else {
+                                                                                    // Away / Inactive (Gray)
+                                                                                    colorClass = 'bg-gray-100 text-gray-600 border-gray-200';
+                                                                                    dotClass = 'bg-gray-400';
+                                                                                }
                                                                             } else if (status === 'WARNING') {
                                                                                 colorClass = 'bg-yellow-50 text-yellow-700 border-yellow-200 shadow-sm';
                                                                                 dotClass = 'bg-yellow-500';
                                                                                 animationClass = 'animate-pulse';
                                                                             }
 
+                                                                            const lastSeenStr = lastActivity ? new Date(lastActivity).toLocaleString('ja-JP') : '不明';
+
                                                                             return (
-                                                                                <div className={`flex items-center gap-2 px-2 py-1 rounded-md border ${colorClass} w-max transition-all`}>
+                                                                                <div
+                                                                                    className={`flex items-center gap-2 px-2 py-1 rounded-md border ${colorClass} w-max transition-all`}
+                                                                                    title={`最終確認: ${lastSeenStr}`}
+                                                                                >
                                                                                     <span className={`w-2 h-2 rounded-full ${dotClass} ${animationClass}`}></span>
                                                                                     <div className="flex flex-col leading-none">
                                                                                         <span className="text-[10px] font-bold opacity-90">{label}</span>
