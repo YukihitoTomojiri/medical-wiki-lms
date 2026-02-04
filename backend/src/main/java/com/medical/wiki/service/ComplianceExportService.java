@@ -8,23 +8,13 @@ import com.medical.wiki.repository.ProgressRepository;
 import com.medical.wiki.repository.UserRepository;
 import com.opencsv.CSVWriter;
 import lombok.RequiredArgsConstructor;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,9 +26,6 @@ public class ComplianceExportService {
     private final ManualRepository manualRepository;
     private final ProgressRepository progressRepository;
     private final com.medical.wiki.repository.FacilityRepository facilityRepository;
-
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     /**
      * Get distinct facility list
@@ -66,12 +53,12 @@ public class ComplianceExportService {
             List<Manual> manuals = manualRepository.findAll();
             Map<Long, Set<Long>> userProgressMap = buildUserProgressMap(users, startDate, endDate);
 
-            // Header row
+            // Header row: 職員ID, 氏名, 施設, 部署, [マニュアル名...], 完了率
             List<String> header = new ArrayList<>();
-            header.add("社員ID");
+            header.add("職員ID");
             header.add("氏名");
             header.add("施設");
-            header.add("部門");
+            header.add("部署");
             for (Manual manual : manuals) {
                 header.add(manual.getTitle());
             }
@@ -107,157 +94,6 @@ public class ComplianceExportService {
             return baos.toByteArray();
         } catch (Exception e) {
             throw new RuntimeException("CSV export failed: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Export compliance report as PDF
-     */
-    public byte[] exportComplianceReport(String facility, LocalDate startDate, LocalDate endDate) {
-        try (PDDocument document = new PDDocument();
-                ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-
-            List<User> users = getFilteredUsers(facility);
-            List<Manual> manuals = manualRepository.findAll();
-            Map<Long, Set<Long>> userProgressMap = buildUserProgressMap(users, startDate, endDate);
-
-            PDPage page = new PDPage(PDRectangle.A4);
-            document.addPage(page);
-
-            // Load Japanese font - try multiple locations
-            PDFont font;
-            java.io.File fontFile = new java.io.File("/app/src/main/resources/fonts/NotoSansJP-Regular.ttf");
-            if (fontFile.exists()) {
-                try (java.io.FileInputStream fontStream = new java.io.FileInputStream(fontFile)) {
-                    font = PDType0Font.load(document, fontStream);
-                }
-            } else {
-                // Try classpath as fallback (for production)
-                try (InputStream fontStream = new ClassPathResource("fonts/NotoSansJP-Regular.ttf").getInputStream()) {
-                    font = PDType0Font.load(document, fontStream);
-                } catch (Exception e) {
-                    // Final fallback: Use Helvetica (will fail for Japanese characters)
-                    font = PDType1Font.HELVETICA;
-                }
-            }
-
-            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-                float yPosition = 750;
-                float margin = 50;
-                float lineHeight = 20;
-
-                // Title
-                contentStream.beginText();
-                contentStream.setFont(font, 18);
-                contentStream.newLineAtOffset(margin, yPosition);
-                contentStream.showText("Compliance Report - " + (facility != null ? facility : "All Facilities"));
-                contentStream.endText();
-                yPosition -= 30;
-
-                // Report metadata
-                contentStream.beginText();
-                contentStream.setFont(font, 10);
-                contentStream.newLineAtOffset(margin, yPosition);
-                String dateRange = String.format("Period: %s to %s",
-                        startDate != null ? startDate.format(DATE_FORMATTER) : "Beginning",
-                        endDate != null ? endDate.format(DATE_FORMATTER) : "Present");
-                contentStream.showText(dateRange);
-                contentStream.endText();
-                yPosition -= lineHeight;
-
-                contentStream.beginText();
-                contentStream.newLineAtOffset(margin, yPosition);
-                contentStream.showText("Generated: " + LocalDateTime.now().format(DATETIME_FORMATTER));
-                contentStream.endText();
-                yPosition -= 30;
-
-                // Summary statistics
-                int totalUsers = users.size();
-                int totalManuals = manuals.size();
-                long completedUsers = users.stream()
-                        .filter(u -> {
-                            Set<Long> completed = userProgressMap.getOrDefault(u.getId(), Collections.emptySet());
-                            return completed.size() == totalManuals && totalManuals > 0;
-                        })
-                        .count();
-
-                double overallCompletionRate = 0;
-                if (!users.isEmpty() && !manuals.isEmpty()) {
-                    long totalPossible = (long) users.size() * manuals.size();
-                    long totalCompleted = userProgressMap.values().stream().mapToLong(Set::size).sum();
-                    overallCompletionRate = (double) totalCompleted / totalPossible * 100;
-                }
-
-                contentStream.beginText();
-                contentStream.setFont(font, 12);
-                contentStream.newLineAtOffset(margin, yPosition);
-                contentStream.showText("=== Summary ===");
-                contentStream.endText();
-                yPosition -= lineHeight;
-
-                String[] summaryLines = {
-                        "Total Users: " + totalUsers,
-                        "Total Manuals: " + totalManuals,
-                        "Users with 100% Completion: " + completedUsers,
-                        "Overall Completion Rate: " + String.format("%.1f%%", overallCompletionRate)
-                };
-
-                contentStream.setFont(font, 10);
-                for (String line : summaryLines) {
-                    contentStream.beginText();
-                    contentStream.newLineAtOffset(margin + 20, yPosition);
-                    contentStream.showText(line);
-                    contentStream.endText();
-                    yPosition -= lineHeight;
-                }
-
-                yPosition -= 20;
-
-                // User list (simplified)
-                contentStream.beginText();
-                contentStream.setFont(font, 12);
-                contentStream.newLineAtOffset(margin, yPosition);
-                contentStream.showText("=== User Progress ===");
-                contentStream.endText();
-                yPosition -= lineHeight;
-
-                contentStream.setFont(font, 9);
-                int maxUsersPerPage = 25;
-                int userCount = 0;
-
-                for (User user : users) {
-                    if (userCount >= maxUsersPerPage)
-                        break;
-
-                    Set<Long> completed = userProgressMap.getOrDefault(user.getId(), Collections.emptySet());
-                    double rate = manuals.isEmpty() ? 0 : (double) completed.size() / manuals.size() * 100;
-
-                    String userLine = String.format("%s (%s) - %s - %.0f%%",
-                            user.getName(),
-                            user.getEmployeeId(),
-                            user.getDepartment(),
-                            rate);
-
-                    contentStream.beginText();
-                    contentStream.newLineAtOffset(margin + 20, yPosition);
-                    contentStream.showText(userLine);
-                    contentStream.endText();
-                    yPosition -= lineHeight;
-                    userCount++;
-                }
-
-                if (users.size() > maxUsersPerPage) {
-                    contentStream.beginText();
-                    contentStream.newLineAtOffset(margin + 20, yPosition);
-                    contentStream.showText("... and " + (users.size() - maxUsersPerPage) + " more users");
-                    contentStream.endText();
-                }
-            }
-
-            document.save(baos);
-            return baos.toByteArray();
-        } catch (Exception e) {
-            throw new RuntimeException("PDF export failed: " + e.getMessage(), e);
         }
     }
 

@@ -1347,7 +1347,7 @@ export default function DeveloperDashboard() {
                                 <div>
                                     <h2 className="text-lg font-black text-gray-800 tracking-tight">レポート出力（コンプライアンス）</h2>
                                     <p className="text-xs text-gray-500 font-medium">
-                                        施設・期間を選択して、学習進捗データをCSV/PDF形式でエクスポートします。
+                                        施設・期間を選択して、学習進捗データをCSV形式でエクスポートします。
                                     </p>
                                 </div>
                             </div>
@@ -1438,36 +1438,6 @@ export default function DeveloperDashboard() {
                                     <FileDown size={16} />
                                     {exporting ? '処理中...' : 'CSV ダウンロード'}
                                 </button>
-
-                                <button
-                                    onClick={async () => {
-                                        setExporting(true);
-                                        try {
-                                            const blob = await api.exportCompliancePdf(1, selectedFacility, startDate, endDate);
-                                            const url = window.URL.createObjectURL(blob);
-                                            const a = document.createElement('a');
-                                            a.style.display = 'none';
-                                            a.href = url;
-                                            const filename = `compliance_report_${new Date().toISOString().split('T')[0]}.pdf`;
-                                            a.download = filename;
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            document.body.removeChild(a);
-                                            window.URL.revokeObjectURL(url);
-                                            addLog('PDF exported successfully', 'success');
-                                        } catch (e) {
-                                            console.error(e);
-                                            addLog('PDF export failed', 'error');
-                                        } finally {
-                                            setExporting(false);
-                                        }
-                                    }}
-                                    disabled={exporting}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all hover:shadow-md hover:shadow-blue-200 active:scale-95 disabled:opacity-50"
-                                >
-                                    <FileText size={16} />
-                                    {exporting ? '処理中...' : 'PDF ダウンロード'}
-                                </button>
                             </div>
                         </div>
 
@@ -1479,7 +1449,6 @@ export default function DeveloperDashboard() {
                                     <p className="font-bold mb-1">エクスポート内容</p>
                                     <ul className="list-disc list-inside text-blue-700 space-y-1">
                                         <li>CSV: ユーザー × マニュアル進捗マトリクス（Excel対応）</li>
-                                        <li>PDF: サマリーレポート（完了率統計、ユーザー一覧）</li>
                                     </ul>
                                 </div>
                             </div>

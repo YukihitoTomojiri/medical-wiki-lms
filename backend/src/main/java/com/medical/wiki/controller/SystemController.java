@@ -79,25 +79,9 @@ public class SystemController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(csvData.length))
                 .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
                 .body(csvData);
-    }
-
-    @GetMapping("/compliance/export/pdf")
-    public ResponseEntity<byte[]> exportCompliancePdf(
-            @RequestParam(required = false) String facility,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
-
-        byte[] pdfData = complianceExportService.exportComplianceReport(facility, start, end);
-
-        String filename = String.format("compliance_report_%s.pdf",
-                LocalDate.now().toString());
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(pdfData);
     }
 
     // ============ User Management APIs ============
