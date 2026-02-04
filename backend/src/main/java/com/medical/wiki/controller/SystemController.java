@@ -50,9 +50,42 @@ public class SystemController {
         return ResponseEntity.ok(data);
     }
 
-    @GetMapping("/system/resources")
-    public ResponseEntity<?> getResources() {
-        return ResponseEntity.ok(systemStatusService.getResourceMetrics());
+    @GetMapping("/system-resources")
+    public ResponseEntity<?> getSystemResources() {
+        // Memory Usage
+        java.lang.management.MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+        long usedHeap = memoryBean.getHeapMemoryUsage().getUsed();
+        long maxHeap = memoryBean.getHeapMemoryUsage().getMax();
+        double memoryUsagePercent = (double) usedHeap / maxHeap * 100;
+
+        // Disk Usage
+        java.io.File[] roots = java.io.File.listRoots();
+        long freeSpace = 0;
+        long totalSpace = 0;
+        if (roots != null && roots.length > 0) {
+            freeSpace = roots[0].getFreeSpace();
+            totalSpace = roots[0].getTotalSpace();
+        }
+
+        long usedSpace = totalSpace - freeSpace;
+        double diskUsagePercent = totalSpace > 0 ? (double) usedSpace / totalSpace * 100 : 0;
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("memoryUsed", usedHeap);
+        response.put("memoryMax", maxHeap);
+        response.put("memoryPercent", memoryUsagePercent);
+        response.put("diskFree", freeSpace);
+        response.put("diskTotal", totalSpace);
+        response.put("diskPercent", diskUsagePercent);
+
+        // Extended format as requested in example: { "memoryUsage": 45,
+        // "diskFreeSpace": "100GB" }
+        // Keeping keys consistent with frontend expectations (from previous impl) but
+        // ensuring the requested logic is used.
+        // Frontend uses: memoryPercent, diskPercent, memoryUsed, memoryMax, diskUsed,
+        // diskTotal
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/logs")
