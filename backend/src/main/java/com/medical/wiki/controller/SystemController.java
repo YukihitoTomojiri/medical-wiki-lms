@@ -6,6 +6,7 @@ import com.medical.wiki.service.ComplianceExportService;
 import com.medical.wiki.service.ProgressService;
 import com.medical.wiki.service.UserService;
 import com.medical.wiki.service.LoggingService;
+import com.medical.wiki.service.SystemStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +30,7 @@ public class SystemController {
     private final ProgressService progressService;
     private final LoggingService loggingService;
     private final ComplianceExportService complianceExportService;
+    private final SystemStatusService systemStatusService;
 
     @GetMapping("/system")
     public ResponseEntity<?> getSystemStats() {
@@ -41,16 +43,16 @@ public class SystemController {
     @GetMapping("/system/diagnostics")
     public ResponseEntity<?> getDiagnostics() {
         long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-        Runtime runtime = Runtime.getRuntime();
-
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = systemStatusService.getResourceMetrics();
         data.put("uptime", uptime);
-        data.put("memoryTotal", runtime.totalMemory());
-        data.put("memoryFree", runtime.freeMemory());
-        data.put("memoryUsed", runtime.totalMemory() - runtime.freeMemory());
         data.put("dbPing", 5); // Mocked latency in ms for now
 
         return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/system/resources")
+    public ResponseEntity<?> getResources() {
+        return ResponseEntity.ok(systemStatusService.getResourceMetrics());
     }
 
     @GetMapping("/logs")
