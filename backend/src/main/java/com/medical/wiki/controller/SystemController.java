@@ -43,20 +43,23 @@ public class SystemController {
     @GetMapping("/system/diagnostics")
     public ResponseEntity<?> getDiagnostics() {
         long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-        Map<String, Object> data = systemStatusService.getResourceMetrics();
+        Map<String, Object> data = calculateResourceMetrics();
         data.put("uptime", uptime);
         data.put("dbPing", 5); // Mocked latency in ms for now
-
         return ResponseEntity.ok(data);
     }
 
     @GetMapping("/system-resources")
     public ResponseEntity<?> getSystemResources() {
+        return ResponseEntity.ok(calculateResourceMetrics());
+    }
+
+    private Map<String, Object> calculateResourceMetrics() {
         // Memory Usage
         java.lang.management.MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
         long usedHeap = memoryBean.getHeapMemoryUsage().getUsed();
         long maxHeap = memoryBean.getHeapMemoryUsage().getMax();
-        double memoryUsagePercent = (double) usedHeap / maxHeap * 100;
+        double memoryUsagePercent = maxHeap > 0 ? (double) usedHeap / maxHeap * 100 : 0;
 
         // Disk Usage
         java.io.File[] roots = java.io.File.listRoots();
@@ -70,22 +73,16 @@ public class SystemController {
         long usedSpace = totalSpace - freeSpace;
         double diskUsagePercent = totalSpace > 0 ? (double) usedSpace / totalSpace * 100 : 0;
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("memoryUsed", usedHeap);
-        response.put("memoryMax", maxHeap);
-        response.put("memoryPercent", memoryUsagePercent);
-        response.put("diskFree", freeSpace);
-        response.put("diskTotal", totalSpace);
-        response.put("diskPercent", diskUsagePercent);
+        Map<String, Object> metrics = new HashMap<>();
+        metrics.put("memoryUsed", usedHeap);
+        metrics.put("memoryMax", maxHeap);
+        metrics.put("memoryPercent", memoryUsagePercent);
+        metrics.put("diskFree", freeSpace);
+        metrics.put("diskTotal", totalSpace);
+        metrics.put("diskPercent", diskUsagePercent);
+        metrics.put("diskUsed", usedSpace);
 
-        // Extended format as requested in example: { "memoryUsage": 45,
-        // "diskFreeSpace": "100GB" }
-        // Keeping keys consistent with frontend expectations (from previous impl) but
-        // ensuring the requested logic is used.
-        // Frontend uses: memoryPercent, diskPercent, memoryUsed, memoryMax, diskUsed,
-        // diskTotal
-
-        return ResponseEntity.ok(response);
+        return metrics;
     }
 
     @GetMapping("/logs")
