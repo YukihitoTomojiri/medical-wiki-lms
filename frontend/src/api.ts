@@ -174,6 +174,14 @@ export const api = {
         return Array.isArray(data) ? data : [];
     },
 
+    getSystemResources: async (userId: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/system-resources`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return null;
+        return res.json();
+    },
+
     getAuditLogs: async (userId: number): Promise<any[]> => {
         const res = await fetch(`${API_BASE}/admin/audit-logs`, {
             headers: getHeaders(userId),

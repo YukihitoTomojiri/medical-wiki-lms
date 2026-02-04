@@ -51,7 +51,7 @@ export default function DeveloperDashboard() {
         version: '1.0.0',
     });
 
-    const [activeTab, setActiveTab] = useState<'system' | 'nodes' | 'organization' | 'archive' | 'compliance' | 'logs'>('system');
+    const [activeTab, setActiveTab] = useState<'stats' | 'nodes' | 'organization' | 'users' | 'export' | 'audit'>('stats');
 
     // Compliance Export States
     const [complianceFacilities, setComplianceFacilities] = useState<string[]>([]);
@@ -76,7 +76,7 @@ export default function DeveloperDashboard() {
     const [lastSync, setLastSync] = useState<string>('Never');
     const [loading, setLoading] = useState(false);
     const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
-    const [diagnostics, setDiagnostics] = useState({
+    const [resources, setResources] = useState({
         uptime: 0,
         memoryUsed: 0,
         memoryMax: 0,
@@ -109,7 +109,7 @@ export default function DeveloperDashboard() {
     useEffect(() => {
         // When the path is exactly /developer, reset to system tab
         if (location.pathname === '/developer') {
-            setActiveTab('system');
+            setActiveTab('stats');
         }
     }, [location.pathname]);
 
@@ -131,7 +131,14 @@ export default function DeveloperDashboard() {
     const fetchDiagnostics = async () => {
         try {
             const data = await api.getDiagnostics(1);
-            setDiagnostics(data);
+            setResources(prev => ({ ...prev, ...data }));
+        } catch (e) { console.error(e); }
+    };
+
+    const fetchSystemResources = async () => {
+        try {
+            const data = await api.getSystemResources(1);
+            if (data) setResources(prev => ({ ...prev, ...data }));
         } catch (e) { console.error(e); }
     };
 
@@ -182,7 +189,7 @@ export default function DeveloperDashboard() {
     };
 
     useEffect(() => {
-        if (activeTab === 'compliance') {
+        if (activeTab === 'export') {
             fetchComplianceFacilities();
         }
     }, [activeTab]);
@@ -223,6 +230,7 @@ export default function DeveloperDashboard() {
                 api.getManuals(1).catch(() => []),
                 api.getAllUsersProgress().catch(() => []),
                 fetchDiagnostics(),
+                fetchSystemResources(),
                 fetchSystemLogs(),
                 fetchSecurityAlerts()
             ]);
@@ -621,7 +629,7 @@ export default function DeveloperDashboard() {
 
                 {/* Tab Navigation */}
                 <div className="flex p-1 bg-gray-100/50 rounded-xl w-fit mb-2 border border-gray-200/50 backdrop-blur-sm">
-                    {['system', 'nodes', 'organization', 'archive', 'compliance', 'logs'].map((tab) => (
+                    {['stats', 'nodes', 'organization', 'users', 'export', 'audit'].map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
@@ -629,17 +637,17 @@ export default function DeveloperDashboard() {
                                 ? 'bg-white text-orange-600 shadow-sm ring-1 ring-black/5'
                                 : 'text-gray-500 hover:text-gray-800 hover:bg-white/50'}`}
                         >
-                            {tab === 'system' ? 'システム統計' :
+                            {tab === 'stats' ? 'システム統計' :
                                 tab === 'nodes' ? '稼働状況' :
                                     tab === 'organization' ? '組織管理' :
-                                        tab === 'archive' ? '全ユーザー管理' :
-                                            tab === 'compliance' ? 'レポート出力' :
+                                        tab === 'users' ? '全ユーザー管理' :
+                                            tab === 'export' ? 'レポート出力' :
                                                 '操作履歴'}
                         </button>
                     ))}
                 </div>
 
-                {activeTab === 'system' ? (
+                {activeTab === 'stats' ? (
                     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {/* Status Cards */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -726,18 +734,18 @@ export default function DeveloperDashboard() {
                                         </div>
                                         <h4 className="font-black text-gray-700 text-sm">メモリ使用率</h4>
                                     </div>
-                                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${diagnostics.memoryPercent > 80 ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                                        {diagnostics.memoryPercent.toFixed(1)}%
+                                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${resources.memoryPercent > 90 ? 'bg-red-100 text-red-600' : resources.memoryPercent > 80 ? 'bg-yellow-100 text-yellow-600' : 'bg-blue-100 text-blue-600'}`}>
+                                        {resources.memoryPercent.toFixed(1)}%
                                     </span>
                                 </div>
                                 <div className="w-full bg-gray-100 rounded-full h-2.5 mb-2">
                                     <div
-                                        className={`h-2.5 rounded-full transition-all duration-1000 ${diagnostics.memoryPercent > 80 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]' : 'bg-blue-500'}`}
-                                        style={{ width: `${diagnostics.memoryPercent}%` }}
+                                        className={`h-2.5 rounded-full transition-all duration-1000 ${resources.memoryPercent > 90 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]' : resources.memoryPercent > 80 ? 'bg-yellow-500' : 'bg-blue-500'}`}
+                                        style={{ width: `${resources.memoryPercent}%` }}
                                     />
                                 </div>
                                 <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                    <span>{(diagnostics.memoryUsed / 1024 / 1024).toFixed(0)} MB / {(diagnostics.memoryMax / 1024 / 1024).toFixed(0)} MB</span>
+                                    <span>{(resources.memoryUsed / 1024 / 1024).toFixed(0)} MB / {(resources.memoryMax / 1024 / 1024).toFixed(0)} MB</span>
                                     <span>Allocated JVM Heap</span>
                                 </div>
                             </div>
@@ -751,18 +759,18 @@ export default function DeveloperDashboard() {
                                         </div>
                                         <h4 className="font-black text-gray-700 text-sm">ディスク空き容量</h4>
                                     </div>
-                                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${diagnostics.diskPercent > 90 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
-                                        {(100 - diagnostics.diskPercent).toFixed(1)}% Free
+                                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${resources.diskPercent > 90 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
+                                        {(resources.diskFree / 1024 / 1024 / 1024).toFixed(1)} GB Free
                                     </span>
                                 </div>
                                 <div className="w-full bg-gray-100 rounded-full h-2.5 mb-2">
                                     <div
-                                        className={`h-2.5 rounded-full transition-all duration-1000 ${diagnostics.diskPercent > 90 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]' : 'bg-amber-500'}`}
-                                        style={{ width: `${diagnostics.diskPercent}%` }}
+                                        className={`h-2.5 rounded-full transition-all duration-1000 ${resources.diskPercent > 90 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]' : 'bg-amber-500'}`}
+                                        style={{ width: `${resources.diskPercent}%` }}
                                     />
                                 </div>
                                 <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                    <span>Usage: {(diagnostics.diskUsed / 1024 / 1024 / 1024).toFixed(1)} GB / Total: {(diagnostics.diskTotal / 1024 / 1024 / 1024).toFixed(1)} GB</span>
+                                    <span>Used: {(resources.diskUsed / 1024 / 1024 / 1024).toFixed(1)} GB / Total: {(resources.diskTotal / 1024 / 1024 / 1024).toFixed(1)} GB</span>
                                     <span>Root Volume (/)</span>
                                 </div>
                             </div>
@@ -1236,7 +1244,7 @@ export default function DeveloperDashboard() {
                             </div>
                         </div>
                     </div>
-                ) : activeTab === 'logs' ? (
+                ) : activeTab === 'audit' ? (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                         {/* Audit Logs View */}
                         <div className="bg-slate-900 rounded-[2.5rem] border border-slate-800 shadow-2xl overflow-hidden mb-12">
@@ -1324,7 +1332,7 @@ export default function DeveloperDashboard() {
                             </div>
                         </div>
                     </div>
-                ) : activeTab === 'compliance' ? (
+                ) : activeTab === 'export' ? (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-4">
                         {/* Header */}
                         <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm relative overflow-hidden">
@@ -1444,11 +1452,11 @@ export default function DeveloperDashboard() {
                     </div>
                 ) : activeTab === 'organization' ? (
                     <OrganizationManagement />
-                ) : (
+                ) : activeTab === 'users' ? (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                         <AllUsersAdmin />
                     </div>
-                )
+                ) : null
                 }
 
 
@@ -1468,8 +1476,8 @@ export default function DeveloperDashboard() {
                             {/* DB Latency */}
                             <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
                                 <Database size={12} className="text-slate-500" />
-                                <span className={`text-[10px] font-bold ${diagnostics.dbPing < 50 ? 'text-emerald-400' : diagnostics.dbPing < 100 ? 'text-amber-400' : 'text-red-400'}`}>
-                                    {diagnostics.dbPing}ms
+                                <span className={`text-[10px] font-bold ${resources.dbPing < 50 ? 'text-emerald-400' : resources.dbPing < 100 ? 'text-amber-400' : 'text-red-400'}`}>
+                                    {resources.dbPing}ms
                                 </span>
                             </div>
 
@@ -1477,7 +1485,7 @@ export default function DeveloperDashboard() {
                             <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
                                 <Activity size={12} className="text-slate-500" />
                                 <span className="text-[10px] font-bold text-orange-400">
-                                    {Math.floor(diagnostics.uptime / 3600000)}h {Math.floor((diagnostics.uptime % 3600000) / 60000)}m
+                                    {Math.floor(resources.uptime / 3600000)}h {Math.floor((resources.uptime % 3600000) / 60000)}m
                                 </span>
                             </div>
 
@@ -1485,9 +1493,9 @@ export default function DeveloperDashboard() {
                             <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
                                 <Cpu size={12} className="text-slate-500" />
                                 <span className="text-[10px] font-bold text-blue-400">
-                                    {Math.round(diagnostics.memoryUsed / 1024 / 1024)}
+                                    {Math.round(resources.memoryUsed / 1024 / 1024)}
                                 </span>
-                                <span className="text-[9px] text-slate-500">/ {Math.round(diagnostics.memoryMax / 1024 / 1024)} MB</span>
+                                <span className="text-[9px] text-slate-500">/ {Math.round(resources.memoryMax / 1024 / 1024)} MB</span>
                             </div>
 
                             {/* Node Name */}
