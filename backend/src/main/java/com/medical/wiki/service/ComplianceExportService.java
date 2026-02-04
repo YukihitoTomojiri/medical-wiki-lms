@@ -129,28 +129,25 @@ public class ComplianceExportService {
                     font = PDType0Font.load(document, fontStream);
                 }
             } catch (Exception e) {
-                // Secondary fallback for absolute path if classpath fails in some environments
+                // Absolute path retry (Docker/Prod environment)
                 java.io.File fontFile = new java.io.File("/app/src/main/resources/fonts/NotoSansJP-Regular.ttf");
                 if (fontFile.exists()) {
                     try (java.io.FileInputStream fis = new java.io.FileInputStream(fontFile)) {
                         font = PDType0Font.load(document, fis);
                     } catch (Exception e2) {
-                        throw new RuntimeException(
-                                "CRITICAL: Failed to load Japanese font even from filesystem: " + e2.getMessage());
+                        System.err.println("ERROR: Could not load font from path: " + e2.getMessage());
+                        font = org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA;
                     }
                 } else {
-                    // Log and use a safe internal fallback if possible, but for Japanese, missing
-                    // font is usually fatal for rendering
-                    System.err.println("WARNING: NotoSansJP-Regular.ttf not found. PDF may contain broken characters.");
-                    // Last resort: Standard font (will not support JP characters properly)
-                    // We keep this only to prevent 0-byte file, but log the failure clearly
+                    System.err.println(
+                            "WARNING: NotoSansJP-Regular.ttf not found in resources or /app. Fallback to Helvetica.");
                     font = org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA;
                 }
             }
 
+            byte[] pdfBytes;
             try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                // Explicitly manage contentStream to ensure it's closed before saving the
-                // document
+                // Ensure contentStream is closed before saving document
                 try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
                     float yPosition = 750;
                     float margin = 50;
@@ -267,13 +264,28 @@ public class ComplianceExportService {
                         contentStream.endText();
                     }
                 }
-                // Ensure contentStream is closed before saving
                 document.save(baos);
-                baos.flush();
-                return baos.toByteArray();
+                baos.flush(); // Ensure everything is written to the BAOS
+                pdfBytes = baos.toByteArray();
             }
+
+            // Final validation of PDF structure
+            validatePdfBytes(pdfBytes);
+            return pdfBytes;
         } catch (Exception e) {
+            System.err.println("FATAL ERROR during PDF export: " + e.getMessage());
             throw new RuntimeException("PDF export failed: " + e.getMessage(), e);
+        }
+    }
+
+    private void validatePdfBytes(byte[] data) {
+        if (data == null || data.length < 10) {
+            throw new RuntimeException("Generated PDF is empty or too small");
+        }
+        // Check for PDF magic number %PDF-
+        String header = new String(data, 0, 5);
+        if (!"%PDF-".equals(header)) {
+            throw new RuntimeException("Generated file does not have a valid PDF header");
         }
     }
 

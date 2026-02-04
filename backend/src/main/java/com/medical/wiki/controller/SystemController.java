@@ -95,6 +95,9 @@ public class SystemController {
         String filename = String.format("compliance_report_%s.pdf",
                 LocalDate.now().toString());
 
+        // Use 'attachment' for forced download as requested, or 'inline' for preview.
+        // The user mentioned "attachment ... or inline", I will stick to 'attachment'
+        // for maximum stability of the saved file.
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                 .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(pdfData.length))
