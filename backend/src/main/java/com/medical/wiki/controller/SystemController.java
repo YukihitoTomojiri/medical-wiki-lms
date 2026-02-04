@@ -6,6 +6,7 @@ import com.medical.wiki.service.ComplianceExportService;
 import com.medical.wiki.service.ProgressService;
 import com.medical.wiki.service.UserService;
 import com.medical.wiki.service.LoggingService;
+import com.medical.wiki.service.SystemStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +30,7 @@ public class SystemController {
     private final ProgressService progressService;
     private final LoggingService loggingService;
     private final ComplianceExportService complianceExportService;
+    private final SystemStatusService systemStatusService;
 
     @GetMapping("/system")
     public ResponseEntity<?> getSystemStats() {
@@ -41,16 +43,46 @@ public class SystemController {
     @GetMapping("/system/diagnostics")
     public ResponseEntity<?> getDiagnostics() {
         long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-        Runtime runtime = Runtime.getRuntime();
-
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = calculateResourceMetrics();
         data.put("uptime", uptime);
-        data.put("memoryTotal", runtime.totalMemory());
-        data.put("memoryFree", runtime.freeMemory());
-        data.put("memoryUsed", runtime.totalMemory() - runtime.freeMemory());
         data.put("dbPing", 5); // Mocked latency in ms for now
-
         return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/system-resources")
+    public ResponseEntity<?> getSystemResources() {
+        return ResponseEntity.ok(calculateResourceMetrics());
+    }
+
+    private Map<String, Object> calculateResourceMetrics() {
+        // Memory Usage
+        java.lang.management.MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+        long usedHeap = memoryBean.getHeapMemoryUsage().getUsed();
+        long maxHeap = memoryBean.getHeapMemoryUsage().getMax();
+        double memoryUsagePercent = maxHeap > 0 ? (double) usedHeap / maxHeap * 100 : 0;
+
+        // Disk Usage
+        java.io.File[] roots = java.io.File.listRoots();
+        long freeSpace = 0;
+        long totalSpace = 0;
+        if (roots != null && roots.length > 0) {
+            freeSpace = roots[0].getFreeSpace();
+            totalSpace = roots[0].getTotalSpace();
+        }
+
+        long usedSpace = totalSpace - freeSpace;
+        double diskUsagePercent = totalSpace > 0 ? (double) usedSpace / totalSpace * 100 : 0;
+
+        Map<String, Object> metrics = new HashMap<>();
+        metrics.put("memoryUsed", usedHeap);
+        metrics.put("memoryMax", maxHeap);
+        metrics.put("memoryPercent", memoryUsagePercent);
+        metrics.put("diskFree", freeSpace);
+        metrics.put("diskTotal", totalSpace);
+        metrics.put("diskPercent", diskUsagePercent);
+        metrics.put("diskUsed", usedSpace);
+
+        return metrics;
     }
 
     @GetMapping("/logs")

@@ -31,7 +31,9 @@ import {
     Calendar,
     ShieldAlert,
     Eye,
-    CheckCircle2
+    CheckCircle2,
+    Cpu,
+    HardDrive
 } from 'lucide-react';
 
 
@@ -49,7 +51,7 @@ export default function DeveloperDashboard() {
         version: '1.0.0',
     });
 
-    const [activeTab, setActiveTab] = useState<'system' | 'logs' | 'archive' | 'compliance' | 'organization'>('system');
+    const [activeTab, setActiveTab] = useState<'system' | 'nodes' | 'organization' | 'archive' | 'compliance' | 'logs'>('system');
 
     // Compliance Export States
     const [complianceFacilities, setComplianceFacilities] = useState<string[]>([]);
@@ -77,7 +79,12 @@ export default function DeveloperDashboard() {
     const [diagnostics, setDiagnostics] = useState({
         uptime: 0,
         memoryUsed: 0,
-        memoryTotal: 0,
+        memoryMax: 0,
+        memoryPercent: 0,
+        diskUsed: 0,
+        diskTotal: 0,
+        diskPercent: 0,
+        diskFree: 0,
         dbPing: 0
     });
     const [securityAlerts, setSecurityAlerts] = useState<any[]>([]);
@@ -614,7 +621,7 @@ export default function DeveloperDashboard() {
 
                 {/* Tab Navigation */}
                 <div className="flex p-1 bg-gray-100/50 rounded-xl w-fit mb-2 border border-gray-200/50 backdrop-blur-sm">
-                    {['system', 'logs', 'archive', 'compliance', 'organization'].map((tab) => (
+                    {['system', 'nodes', 'organization', 'archive', 'compliance', 'logs'].map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
@@ -623,10 +630,11 @@ export default function DeveloperDashboard() {
                                 : 'text-gray-500 hover:text-gray-800 hover:bg-white/50'}`}
                         >
                             {tab === 'system' ? 'システム統計' :
-                                tab === 'logs' ? '操作履歴' :
-                                    tab === 'archive' ? '全ユーザー管理' :
-                                        tab === 'compliance' ? 'レポート出力' :
-                                            '組織管理'}
+                                tab === 'nodes' ? '稼働状況' :
+                                    tab === 'organization' ? '組織管理' :
+                                        tab === 'archive' ? '全ユーザー管理' :
+                                            tab === 'compliance' ? 'レポート出力' :
+                                                '操作履歴'}
                         </button>
                     ))}
                 </div>
@@ -703,6 +711,59 @@ export default function DeveloperDashboard() {
                                         alertStats.alerts24h < 5 ? 'text-yellow-600' : 'text-red-600'}`}>
                                         {alertStats.alerts24h}
                                     </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Resource Monitoring Cards */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            {/* Memory Usage */}
+                            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                            <Cpu size={18} />
+                                        </div>
+                                        <h4 className="font-black text-gray-700 text-sm">メモリ使用率</h4>
+                                    </div>
+                                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${diagnostics.memoryPercent > 80 ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                                        {diagnostics.memoryPercent.toFixed(1)}%
+                                    </span>
+                                </div>
+                                <div className="w-full bg-gray-100 rounded-full h-2.5 mb-2">
+                                    <div
+                                        className={`h-2.5 rounded-full transition-all duration-1000 ${diagnostics.memoryPercent > 80 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]' : 'bg-blue-500'}`}
+                                        style={{ width: `${diagnostics.memoryPercent}%` }}
+                                    />
+                                </div>
+                                <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                    <span>{(diagnostics.memoryUsed / 1024 / 1024).toFixed(0)} MB / {(diagnostics.memoryMax / 1024 / 1024).toFixed(0)} MB</span>
+                                    <span>Allocated JVM Heap</span>
+                                </div>
+                            </div>
+
+                            {/* Disk Usage */}
+                            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                                            <HardDrive size={18} />
+                                        </div>
+                                        <h4 className="font-black text-gray-700 text-sm">ディスク空き容量</h4>
+                                    </div>
+                                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${diagnostics.diskPercent > 90 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
+                                        {(100 - diagnostics.diskPercent).toFixed(1)}% Free
+                                    </span>
+                                </div>
+                                <div className="w-full bg-gray-100 rounded-full h-2.5 mb-2">
+                                    <div
+                                        className={`h-2.5 rounded-full transition-all duration-1000 ${diagnostics.diskPercent > 90 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]' : 'bg-amber-500'}`}
+                                        style={{ width: `${diagnostics.diskPercent}%` }}
+                                    />
+                                </div>
+                                <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                    <span>Usage: {(diagnostics.diskUsed / 1024 / 1024 / 1024).toFixed(1)} GB / Total: {(diagnostics.diskTotal / 1024 / 1024 / 1024).toFixed(1)} GB</span>
+                                    <span>Root Volume (/)</span>
                                 </div>
                             </div>
                         </div>
@@ -951,303 +1012,230 @@ export default function DeveloperDashboard() {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* User Management Section */}
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                                <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                                    <div>
-                                        <h3 className="text-lg font-black text-gray-800 tracking-tight">Active Nodes Control</h3>
-                                        <p className="text-xs text-gray-500 font-medium">Control access and user privileges</p>
-                                    </div>
-
-                                    {/* Bulk Action Menu */}
-                                    {selectedUsers.length > 0 && (
-                                        <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-300">
-                                            <span className="text-xs font-bold text-orange-600 px-3 py-1 bg-orange-50 rounded-full border border-orange-100">
-                                                {selectedUsers.length} Selected
-                                            </span>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={handleBulkReset}
-                                                    className="px-4 py-2 bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-700 transition-all shadow-lg shadow-slate-200"
-                                                >
-                                                    Reset Progress
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={openDeleteModal}
-                                                    className="px-4 py-2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-100"
-                                                >
-                                                    Delete Users
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {selectedUsers.length === 0 && (
-                                        <div className="px-5 py-2 bg-white border border-gray-100 rounded-2xl text-[10px] font-black text-gray-400 shadow-sm uppercase tracking-widest">
-                                            {userList.length} Nodes Registered
-                                        </div>
-                                    )}
+                        </div>
+                    </div>
+                ) : activeTab === 'nodes' ? (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-4">
+                        {/* User Management Section (Active Nodes Control) */}
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                                <div>
+                                    <h3 className="text-lg font-black text-gray-800 tracking-tight">Active Nodes Control</h3>
+                                    <p className="text-xs text-gray-500 font-medium">Control access and user privileges</p>
                                 </div>
 
-                                {/* Main Content Area with Fixed Height and Scroll */}
-                                <div className="h-[70vh] flex flex-col">
-                                    {/* Filtering Section - Sticky / Fixed part */}
-                                    <div className="flex-none px-5 py-3 bg-gray-50/30 border-b border-gray-100 flex items-center gap-4">
-                                        <div className="flex items-center gap-2">
-                                            <div className="p-1 bg-orange-50 text-orange-600 rounded-md">
-                                                <Search size={14} />
-                                            </div>
-                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">FILTERING</span>
-                                        </div>
-
-                                        <div className="flex-1 flex gap-4 items-center">
-                                            {/* Search Input */}
-                                            <div className="flex-1 relative max-w-sm">
-                                                <input
-                                                    type="text"
-                                                    value={nodeSearchQuery}
-                                                    onChange={(e) => setNodeSearchQuery(e.target.value)}
-                                                    placeholder="検索..."
-                                                    className="w-full pl-9 pr-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
-                                                />
-                                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                                            </div>
-
-                                            {/* Filters Group */}
-                                            <div className="flex items-center gap-2">
-                                                {/* Facility Filter */}
-                                                <select
-                                                    value={activeNodesFacilityFilter}
-                                                    onChange={(e) => setActiveNodesFacilityFilter(e.target.value)}
-                                                    className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none cursor-pointer transition-all"
-                                                >
-                                                    <option value="all">全施設</option>
-                                                    {orgFacilities.map(f => (
-                                                        <option key={f.id} value={f.name}>{f.name}</option>
-                                                    ))}
-                                                </select>
-
-                                                {/* Status Filter */}
-                                                <div className="flex bg-white border border-gray-200 rounded-lg p-0.5">
-                                                    {[
-                                                        { key: 'all', label: 'All', color: 'bg-gray-600' },
-                                                        { key: 'UP', label: 'UP', color: 'bg-green-500' },
-                                                        { key: 'DOWN', label: 'DOWN', color: 'bg-gray-400' },
-                                                        { key: 'WARNING', label: 'WARN', color: 'bg-yellow-500' }
-                                                    ].map(({ key, label, color }) => (
-                                                        <button
-                                                            key={key}
-                                                            onClick={() => setNodeStatusFilter(key as 'all' | 'UP' | 'DOWN' | 'WARNING')}
-                                                            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${nodeStatusFilter === key
-                                                                ? `${color} text-white shadow-sm`
-                                                                : 'text-gray-400 hover:bg-gray-50'
-                                                                }`}
-                                                        >
-                                                            {label}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
+                                {/* Bulk Action Menu */}
+                                {selectedUsers.length > 0 && (
+                                    <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-300">
+                                        <span className="text-xs font-bold text-orange-600 px-3 py-1 bg-orange-50 rounded-full border border-orange-100">
+                                            {selectedUsers.length} Selected
+                                        </span>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={handleBulkReset}
+                                                className="px-4 py-2 bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-700 transition-all shadow-lg shadow-slate-200"
+                                            >
+                                                Reset Progress
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={openDeleteModal}
+                                                className="px-4 py-2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-100"
+                                            >
+                                                Delete Users
+                                            </button>
                                         </div>
                                     </div>
+                                )}
 
-                                    {/* Scrollable Table Area */}
-                                    <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent p-0">
-                                        <table className="w-full text-left border-collapse relative">
-                                            <thead className="sticky top-0 z-10">
-                                                <tr className="border-b border-gray-100 shadow-sm shadow-gray-100/50">
-                                                    <th className="px-6 py-4 w-10 bg-white/95 backdrop-blur-sm">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={selectedUsers.length === userList.length && userList.length > 0}
-                                                            onChange={toggleSelectAll}
-                                                            className="w-4 h-4 rounded-md border-gray-300 text-orange-600 focus:ring-orange-500 cursor-pointer"
-                                                        />
-                                                    </th>
-                                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white/95 backdrop-blur-sm">IDENTITY NAME</th>
-                                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white/95 backdrop-blur-sm">ID (EMP)</th>
-                                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white/95 backdrop-blur-sm">FACILITY / DEPARTMENT</th>
-                                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white/95 backdrop-blur-sm">STATUS</th>
-                                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white/95 backdrop-blur-sm">ROLE</th>
-                                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right bg-white/95 backdrop-blur-sm">ACTION</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-50">
-                                                {filteredNodes.length === 0 ? (
-                                                    <tr>
-                                                        <td colSpan={8} className="px-4 py-16 text-center">
-                                                            <div className="flex flex-col items-center gap-3 animate-in fade-in duration-300">
-                                                                <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                                                </svg>
-                                                                <p className="text-gray-400 font-medium">該当するノードが見つかりません</p>
-                                                                <button
-                                                                    onClick={() => { setNodeSearchQuery(''); setNodeStatusFilter('all'); }}
-                                                                    className="text-xs text-orange-500 hover:text-orange-600 font-bold"
-                                                                >
-                                                                    フィルタをクリア
-                                                                </button>
+                                {selectedUsers.length === 0 && (
+                                    <div className="px-5 py-2 bg-white border border-gray-100 rounded-2xl text-[10px] font-black text-gray-400 shadow-sm uppercase tracking-widest">
+                                        {userList.length} Nodes Registered
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="h-[70vh] flex flex-col">
+                                <div className="flex-none px-5 py-3 bg-gray-50/30 border-b border-gray-100 flex items-center gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="p-1 bg-orange-50 text-orange-600 rounded-md">
+                                            <Search size={14} />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            placeholder="施設、名前、部署で検索..."
+                                            value={nodeSearchQuery}
+                                            onChange={(e) => setNodeSearchQuery(e.target.value)}
+                                            className="bg-transparent border-none outline-none text-xs font-bold text-gray-700 w-48 placeholder:text-gray-400"
+                                        />
+                                    </div>
+                                    <div className="h-4 w-px bg-gray-200" />
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status:</span>
+                                        <div className="flex p-0.5 bg-gray-200/50 rounded-lg">
+                                            {(['all', 'UP', 'WARNING', 'DOWN'] as const).map((s) => (
+                                                <button
+                                                    key={s}
+                                                    onClick={() => setNodeStatusFilter(s)}
+                                                    className={`px-3 py-1 rounded-md text-[9px] font-black transition-all ${nodeStatusFilter === s ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                                >
+                                                    {s}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="h-4 w-px bg-gray-200" />
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Facility:</span>
+                                        <select
+                                            value={activeNodesFacilityFilter}
+                                            onChange={(e) => setActiveNodesFacilityFilter(e.target.value)}
+                                            className="bg-transparent border-none outline-none text-[10px] font-black text-gray-600 cursor-pointer hover:text-orange-600 transition-colors"
+                                        >
+                                            <option value="all">ALL FACILITIES</option>
+                                            {Array.from(new Set(userList.map(u => u.facility))).filter(Boolean).sort().map(fac => (
+                                                <option key={fac} value={fac}>{fac?.toUpperCase()}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="flex-none bg-white border-b border-gray-100">
+                                    <table className="w-full table-fixed">
+                                        <thead>
+                                            <tr className="text-left border-b border-gray-100 bg-gray-50/50">
+                                                <th className="w-12 px-4 py-3">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedUsers.length === userList.length && userList.length > 0}
+                                                        onChange={toggleSelectAll}
+                                                        className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                                                    />
+                                                </th>
+                                                <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Node ID / Name</th>
+                                                <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest w-40">Status</th>
+                                                <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Facility / Dept</th>
+                                                <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+                                    <table className="w-full table-fixed">
+                                        <tbody className="divide-y divide-gray-100">
+                                            {filteredNodes.map((user) => {
+                                                const nodeInfo = nodeStatuses.get(user.id);
+                                                const isEditing = editingUserId === user.id;
+                                                return (
+                                                    <tr key={user.id} className={`group hover:bg-orange-50/30 transition-all ${selectedUsers.includes(user.id) ? 'bg-orange-50/50' : ''}`}>
+                                                        <td className="w-12 px-4 py-4">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectedUsers.includes(user.id)}
+                                                                onChange={() => toggleSelectUser(user.id)}
+                                                                className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                                                            />
+                                                        </td>
+                                                        <td className="px-4 py-4">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-xs font-mono font-black text-gray-400 uppercase tracking-tighter">#{user.employeeId}</span>
+                                                                <span className="text-sm font-bold text-gray-800">{user.name}</span>
                                                             </div>
                                                         </td>
-                                                    </tr>
-                                                ) : filteredNodes.map(user => {
-                                                    const isEditing = editingUserId === user.id;
-                                                    const isSelected = selectedUsers.includes(user.id);
-                                                    return (
-                                                        <tr key={user.id} className={`transition-all group animate-in fade-in slide-in-from-bottom-2 duration-200 ${isEditing ? 'bg-orange-50/50' : (isSelected ? 'bg-blue-50/30' : 'hover:bg-gray-50/80')} `}>
-                                                            <td className="px-4 py-4 w-10">
-                                                                {!isEditing && (
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={isSelected}
-                                                                        onChange={() => toggleSelectUser(user.id)}
-                                                                        className="w-4 h-4 rounded-md border-gray-300 text-orange-600 focus:ring-orange-500 cursor-pointer"
-                                                                    />
-                                                                )}
-                                                            </td>
-                                                            <td className="px-6 py-4">
-                                                                <div className="flex flex-col">
-                                                                    <span className="text-sm font-black text-gray-800 tracking-tight">{user.name}</span>
-                                                                    {isEditing ? (
-                                                                        <input
-                                                                            type="email"
-                                                                            value={editForm.email || ''}
-                                                                            onChange={e => setEditForm({ ...editForm, email: e.target.value })}
-                                                                            className="mt-1 w-full p-1 border border-orange-200 rounded text-xs bg-white focus:border-orange-500 outline-none"
-                                                                            placeholder="Email"
-                                                                        />
-                                                                    ) : (
-                                                                        <span className="text-[10px] text-gray-400 font-mono">{user.email || 'No Email'}</span>
-                                                                    )}
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-6 py-4 text-xs font-mono text-gray-400 font-bold">{user.employeeId}</td>
-
-                                                            {/* Facility/Dept */}
-                                                            <td className="px-6 py-4">
-                                                                {isEditing ? (
-                                                                    <div className="flex flex-col gap-1">
-                                                                        <select
-                                                                            value={editForm.facility}
-                                                                            onChange={e => setEditForm({ ...editForm, facility: e.target.value, department: getDepartments(e.target.value)[0] || '' })}
-                                                                            className="p-1 border border-orange-200 rounded text-xs"
-                                                                        >
-                                                                            {orgFacilities.map(f => (
-                                                                                <option key={f.id} value={f.name}>{f.name}</option>
-                                                                            ))}
-                                                                        </select>
-                                                                        <select
-                                                                            value={editForm.department}
-                                                                            onChange={e => setEditForm({ ...editForm, department: e.target.value })}
-                                                                            className="p-1 border border-orange-200 rounded text-xs"
-                                                                        >
-                                                                            {getDepartments(editForm.facility).map(dept => (
-                                                                                <option key={dept} value={dept}>{dept}</option>
-                                                                            ))}
-                                                                        </select>
-                                                                    </div>
-                                                                ) : (
-                                                                    <div className="flex flex-col gap-0.5">
-                                                                        <span className="text-xs font-bold text-gray-600 truncate max-w-[140px]" title={user.facility}>{user.facility}</span>
-                                                                        <span className="text-[10px] text-gray-400">{user.department}</span>
-                                                                    </div>
-                                                                )}
-                                                            </td>
-
-                                                            {/* Status */}
-                                                            <td className="px-6 py-4">
-                                                                {(() => {
-                                                                    const statusInfo = nodeStatuses.get(user.id);
-                                                                    const status = statusInfo?.status || 'UP';
-                                                                    const label = status === 'UP' ? '稼働中' : status === 'DOWN' ? '停止中' : '警告';
-
-                                                                    let colorClass = 'bg-emerald-500 text-white shadow-emerald-200';
-                                                                    if (status === 'DOWN') colorClass = 'bg-gray-400 text-white shadow-gray-200';
-                                                                    if (status === 'WARNING') colorClass = 'bg-amber-400 text-white shadow-amber-200';
-
-                                                                    return (
-                                                                        <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold tracking-wide shadow-sm ${colorClass}`}>
-                                                                            {label}
-                                                                        </span>
-                                                                    );
-                                                                })()}
-                                                            </td>
-
-                                                            {/* Role */}
-                                                            <td className="px-6 py-4">
-                                                                {isEditing ? (
+                                                        <td className="px-4 py-4 w-40">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className={`w-2 h-2 rounded-full ${nodeInfo?.status === 'UP' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' :
+                                                                    nodeInfo?.status === 'WARNING' ? 'bg-yellow-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' :
+                                                                        nodeInfo?.status === 'DOWN' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' :
+                                                                            'bg-gray-300'
+                                                                    }`} />
+                                                                <span className={`text-[10px] font-black tracking-widest border px-2 py-0.5 rounded uppercase ${nodeInfo?.status === 'UP' ? 'text-emerald-700 bg-emerald-50 border-emerald-100' :
+                                                                    nodeInfo?.status === 'WARNING' ? 'text-yellow-700 bg-yellow-50 border-yellow-100' :
+                                                                        nodeInfo?.status === 'DOWN' ? 'text-red-700 bg-red-50 border-red-100' :
+                                                                            'text-gray-500 bg-gray-50 border-gray-100'
+                                                                    }`}>
+                                                                    {nodeInfo?.status || 'UP'}
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-4">
+                                                            {isEditing ? (
+                                                                <div className="space-y-1">
                                                                     <select
-                                                                        value={editForm.role}
-                                                                        onChange={e => setEditForm({ ...editForm, role: e.target.value as any })}
-                                                                        className="p-1 border rounded text-xs"
+                                                                        value={editForm.facility}
+                                                                        onChange={e => setEditForm({ ...editForm, facility: e.target.value, department: getDepartments(e.target.value)[0] || '' })}
+                                                                        className="w-full text-xs p-1 rounded border border-gray-200"
                                                                     >
-                                                                        <option value="USER">USER</option>
-                                                                        <option value="ADMIN">ADMIN</option>
-                                                                        <option value="DEVELOPER">DEVELOPER</option>
+                                                                        {orgFacilities.map(f => (
+                                                                            <option key={f.id} value={f.name}>{f.name}</option>
+                                                                        ))}
                                                                     </select>
-                                                                ) : (
-                                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${user.role === 'DEVELOPER' ? 'text-purple-600' :
-                                                                        user.role === 'ADMIN' ? 'text-red-500' :
-                                                                            'text-gray-400'
-                                                                        }`}>
-                                                                        {user.role}
-                                                                    </span>
-                                                                )}
-                                                            </td>
-
-                                                            {/* Actions */}
-                                                            <td className="px-4 py-4 text-right">
-                                                                {isEditing ? (
-                                                                    <div className="flex justify-end gap-2">
-                                                                        <button
-                                                                            onClick={cancelEdit}
-                                                                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all"
-                                                                            title="Cancel"
-                                                                        >
-                                                                            <XIcon size={20} />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => saveEdit(user.id)}
-                                                                            className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-xl hover:bg-orange-700 shadow-lg shadow-orange-600/20 transition-all text-xs font-black tracking-widest"
-                                                                            title="Save Changes"
-                                                                        >
-                                                                            <Check size={16} />
-                                                                            SAVE
-                                                                        </button>
-                                                                    </div>
-                                                                ) : (
-                                                                    <div className="flex justify-end gap-2">
-                                                                        <button
-                                                                            onClick={() => openResetModal(user)}
-                                                                            className="flex items-center gap-2 px-3 py-2 text-xs font-black tracking-widest text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all"
-                                                                            title="Reset Password"
-                                                                        >
-                                                                            <Key size={14} />
-                                                                            RESET
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => startEdit(user)}
-                                                                            className="flex items-center gap-2 px-4 py-2 text-xs font-black tracking-widest text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all"
-                                                                        >
-                                                                            <Edit2 size={14} />
-                                                                            EDIT
-                                                                        </button>
-                                                                    </div>
-                                                                )}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                                    <select
+                                                                        value={editForm.department}
+                                                                        onChange={e => setEditForm({ ...editForm, department: e.target.value })}
+                                                                        className="w-full text-xs p-1 rounded border border-gray-200"
+                                                                    >
+                                                                        {getDepartments(editForm.facility).map(dept => (
+                                                                            <option key={dept} value={dept}>{dept}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-[10px] font-black text-orange-600/60 uppercase tracking-widest">{user.facility}</span>
+                                                                    <span className="text-xs font-bold text-gray-500">{user.department}</span>
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-4 py-4 text-right">
+                                                            {isEditing ? (
+                                                                <div className="flex justify-end gap-2">
+                                                                    <button
+                                                                        onClick={cancelEdit}
+                                                                        className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-red-600"
+                                                                        title="Cancel"
+                                                                    >
+                                                                        <XIcon size={20} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => saveEdit(user.id)}
+                                                                        className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-xl hover:bg-orange-700 shadow-lg shadow-orange-600/20 transition-all text-xs font-black tracking-widest"
+                                                                        title="Save Changes"
+                                                                    >
+                                                                        <Check size={16} />
+                                                                        SAVE
+                                                                    </button>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex justify-end gap-2">
+                                                                    <button
+                                                                        onClick={() => openResetModal(user)}
+                                                                        className="flex items-center gap-2 px-3 py-2 text-xs font-black tracking-widest text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all"
+                                                                        title="Reset Password"
+                                                                    >
+                                                                        <Key size={14} />
+                                                                        RESET
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => startEdit(user)}
+                                                                        className="flex items-center gap-2 px-4 py-2 text-xs font-black tracking-widest text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all"
+                                                                    >
+                                                                        <Edit2 size={14} />
+                                                                        EDIT
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 ) : activeTab === 'logs' ? (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                         {/* Audit Logs View */}
@@ -1495,11 +1483,11 @@ export default function DeveloperDashboard() {
 
                             {/* Memory Usage */}
                             <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
-                                <Shield size={12} className="text-slate-500" />
+                                <Cpu size={12} className="text-slate-500" />
                                 <span className="text-[10px] font-bold text-blue-400">
                                     {Math.round(diagnostics.memoryUsed / 1024 / 1024)}
                                 </span>
-                                <span className="text-[9px] text-slate-500">/ {Math.round(diagnostics.memoryTotal / 1024 / 1024)} MB</span>
+                                <span className="text-[9px] text-slate-500">/ {Math.round(diagnostics.memoryMax / 1024 / 1024)} MB</span>
                             </div>
 
                             {/* Node Name */}
