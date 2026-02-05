@@ -9,7 +9,8 @@ import {
     Menu,
     X,
     Building2,
-    Database
+    Database,
+    Calendar
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -36,6 +37,7 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
     const navItems = [
         { path: '/manuals', label: 'マニュアル', icon: BookOpen },
         { path: '/mypage', label: 'Myページ', icon: UserIcon },
+        { path: '/paid-leaves', label: '有給申請', icon: Calendar },
         ...(user.role === 'ADMIN' || user.role === 'DEVELOPER' ? [{ path: '/admin', label: '管理者ダッシュボード', icon: LayoutDashboard }] : []),
         ...(user.role === 'DEVELOPER' ? [{ path: '/developer', label: '開発者メニュー', icon: Database }] : []),
     ];
@@ -68,6 +70,12 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
                         </div>
 
                         <div className="flex items-center gap-4">
+                            {user.role === 'DEVELOPER' && location.pathname.startsWith('/admin') && (
+                                <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-amber-100 border border-amber-200 rounded-full">
+                                    <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+                                    <span className="text-xs font-bold text-amber-700">開発者権限で代行中</span>
+                                </div>
+                            )}
                             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full">
                                 <Building2 size={14} className="text-gray-500" />
                                 <span className="text-sm text-gray-600">{user.facility}</span>

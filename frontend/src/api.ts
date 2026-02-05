@@ -428,10 +428,51 @@ export const api = {
         return res.json();
     },
 
-    // Node Status Monitoring
     getNodeStatuses: async (): Promise<any[]> => {
         const res = await fetch(`${API_BASE}/nodes/status`);
         if (!res.ok) return [];
+        return res.json();
+    },
+
+    // Paid Leave
+    submitPaidLeave: async (userId: number, date: string, reason: string): Promise<any> => {
+        const res = await fetch(`${API_BASE}/paid-leaves`, {
+            method: 'POST',
+            headers: getHeaders(userId),
+            body: JSON.stringify({ date, reason }),
+        });
+        return res.json();
+    },
+
+    getMyPaidLeaves: async (userId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/paid-leaves/my`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    getAllPaidLeaves: async (userId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/admin/paid-leaves`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    approvePaidLeave: async (userId: number, id: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/paid-leaves/${id}/approve`, {
+            method: 'PUT',
+            headers: getHeaders(userId),
+        });
+        return res.json();
+    },
+
+    rejectPaidLeave: async (userId: number, id: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/paid-leaves/${id}/reject`, {
+            method: 'PUT',
+            headers: getHeaders(userId),
+        });
         return res.json();
     },
 };
