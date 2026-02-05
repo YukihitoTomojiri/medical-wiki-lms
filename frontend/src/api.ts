@@ -445,32 +445,41 @@ export const api = {
         return response.json();
     },
 
-    // Paid Leaves
-    submitPaidLeave: async (userId: number, startDate: string, endDate: string, reason: string): Promise<any> => {
-        const response = await fetch(`${API_BASE}/leaves/apply`, {
+    // Attendance Requests
+    submitAttendanceRequest: async (
+        userId: number,
+        type: string,
+        durationType: string | null,
+        startDate: string,
+        endDate: string,
+        startTime: string,
+        endTime: string,
+        reason: string
+    ): Promise<any> => {
+        const response = await fetch(`${API_BASE}/attendance/requests`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-User-Id': userId.toString()
             },
-            body: JSON.stringify({ startDate, endDate, reason })
+            body: JSON.stringify({ type, durationType, startDate, endDate, startTime, endTime, reason })
         });
-        if (!response.ok) throw new Error('Failed to submit leave request');
+        if (!response.ok) throw new Error('Failed to submit attendance request');
         return response.json();
     },
 
-    getMyPaidLeaves: async (userId: number): Promise<any[]> => {
-        const response = await fetch(`${API_BASE}/leaves/history`, {
+    getMyAttendanceRequests: async (userId: number): Promise<any[]> => {
+        const response = await fetch(`${API_BASE}/attendance/requests/my`, {
             headers: {
                 'X-User-Id': userId.toString()
             }
         });
-        if (!response.ok) throw new Error('Failed to fetch leave requests');
+        if (!response.ok) throw new Error('Failed to fetch attendance requests');
         return response.json();
     },
 
-    getAllPaidLeaves: async (userId: number): Promise<any[]> => {
-        const res = await fetch(`${API_BASE}/admin/paid-leaves`, {
+    getAllAttendanceRequests: async (userId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/admin/attendance/requests`, {
             headers: getHeaders(userId),
         });
         if (!res.ok) return [];

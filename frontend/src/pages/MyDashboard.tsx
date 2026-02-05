@@ -27,8 +27,12 @@ export default function MyDashboard({ user }: MyDashboardProps) {
     const [activeTab, setActiveTab] = useState<'learning' | 'leaves'>('learning');
 
     // Leave Form State
+    const [requestType, setRequestType] = useState('PAID_LEAVE');
+    const [durationType, setDurationType] = useState('FULL_DAY');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
     const [reason, setReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,7 +45,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
             const [dashData, progressData, leaveData] = await Promise.all([
                 api.getMyDashboard(user.id),
                 api.getMyProgress(user.id),
-                api.getMyPaidLeaves(user.id)
+                api.getMyAttendanceRequests(user.id)
             ]);
             setDashboardData(dashData);
             setProgress(progressData);
@@ -57,15 +61,19 @@ export default function MyDashboard({ user }: MyDashboardProps) {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await api.submitPaidLeave(user.id, startDate, endDate, reason);
-            alert('有給休暇を申請しました');
+            await api.submitAttendanceRequest(user.id, requestType, durationType, startDate, endDate, startTime, endTime, reason);
+            alert('申請しました');
             setStartDate('');
             setEndDate('');
+            setStartTime('');
+            setEndTime('');
             setReason('');
+            setRequestType('PAID_LEAVE');
+            setDurationType('FULL_DAY');
             // Reload leaves and dashboard stats
             const [dashData, leaveData] = await Promise.all([
                 api.getMyDashboard(user.id),
-                api.getMyPaidLeaves(user.id)
+                api.getMyAttendanceRequests(user.id)
             ]);
             setDashboardData(dashData);
             setLeaveRequests(leaveData);
@@ -228,6 +236,36 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                     新規申請
                                 </h3>
                                 <form onSubmit={handleSubmitLeave} className="space-y-4">
+                                    {/* Request Type Selection */}
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1">申請種別</label>
+                                        <select
+                                            value={requestType}
+                                            onChange={(e) => setRequestType(e.target.value)}
+                                            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700"
+                                        >
+                                            <option value="PAID_LEAVE">有給休暇</option>
+                                            <option value="ABSENCE">欠勤</option>
+                                            <option value="LATE">遅刻</option>
+                                            <option value="EARLY_DEPARTURE">早退</option>
+                                        </select>
+                                    </div>
+
+                                    {requestType === 'PAID_LEAVE' && (
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-500 mb-1">取得単位</label>
+                                            <select
+                                                value={durationType}
+                                                onChange={(e) => setDurationType(e.target.value)}
+                                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700"
+                                            >
+                                                <option value="FULL_DAY">全日</option>
+                                                <option value="HALF_DAY_AM">半日 (午前)</option>
+                                                <option value="HALF_DAY_PM">半日 (午後)</option>
+                                            </select>
+                                        </div>
+                                    )}
+
                                     <div className="grid grid-cols-2 gap-2">
                                         <div>
                                             <label className="block text-xs font-bold text-gray-500 mb-1">開始日</label>
@@ -250,6 +288,38 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                             />
                                         </div>
                                     </div>
+
+                                    {(requestType === 'LATE' || requestType === 'EARLY_DEPARTURE') && (
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label className="block text-xs font-bold text-gray-500 mb-1">開始時間</label>
+                                                <div className="relative">
+                                                    <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                                    <input
+                                                        type="time"
+                                                        step="900"
+                                                        value={startTime}
+                                                        onChange={(e) => setStartTime(e.target.value)}
+                                                        className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-gray-500 mb-1">終了時間</label>
+                                                <div className="relative">
+                                                    <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                                    <input
+                                                        type="time"
+                                                        step="900"
+                                                        value={endTime}
+                                                        onChange={(e) => setEndTime(e.target.value)}
+                                                        className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div>
                                         <label className="block text-xs font-bold text-gray-500 mb-1">事由</label>
                                         <textarea
