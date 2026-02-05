@@ -227,9 +227,9 @@ export default function MyDashboard({ user }: MyDashboardProps) {
 
                 {/* Paid Leaves Tab Content */}
                 {activeTab === 'leaves' && (
-                    <div className="grid md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-2">
+                    <div className="grid lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-2">
                         {/* Application Form */}
-                        <div className="md:col-span-1">
+                        <div className="lg:col-span-5">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sticky top-6">
                                 <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
                                     <Plus size={18} className="text-emerald-500" />
@@ -294,8 +294,8 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                             <div>
                                                 <label className="block text-xs font-bold text-gray-500 mb-1">開始時間</label>
                                                 <div className="flex gap-1 items-center flex-nowrap">
-                                                    <div className="relative w-24 min-w-[6rem]">
-                                                        <Clock size={16} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                                                    <div className="relative w-20">
+                                                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
                                                         <select
                                                             value={startTime ? startTime.split(':')[0] : ''}
                                                             onChange={(e) => {
@@ -303,7 +303,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                                                 const m = startTime ? startTime.split(':')[1] : '00';
                                                                 setStartTime(`${h}:${m}`);
                                                             }}
-                                                            className="w-full pl-8 pr-6 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white text-center"
+                                                            className="w-full pl-6 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white text-center"
                                                         >
                                                             <option value="" disabled>時</option>
                                                             {Array.from({ length: 24 }).map((_, i) => (
@@ -312,10 +312,10 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                                                 </option>
                                                             ))}
                                                         </select>
-                                                        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[10px]">▼</div>
+                                                        <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[8px]">▼</div>
                                                     </div>
                                                     <span className="text-gray-400 font-bold">:</span>
-                                                    <div className="relative w-16 min-w-[4rem]">
+                                                    <div className="relative w-14">
                                                         <select
                                                             value={startTime ? startTime.split(':')[1] : ''}
                                                             onChange={(e) => {
@@ -323,21 +323,21 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                                                 const m = e.target.value;
                                                                 setStartTime(`${h}:${m}`);
                                                             }}
-                                                            className="w-full pl-2 pr-6 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white text-center"
+                                                            className="w-full pl-1 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white text-center"
                                                         >
                                                             {['00', '15', '30', '45'].map((m) => (
                                                                 <option key={m} value={m}>{m}</option>
                                                             ))}
                                                         </select>
-                                                        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[10px]">▼</div>
+                                                        <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[8px]">▼</div>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-bold text-gray-500 mb-1">終了時間</label>
                                                 <div className="flex gap-1 items-center flex-nowrap">
-                                                    <div className="relative w-24 min-w-[6rem]">
-                                                        <Clock size={16} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                                                    <div className="relative w-20">
+                                                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
                                                         <select
                                                             value={endTime ? endTime.split(':')[0] : ''}
                                                             onChange={(e) => {
@@ -345,7 +345,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                                                 const m = endTime ? endTime.split(':')[1] : '00';
                                                                 setEndTime(`${h}:${m}`);
                                                             }}
-                                                            className="w-full pl-8 pr-6 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white text-center"
+                                                            className="w-full pl-6 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white text-center"
                                                         >
                                                             <option value="" disabled>時</option>
                                                             {Array.from({ length: 24 }).map((_, i) => (
@@ -354,10 +354,10 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                                                 </option>
                                                             ))}
                                                         </select>
-                                                        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[10px]">▼</div>
+                                                        <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[8px]">▼</div>
                                                     </div>
                                                     <span className="text-gray-400 font-bold">:</span>
-                                                    <div className="relative w-16 min-w-[4rem]">
+                                                    <div className="relative w-14">
                                                         <select
                                                             value={endTime ? endTime.split(':')[1] : ''}
                                                             onChange={(e) => {
@@ -365,13 +365,13 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                                                 const m = e.target.value;
                                                                 setEndTime(`${h}:${m}`);
                                                             }}
-                                                            className="w-full pl-2 pr-6 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white text-center"
+                                                            className="w-full pl-1 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white text-center"
                                                         >
                                                             {['00', '15', '30', '45'].map((m) => (
                                                                 <option key={m} value={m}>{m}</option>
                                                             ))}
                                                         </select>
-                                                        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[10px]">▼</div>
+                                                        <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[8px]">▼</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -400,7 +400,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                         </div>
 
                         {/* History Table */}
-                        <div className="md:col-span-2">
+                        <div className="lg:col-span-7">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                                 <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
                                     <h3 className="font-bold text-gray-800 text-sm">申請履歴</h3>
