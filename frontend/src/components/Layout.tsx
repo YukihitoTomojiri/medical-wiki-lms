@@ -37,7 +37,6 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
         { path: '/manuals', label: 'マニュアル', icon: BookOpen },
         { path: '/mypage', label: 'Myページ', icon: UserIcon },
         ...(user.role === 'ADMIN' || user.role === 'DEVELOPER' ? [{ path: '/admin', label: '管理者ダッシュボード', icon: LayoutDashboard }] : []),
-        ...(user.role === 'DEVELOPER' ? [{ path: '/developer', label: '開発者メニュー', icon: Database }] : []),
     ];
 
 

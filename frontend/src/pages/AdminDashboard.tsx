@@ -1,248 +1,394 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useMemo } from 'react';
 import { api } from '../api';
-import { UserProgress } from '../types';
+import { User } from '../types';
+import AllUsersAdmin from './AllUsersAdmin';
+import OrganizationManagement from '../components/OrganizationManagement';
 import {
+    Database,
+    FileText,
     Users,
-    Search,
-    Building2,
-    TrendingUp,
-    CheckCircle2,
-    ChevronDown,
-    ChevronUp
+    RefreshCw,
+    Activity,
+    AlertTriangle,
+    ShieldAlert,
+    Cpu,
+    HardDrive,
+    FileDown
 } from 'lucide-react';
 
-export default function AdminDashboard() {
-    const [usersProgress, setUsersProgress] = useState<UserProgress[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [facilityFilter, setFacilityFilter] = useState('');
-    const [departmentFilter, setDepartmentFilter] = useState('');
-    const [expandedUser, setExpandedUser] = useState<number | null>(null);
+interface AdminDashboardProps {
+    user: User;
+}
 
+export default function AdminDashboard({ user }: AdminDashboardProps) {
+    const isDev = user.role === 'DEVELOPER';
+
+    // Tabs Definition
+    const tabs = useMemo(() => {
+        const commonTabs = [
+            { id: 'organization', label: '組織管理' },
+            { id: 'users', label: '全ユーザー管理' },
+            { id: 'export', label: 'レポート出力' },
+        ];
+
+        if (isDev) {
+            return [
+                { id: 'stats', label: 'システム統計' },
+                { id: 'nodes', label: '稼働状況' },
+                { id: 'audit', label: '操作履歴' },
+                ...commonTabs
+            ];
+        }
+        return commonTabs;
+    }, [isDev]);
+
+    // Initial Tab
+    const [activeTab, setActiveTab] = useState<string>(isDev ? 'stats' : 'organization');
+
+    const [stats, setStats] = useState({
+        dbStatus: 'Check...',
+        version: '1.0.0',
+    });
+
+    // Data States
+    const [userList, setUserList] = useState<User[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    // System Data (Dev Only)
+    const [systemLogs, setSystemLogs] = useState<any[]>([]);
+    const [resources, setResources] = useState({
+        uptime: 0,
+        memoryUsed: 0,
+        memoryMax: 0,
+        memoryPercent: 0,
+        diskUsed: 0,
+        diskTotal: 0,
+        diskPercent: 0,
+        diskFree: 0,
+        dbPing: 0
+    });
+    const [securityAlerts, setSecurityAlerts] = useState<any[]>([]);
+    const [alertStats, setAlertStats] = useState({ totalOpen: 0, criticalOpen: 0, alerts24h: 0 });
+    const [nodeStatuses, setNodeStatuses] = useState<Map<number, any>>(new Map());
+    const [lastSync, setLastSync] = useState<string>('Never');
+
+    // Initial Load
     useEffect(() => {
-        loadData();
+        fetchData();
     }, []);
 
-    const loadData = async () => {
+    // Polling only for Dev
+    useEffect(() => {
+        if (isDev && activeTab === 'nodes') {
+            fetchNodeStatuses();
+            const interval = setInterval(fetchNodeStatuses, 5000);
+            return () => clearInterval(interval);
+        }
+    }, [isDev, activeTab]);
+
+    const fetchData = async () => {
+        setLoading(true);
         try {
-            const data = await api.getAllUsersProgress();
-            setUsersProgress(data);
+            // Always fetch users for general stats
+            const promises = [
+                api.getUsers(1),
+            ];
+
+            if (isDev) {
+                promises.push(
+                    api.getDiagnostics(1),
+                    api.getSystemResources(1).catch(() => ({})),
+                    api.getAuditLogs(1).catch(() => []),
+                    api.getSecurityAlerts(1).catch(() => []),
+                    api.getSecurityAlertStats(1).catch(() => ({ totalOpen: 0, criticalOpen: 0, alerts24h: 0 })),
+                    api.getNodeStatuses().catch(() => [])
+                );
+            }
+
+            const results = await Promise.all(promises);
+            const [users, ...devData] = results;
+
+            setUserList(users);
+
+            // Stats
+            setStats(prev => ({ ...prev, dbStatus: 'Connected' }));
+
+            if (isDev) {
+                const [diag, sysRes, audit, alerts, alertSt, nodes] = devData;
+                setResources(prev => ({ ...prev, ...diag, ...sysRes }));
+                setSystemLogs(audit);
+                setSecurityAlerts(alerts);
+                setAlertStats(alertSt);
+                // process nodes
+                const statusMap = new Map();
+                if (Array.isArray(nodes)) {
+                    nodes.forEach((node: any) => statusMap.set(node.userId, node));
+                }
+                setNodeStatuses(statusMap);
+            }
+
+            setLastSync(new Date().toLocaleTimeString());
         } catch (error) {
-            console.error('Failed to load data:', error);
+            console.error(error);
+            setStats(prev => ({ ...prev, dbStatus: 'Error' }));
         } finally {
             setLoading(false);
         }
     };
 
-    const facilities = [...new Set(usersProgress.map(u => u.facility))];
-    const departments = [...new Set(
-        usersProgress
-            .filter(u => !facilityFilter || u.facility === facilityFilter)
-            .map(u => u.department)
-    )];
+    const fetchNodeStatuses = async () => {
+        try {
+            const data = await api.getNodeStatuses();
+            const statusMap = new Map();
+            data.forEach((node: any) => statusMap.set(node.userId, node));
+            setNodeStatuses(statusMap);
+        } catch (e) { console.error(e); }
+    };
 
-    const filteredUsers = usersProgress.filter((user) => {
-        const matchesFacility = !facilityFilter || user.facility === facilityFilter;
-        const matchesDepartment = !departmentFilter || user.department === departmentFilter;
-        const matchesSearch = !searchQuery ||
-            user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user.employeeId.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesFacility && matchesDepartment && matchesSearch;
-    });
-
-    const totalUsers = filteredUsers.length;
-    const averageProgress = totalUsers > 0
-        ? Math.round(filteredUsers.reduce((sum, u) => sum + u.progressPercentage, 0) / totalUsers)
-        : 0;
-    const completedUsers = filteredUsers.filter(u => u.progressPercentage === 100).length;
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-        );
-    }
+    // Calculate Stats
+    const computedStats = useMemo(() => ({
+        developers: userList.filter(u => u.role === 'DEVELOPER').length,
+        admins: userList.filter(u => u.role === 'ADMIN').length,
+        users: userList.filter(u => u.role === 'USER').length,
+        facilities: new Set(userList.map(u => u.facility)).size,
+    }), [userList]);
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-24 max-w-[1600px] mx-auto">
             {/* Header */}
-            <div>
-                <h2 className="text-2xl font-bold text-gray-800">管理者ダッシュボード</h2>
-                <p className="text-gray-500 mt-1">全職員の読了状況を確認できます</p>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-5 text-white shadow-xl shadow-primary-500/20">
-                    <div className="flex items-center gap-3 mb-2">
-                        <Users size={20} className="text-primary-200" />
-                        <span className="text-primary-100">総ユーザー数</span>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800 tracking-tight">
+                        {isDev ? '統合管理コンソール' : '管理者ダッシュボード'}
+                    </h2>
+                    <div className="flex items-center gap-4 mt-1">
+                        <p className="text-gray-500 font-medium text-sm">
+                            {user.facility} | {user.name}
+                        </p>
+                        {isDev && (
+                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">
+                                SYSTEM_MODE: DEV
+                            </span>
+                        )}
+                        <p className="text-gray-400 text-xs flex items-center gap-1 border-l pl-4 border-gray-200">
+                            <RefreshCw size={12} />
+                            {lastSync}
+                        </p>
                     </div>
-                    <p className="text-3xl font-bold">{totalUsers}名</p>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 border border-primary-200 shadow-xl shadow-primary-500/10">
-                    <div className="flex items-center gap-3 mb-2">
-                        <TrendingUp size={20} className="text-primary-500" />
-                        <span className="text-primary-600 font-medium">平均進捗率</span>
-                    </div>
-                    <p className="text-3xl font-bold text-primary-600">{averageProgress}%</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-5 text-white shadow-xl shadow-amber-500/20">
-                    <div className="flex items-center gap-3 mb-2">
-                        <CheckCircle2 size={20} className="text-amber-200" />
-                        <span className="text-amber-100">全読了者</span>
-                    </div>
-                    <p className="text-3xl font-bold">{completedUsers}名</p>
-                </div>
-            </div>
-
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="氏名・社員番号で検索..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all bg-white"
-                    />
-                </div>
-                <div className="relative">
-                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <select
-                        value={facilityFilter}
-                        onChange={(e) => {
-                            setFacilityFilter(e.target.value);
-                            setDepartmentFilter(''); // Reset department when facility changes
-                        }}
-                        className="pl-12 pr-10 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all bg-white appearance-none cursor-pointer min-w-[180px]"
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => fetchData()}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 font-medium shadow-sm transition-all active:scale-95"
                     >
-                        <option value="">すべての施設</option>
-                        {facilities.map((facility) => (
-                            <option key={facility} value={facility}>{facility}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="relative">
-                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <select
-                        value={departmentFilter}
-                        onChange={(e) => setDepartmentFilter(e.target.value)}
-                        className="pl-12 pr-10 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all bg-white appearance-none cursor-pointer min-w-[180px]"
-                        disabled={!facilityFilter}
-                    >
-                        <option value="">すべての部署</option>
-                        {departments.map((dept) => (
-                            <option key={dept} value={dept}>{dept}</option>
-                        ))}
-                    </select>
+                        <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                        更新
+                    </button>
                 </div>
             </div>
 
-            {/* User Progress Table */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">職員</th>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 hidden sm:table-cell">施設</th>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">進捗</th>
-                                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-600">読了数</th>
-                                <th className="px-6 py-4 w-10"></th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                            {filteredUsers.map((userProgress) => (
-                                <>
-                                    <tr
-                                        key={userProgress.userId}
-                                        className="hover:bg-gray-50 transition-colors cursor-pointer"
-                                        onClick={() => setExpandedUser(expandedUser === userProgress.userId ? null : userProgress.userId)}
-                                    >
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-500 rounded-full flex items-center justify-center text-white font-bold shrink-0">
-                                                    {userProgress.name.charAt(0)}
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-gray-800">{userProgress.name}</p>
-                                                    <p className="text-sm text-gray-500">{userProgress.employeeId}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 hidden sm:table-cell">
-                                            <div className="flex flex-col">
-                                                <span className="font-medium text-gray-700">{userProgress.facility}</span>
-                                                <span className="text-xs text-gray-500">{userProgress.department}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex-1 min-w-[100px] max-w-[150px] bg-gray-100 rounded-full h-2.5">
-                                                    <div
-                                                        className={`h-2.5 rounded-full transition-all ${userProgress.progressPercentage === 100
-                                                            ? 'bg-gradient-to-r from-emerald-400 to-teal-500'
-                                                            : userProgress.progressPercentage >= 50
-                                                                ? 'bg-gradient-to-r from-primary-400 to-primary-500'
-                                                                : 'bg-gradient-to-r from-amber-400 to-orange-500'
-                                                            }`}
-                                                        style={{ width: `${userProgress.progressPercentage}%` }}
-                                                    />
-                                                </div>
-                                                <span className="text-sm font-medium text-gray-600 w-12">
-                                                    {userProgress.progressPercentage}%
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <span className="font-semibold text-gray-800">{userProgress.readManuals}</span>
-                                            <span className="text-gray-400"> / {userProgress.totalManuals}</span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {expandedUser === userProgress.userId ? (
-                                                <ChevronUp size={20} className="text-gray-400" />
-                                            ) : (
-                                                <ChevronDown size={20} className="text-gray-400" />
-                                            )}
-                                        </td>
-                                    </tr>
-                                    {expandedUser === userProgress.userId && userProgress.progressList.length > 0 && (
-                                        <tr>
-                                            <td colSpan={5} className="px-6 py-4 bg-gray-50">
-                                                <div className="pl-12 space-y-2">
-                                                    <p className="text-sm font-medium text-gray-600 mb-2">読了済みマニュアル:</p>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {userProgress.progressList.map((p) => (
-                                                            <span
-                                                                key={p.id}
-                                                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm"
-                                                            >
-                                                                <CheckCircle2 size={14} className="text-emerald-500" />
-                                                                {p.manualTitle}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+            {/* Tabs */}
+            <div className="flex flex-wrap border-b border-gray-200">
+                {tabs.map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
+                                ? 'border-orange-500 text-orange-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
 
-                {filteredUsers.length === 0 && (
-                    <div className="px-6 py-12 text-center">
-                        <Users className="mx-auto text-gray-400 mb-4" size={40} />
-                        <p className="text-gray-500">該当する職員が見つかりません</p>
+            {/* Content Area */}
+            <div className="animate-in fade-in duration-300">
+
+                {/* 1. System Stats (Dev Only) */}
+                {isDev && activeTab === 'stats' && (
+                    <div className="space-y-6">
+                        {/* Highlights */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <p className="text-xs text-gray-500 mb-1">データベース接続</p>
+                                    <p className={`text-lg font-bold flex items-center gap-2 ${stats.dbStatus === 'Connected' ? 'text-emerald-600' : 'text-red-600'}`}>
+                                        <Database size={18} />
+                                        {stats.dbStatus === 'Connected' ? '正常' : '異常'}
+                                    </p>
+                                </div>
+                                <div className={`w-3 h-3 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+                            </div>
+
+                            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                                <p className="text-xs text-gray-500 mb-1">総ユーザー数</p>
+                                <p className="text-2xl font-bold text-gray-800">{userList.length} <span className="text-sm font-normal text-gray-400">名</span></p>
+                            </div>
+
+                            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                                <p className="text-xs text-gray-500 mb-1">アラート(24h)</p>
+                                <p className={`text-2xl font-bold ${alertStats.alerts24h > 0 ? 'text-orange-600' : 'text-emerald-600'}`}>
+                                    {alertStats.alerts24h} <span className="text-sm font-normal text-gray-400">件</span>
+                                </p>
+                            </div>
+
+                            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                                <p className="text-xs text-gray-500 mb-1">Uptime</p>
+                                <p className="text-lg font-bold text-blue-600">
+                                    {Math.floor(resources.uptime / 3600000)}h {Math.floor((resources.uptime % 3600000) / 60000)}m
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Resources Widgets */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Memory */}
+                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                                        <Cpu size={20} className="text-blue-500" />
+                                        メモリ使用率 (JVM Heap)
+                                    </h3>
+                                    <span className={`px-2 py-1 rounded text-xs font-bold ${resources.memoryPercent > 80 ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
+                                        {resources.memoryPercent.toFixed(1)}%
+                                    </span>
+                                </div>
+                                <div className="w-full bg-gray-100 rounded-full h-3 mb-2">
+                                    <div
+                                        className={`h-3 rounded-full transition-all duration-1000 ${resources.memoryPercent > 90 ? 'bg-red-500' :
+                                                resources.memoryPercent > 80 ? 'bg-amber-500' : 'bg-blue-500'
+                                            }`}
+                                        style={{ width: `${resources.memoryPercent}%` }}
+                                    ></div>
+                                </div>
+                                <div className="flex justify-between text-xs text-gray-500 font-mono">
+                                    <span>Used: {(resources.memoryUsed / 1024 / 1024).toFixed(0)} MB</span>
+                                    <span>Max: {(resources.memoryMax / 1024 / 1024).toFixed(0)} MB</span>
+                                </div>
+                            </div>
+
+                            {/* Disk */}
+                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                                        <HardDrive size={20} className="text-amber-500" />
+                                        ディスク空き容量 (/)
+                                    </h3>
+                                    <span className={`px-2 py-1 rounded text-xs font-bold ${resources.diskPercent > 90 ? 'bg-red-100 text-red-700' : 'bg-amber-50 text-amber-700'}`}>
+                                        {(resources.diskFree / 1024 / 1024 / 1024).toFixed(1)} GB Free
+                                    </span>
+                                </div>
+                                <div className="w-full bg-gray-100 rounded-full h-3 mb-2">
+                                    <div
+                                        className={`h-3 rounded-full transition-all duration-1000 ${resources.diskPercent > 90 ? 'bg-red-500' : 'bg-amber-500'
+                                            }`}
+                                        style={{ width: `${resources.diskPercent}%` }}
+                                    ></div>
+                                </div>
+                                <div className="flex justify-between text-xs text-gray-500 font-mono">
+                                    <span>Used: {(resources.diskUsed / 1024 / 1024 / 1024).toFixed(1)} GB</span>
+                                    <span>Total: {(resources.diskTotal / 1024 / 1024 / 1024).toFixed(1)} GB</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Alerts List */}
+                        {securityAlerts.length > 0 && (
+                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                <div className="p-4 bg-red-50 border-b border-red-100 flex items-center gap-2">
+                                    <ShieldAlert className="text-red-500" />
+                                    <h3 className="font-bold text-red-800">セキュリティアラート</h3>
+                                </div>
+                                <div className="p-4">
+                                    {/* Simplified list for now as requested by user to focus on integration */}
+                                    <p className="text-sm text-gray-600">詳細は監査ログを確認してください。</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
+
+                {/* 2. Active Nodes (Dev Only) */}
+                {isDev && activeTab === 'nodes' && (
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="p-4 bg-gray-50 border-b border-gray-200">
+                            <h3 className="font-bold text-gray-700">稼働中のノード</h3>
+                        </div>
+                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {Array.from(nodeStatuses.values()).map((node: any) => (
+                                <div key={node.userId} className="p-4 border border-gray-200 rounded-lg flex items-center justify-between">
+                                    <div>
+                                        <p className="font-bold text-sm text-gray-800">{node.healthMetrics?.name || node.userId}</p>
+                                        <p className="text-xs text-gray-500">{node.healthMetrics?.facility}</p>
+                                    </div>
+                                    <div className={`px-2 py-1 rounded text-xs font-bold ${node.status === 'UP' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                                        }`}>
+                                        {node.status}
+                                    </div>
+                                </div>
+                            ))}
+                            {nodeStatuses.size === 0 && <p className="text-gray-500 text-sm p-4">アクティブなノードはありません</p>}
+                        </div>
+                    </div>
+                )}
+
+                {/* 3. Audit Logs (Dev Only) */}
+                {isDev && activeTab === 'audit' && (
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="p-4 bg-gray-50 border-b border-gray-200">
+                            <h3 className="font-bold text-gray-700">操作履歴 (Audit Logs)</h3>
+                        </div>
+                        <div className="max-h-[500px] overflow-y-auto">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-gray-50 text-gray-500 sticky top-0">
+                                    <tr>
+                                        <th className="px-4 py-2">Timestamp</th>
+                                        <th className="px-4 py-2">User</th>
+                                        <th className="px-4 py-2">Action</th>
+                                        <th className="px-4 py-2">Detail</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {systemLogs.map((log: any) => (
+                                        <tr key={log.id}>
+                                            <td className="px-4 py-2 font-mono text-xs">{log.timestamp}</td>
+                                            <td className="px-4 py-2">{log.userId}</td>
+                                            <td className="px-4 py-2 font-bold">{log.action}</td>
+                                            <td className="px-4 py-2 text-gray-600 truncate max-w-xs">{log.description}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* 4. Organization Management */}
+                {activeTab === 'organization' && (
+                    <OrganizationManagement />
+                )}
+
+                {/* 5. All Users */}
+                {activeTab === 'users' && (
+                    <AllUsersAdmin />
+                )}
+
+                {/* 6. Export */}
+                {activeTab === 'export' && (
+                    <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm text-center">
+                        <FileDown size={48} className="mx-auto text-gray-300 mb-4" />
+                        <h3 className="text-lg font-bold text-gray-700 mb-2">コンプライアンスレポート出力</h3>
+                        <p className="text-gray-500 mb-6">監査用ログおよび学習進捗データをCSV形式でエクスポートします</p>
+                        <button className="bg-orange-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-700 transition">
+                            データを出力する
+                        </button>
+                    </div>
+                )}
+
             </div>
         </div>
     );
