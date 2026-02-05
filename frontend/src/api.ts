@@ -289,13 +289,28 @@ export const api = {
     exportComplianceCsv: async (userId: number, facility?: string, start?: string, end?: string): Promise<Blob> => {
         const params = new URLSearchParams();
         if (facility && facility !== 'all') params.append('facility', facility);
-        if (start) params.append('start', start);
-        if (end) params.append('end', end);
-        const url = `${API_BASE}/admin/compliance/export/csv${params.toString() ? '?' + params.toString() : ''}`;
+        if (start) params.append('startDate', start);
+        if (end) params.append('endDate', end);
+        const url = `${API_BASE}/admin/export/compliance${params.toString() ? '?' + params.toString() : ''}`;
         const res = await fetch(url, {
             headers: getHeaders(userId),
         });
         return res.blob();
+    },
+
+    remindUser: async (userId: number, targetUserId: number): Promise<void> => {
+        await fetch(`${API_BASE}/admin/notifications/remind/${targetUserId}`, {
+            method: 'POST',
+            headers: getHeaders(userId),
+        });
+    },
+
+    getLaggingManuals: async (userId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/admin/manuals/lagging`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
     },
 
     exportCompliancePdf: async (userId: number, facility?: string, start?: string, end?: string): Promise<Blob> => {
@@ -413,10 +428,85 @@ export const api = {
         return res.json();
     },
 
-    // Node Status Monitoring
     getNodeStatuses: async (): Promise<any[]> => {
         const res = await fetch(`${API_BASE}/nodes/status`);
         if (!res.ok) return [];
+        return res.json();
+    },
+
+    // Personal Dashboard
+    getMyDashboard: async (userId: number): Promise<any> => {
+        const response = await fetch(`${API_BASE}/my/summary`, {
+            headers: {
+                'X-User-Id': userId.toString()
+            }
+        });
+        if (!response.ok) throw new Error('Failed to fetch dashboard');
+        return response.json();
+    },
+
+    // Attendance Requests
+    submitAttendanceRequest: async (
+        userId: number,
+        type: string,
+        durationType: string | null,
+        startDate: string,
+        endDate: string,
+        startTime: string,
+        endTime: string,
+        reason: string
+    ): Promise<any> => {
+        const response = await fetch(`${API_BASE}/attendance/requests`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-Id': userId.toString()
+            },
+            body: JSON.stringify({ type, durationType, startDate, endDate, startTime, endTime, reason })
+        });
+        if (!response.ok) throw new Error('Failed to submit attendance request');
+        return response.json();
+    },
+
+    getMyAttendanceRequests: async (userId: number): Promise<any[]> => {
+        const response = await fetch(`${API_BASE}/attendance/requests/my`, {
+            headers: {
+                'X-User-Id': userId.toString()
+            }
+        });
+        if (!response.ok) throw new Error('Failed to fetch attendance requests');
+        return response.json();
+    },
+
+    getAllAttendanceRequests: async (userId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/admin/attendance/requests`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    approvePaidLeave: async (userId: number, id: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/paid-leaves/${id}/approve`, {
+            method: 'PUT',
+            headers: getHeaders(userId),
+        });
+        return res.json();
+    },
+
+    rejectPaidLeave: async (userId: number, id: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/paid-leaves/${id}/reject`, {
+            method: 'PUT',
+            headers: getHeaders(userId),
+        });
+        return res.json();
+    },
+
+    // Personal Dashboard
+    getPersonalDashboard: async (userId: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/my/dashboard`, {
+            headers: getHeaders(userId),
+        });
         return res.json();
     },
 };

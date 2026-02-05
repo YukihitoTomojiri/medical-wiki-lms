@@ -13,6 +13,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findAllByDeletedAtIsNull();
 
+    long countByDeletedAtIsNull();
+
     Optional<User> findByEmployeeIdAndDeletedAtIsNull(String employeeId);
 
     @org.springframework.data.jpa.repository.Query(value = "SELECT * FROM users WHERE (:facility IS NULL OR :facility = '' OR facility = :facility)", nativeQuery = true)

@@ -73,3 +73,24 @@ export interface UserCreateRequest {
     email?: string;
 }
 
+
+export type RequestType = 'PAID_LEAVE' | 'ABSENCE' | 'LATE' | 'EARLY_DEPARTURE';
+export type DurationType = 'FULL_DAY' | 'HALF_DAY_AM' | 'HALF_DAY_PM';
+export type RequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface AttendanceRequest {
+    id: number;
+    userId: number;
+    userName: string;
+    type: RequestType;
+    durationType?: DurationType;
+    startDate: string;
+    endDate: string;
+    startTime?: string;
+    endTime?: string;
+    reason: string;
+    rejectionReason?: string;
+    status: RequestStatus;
+    createdAt: string;
+    updatedAt: string;
+}

@@ -62,6 +62,10 @@ public class User {
     @Column(name = "last_seen_at")
     private LocalDateTime lastSeenAt;
 
+    @Column(name = "paid_leave_days")
+    @Builder.Default
+    private Integer paidLeaveDays = 20;
+
     public enum Role {
         ADMIN, USER, DEVELOPER
     }

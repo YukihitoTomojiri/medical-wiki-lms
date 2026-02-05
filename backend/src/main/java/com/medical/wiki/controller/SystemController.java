@@ -6,7 +6,6 @@ import com.medical.wiki.service.ComplianceExportService;
 import com.medical.wiki.service.ProgressService;
 import com.medical.wiki.service.UserService;
 import com.medical.wiki.service.LoggingService;
-import com.medical.wiki.service.SystemStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -30,7 +29,7 @@ public class SystemController {
     private final ProgressService progressService;
     private final LoggingService loggingService;
     private final ComplianceExportService complianceExportService;
-    private final SystemStatusService systemStatusService;
+    // private final SystemStatusService systemStatusService;
 
     @GetMapping("/system")
     public ResponseEntity<?> getSystemStats() {
