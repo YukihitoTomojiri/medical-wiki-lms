@@ -3,14 +3,12 @@ import { Link, useLocation } from 'react-router-dom';
 import { User } from '../types';
 import {
     BookOpen,
-    User as UserIcon,
     LayoutDashboard,
     LogOut,
     Menu,
     X,
     Building2,
-    Database,
-    Calendar
+    Database
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -36,8 +34,7 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
 
     const navItems = [
         { path: '/manuals', label: 'マニュアル', icon: BookOpen },
-        { path: '/mypage', label: 'Myページ', icon: UserIcon },
-        { path: '/paid-leaves', label: '有給申請', icon: Calendar },
+        { path: '/dashboard', label: 'Myダッシュボード', icon: LayoutDashboard },
         ...(user.role === 'ADMIN' || user.role === 'DEVELOPER' ? [{ path: '/admin', label: '管理者ダッシュボード', icon: LayoutDashboard }] : []),
         ...(user.role === 'DEVELOPER' ? [{ path: '/developer', label: '開発者メニュー', icon: Database }] : []),
     ];

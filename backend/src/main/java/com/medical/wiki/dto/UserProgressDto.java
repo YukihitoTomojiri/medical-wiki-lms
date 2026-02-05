@@ -1,11 +1,10 @@
 package com.medical.wiki.dto;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class UserProgressDto {
     private Long userId;

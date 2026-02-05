@@ -5,7 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface PaidLeaveRepository extends JpaRepository<PaidLeave, Long> {
-    List<PaidLeave> findByUserIdOrderByDateDesc(Long userId);
+    List<PaidLeave> findByUserIdOrderByStartDateDesc(Long userId);
 
-    List<PaidLeave> findAllByOrderByDateDesc();
+    List<PaidLeave> findAllByOrderByStartDateDesc();
+
+    long countByUserIdAndStatus(Long userId, PaidLeave.Status status);
 }

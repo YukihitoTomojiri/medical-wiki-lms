@@ -9,6 +9,8 @@ import java.util.Optional;
 public interface ProgressRepository extends JpaRepository<Progress, Long> {
     List<Progress> findByUserId(Long userId);
 
+    List<Progress> findByUserIdOrderByReadAtDesc(Long userId);
+
     List<Progress> findByManualId(Long manualId);
 
     Optional<Progress> findByUserIdAndManualId(Long userId, Long manualId);

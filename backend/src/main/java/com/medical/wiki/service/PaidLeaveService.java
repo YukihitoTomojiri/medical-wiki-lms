@@ -21,13 +21,26 @@ public class PaidLeaveService {
     private final UserRepository userRepository;
 
     @Transactional
-    public PaidLeaveDto submitRequest(Long userId, LocalDate date, String reason) {
+    public PaidLeaveDto submitRequest(Long userId, LocalDate startDate, LocalDate endDate, String reason) {
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("Start date must be before or equal to end date");
+        }
+
+        // Simple check for past dates, can be relaxed if needed
+        if (startDate.isBefore(LocalDate.now())) {
+            // System policy: Allow past dates? Assuming strict for now, but usually for HR
+            // it might be allowed.
+            // Let's allow past dates for flexible workflow unless specified strictly.
+            // throw new IllegalArgumentException("Cannot submit leave for past dates");
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         PaidLeave paidLeave = PaidLeave.builder()
                 .user(user)
-                .date(date)
+                .startDate(startDate)
+                .endDate(endDate)
                 .reason(reason)
                 .status(PaidLeave.Status.PENDING)
                 .build();
@@ -37,14 +50,14 @@ public class PaidLeaveService {
 
     @Transactional(readOnly = true)
     public List<PaidLeaveDto> getMyRequests(Long userId) {
-        return repository.findByUserIdOrderByDateDesc(userId).stream()
+        return repository.findByUserIdOrderByStartDateDesc(userId).stream()
                 .map(PaidLeaveDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<PaidLeaveDto> getAllRequests() {
-        return repository.findAllByOrderByDateDesc().stream()
+        return repository.findAllByOrderByStartDateDesc().stream()
                 .map(PaidLeaveDto::fromEntity)
                 .collect(Collectors.toList());
     }

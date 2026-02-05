@@ -4,7 +4,7 @@ import { User } from './types';
 import Login from './pages/Login';
 import ManualList from './pages/ManualList';
 import ManualDetail from './pages/ManualDetail';
-import MyPage from './pages/MyPage';
+import PersonalDashboard from './pages/PersonalDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import DeveloperDashboard from './pages/DeveloperDashboard';
 import AllUsersAdmin from './pages/AllUsersAdmin';
@@ -14,7 +14,7 @@ import ChangePassword from './pages/ChangePassword';
 import SetupAccount from './pages/SetupAccount';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import PaidLeaveRequest from './pages/PaidLeaveRequest';
+
 
 function App() {
     const [user, setUser] = useState<User | null>(() => {
@@ -70,8 +70,7 @@ function App() {
                     <Route path="/" element={<Navigate to="/manuals" replace />} />
                     <Route path="/manuals" element={<ManualList user={user} />} />
                     <Route path="/manuals/:id" element={<ManualDetail user={user} />} />
-                    <Route path="/mypage" element={<MyPage user={user} />} />
-                    <Route path="/paid-leaves" element={<PaidLeaveRequest user={user} />} />
+                    <Route path="/dashboard" element={<PersonalDashboard user={user} />} />
                     {user.role === 'DEVELOPER' && (
                         <Route path="/developer" element={<DeveloperDashboard />} />
                     )}

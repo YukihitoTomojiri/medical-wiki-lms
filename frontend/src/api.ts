@@ -435,11 +435,11 @@ export const api = {
     },
 
     // Paid Leave
-    submitPaidLeave: async (userId: number, date: string, reason: string): Promise<any> => {
+    submitPaidLeave: async (userId: number, startDate: string, endDate: string, reason: string): Promise<any> => {
         const res = await fetch(`${API_BASE}/paid-leaves`, {
             method: 'POST',
             headers: getHeaders(userId),
-            body: JSON.stringify({ date, reason }),
+            body: JSON.stringify({ startDate, endDate, reason }),
         });
         return res.json();
     },
@@ -471,6 +471,14 @@ export const api = {
     rejectPaidLeave: async (userId: number, id: number): Promise<any> => {
         const res = await fetch(`${API_BASE}/admin/paid-leaves/${id}/reject`, {
             method: 'PUT',
+            headers: getHeaders(userId),
+        });
+        return res.json();
+    },
+
+    // Personal Dashboard
+    getPersonalDashboard: async (userId: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/my/dashboard`, {
             headers: getHeaders(userId),
         });
         return res.json();

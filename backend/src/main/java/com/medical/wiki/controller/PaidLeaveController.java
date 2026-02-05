@@ -5,7 +5,6 @@ import com.medical.wiki.entity.PaidLeave;
 import com.medical.wiki.service.PaidLeaveService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +22,7 @@ public class PaidLeaveController {
     public PaidLeaveDto submitRequest(
             @RequestHeader(value = "X-User-Id") Long userId,
             @RequestBody PaidLeaveRequest request) {
-        return service.submitRequest(userId, request.getDate(), request.getReason());
+        return service.submitRequest(userId, request.getStartDate(), request.getEndDate(), request.getReason());
     }
 
     @GetMapping("/paid-leaves/my")
@@ -51,7 +50,8 @@ public class PaidLeaveController {
 
     @Data
     public static class PaidLeaveRequest {
-        private LocalDate date;
+        private LocalDate startDate;
+        private LocalDate endDate;
         private String reason;
     }
 }
