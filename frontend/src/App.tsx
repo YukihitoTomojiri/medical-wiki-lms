@@ -14,6 +14,7 @@ import ChangePassword from './pages/ChangePassword';
 import SetupAccount from './pages/SetupAccount';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import DevConsole from './pages/DevConsole';
 
 function App() {
     const [user, setUser] = useState<User | null>(() => {
@@ -76,6 +77,7 @@ function App() {
                     {(user.role === 'ADMIN' || user.role === 'DEVELOPER') && (
                         <>
                             <Route path="/admin" element={<AdminDashboard />} />
+                            <Route path="/dev/console" element={<DevConsole />} />
                             <Route path="/admin/manuals/new" element={<ManualEdit user={user} />} />
                             <Route path="/admin/manuals/new" element={<ManualEdit user={user} />} />
                             <Route path="/admin/manuals/edit/:id" element={<ManualEdit user={user} />} />
