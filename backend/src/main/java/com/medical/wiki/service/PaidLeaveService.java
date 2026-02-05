@@ -30,7 +30,7 @@ public class PaidLeaveService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Calculate requested days
-        long daysRequested = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        double daysRequested = (double) java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
 
         // Check balance (Simplified: Assuming single day excluding weekends is not
         // required yet, just pure date diff)
@@ -76,13 +76,13 @@ public class PaidLeaveService {
         }
 
         if (status == PaidLeave.Status.APPROVED) {
-            long daysRequested = java.time.temporal.ChronoUnit.DAYS.between(paidLeave.getStartDate(),
+            double daysRequested = java.time.temporal.ChronoUnit.DAYS.between(paidLeave.getStartDate(),
                     paidLeave.getEndDate()) + 1;
             User user = paidLeave.getUser();
             if (user.getPaidLeaveDays() < daysRequested) {
                 throw new IllegalStateException("User has insufficient balance to approve this request");
             }
-            user.setPaidLeaveDays((int) (user.getPaidLeaveDays() - daysRequested));
+            user.setPaidLeaveDays(user.getPaidLeaveDays() - daysRequested);
             userRepository.save(user);
         } else if (status == PaidLeave.Status.REJECTED) {
             paidLeave.setRejectionReason(rejectionReason);

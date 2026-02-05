@@ -55,7 +55,7 @@ public class PersonalDashboardController {
                 .lastReadDate(lastReadDate)
                 .pendingLeaveRequestsCount(pendingLeaves)
                 .approvedLeaveRequestsCount(approvedLeaves)
-                .paidLeaveDays(user.getPaidLeaveDays() != null ? user.getPaidLeaveDays() : 0)
+                .paidLeaveDays(user.getPaidLeaveDays() != null ? user.getPaidLeaveDays() : 0.0)
                 .unreadNotificationsCount(0) // Mock
                 .build();
     }
