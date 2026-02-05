@@ -290,31 +290,89 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                     </div>
 
                                     {(requestType === 'LATE' || requestType === 'EARLY_DEPARTURE') && (
-                                        <div className="grid grid-cols-2 gap-2">
+                                        <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-xs font-bold text-gray-500 mb-1">開始時間</label>
-                                                <div className="relative">
-                                                    <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                                    <input
-                                                        type="time"
-                                                        step="900"
-                                                        value={startTime}
-                                                        onChange={(e) => setStartTime(e.target.value)}
-                                                        className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700"
-                                                    />
+                                                <div className="flex gap-2 items-center">
+                                                    <div className="relative flex-1">
+                                                        <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                                        <select
+                                                            value={startTime ? startTime.split(':')[0] : ''}
+                                                            onChange={(e) => {
+                                                                const h = e.target.value;
+                                                                const m = startTime ? startTime.split(':')[1] : '00';
+                                                                setStartTime(`${h}:${m}`);
+                                                            }}
+                                                            className="w-full pl-9 pr-8 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white"
+                                                        >
+                                                            <option value="" disabled>時</option>
+                                                            {Array.from({ length: 24 }).map((_, i) => (
+                                                                <option key={i} value={i.toString().padStart(2, '0')}>
+                                                                    {i.toString().padStart(2, '0')}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+                                                    </div>
+                                                    <span className="text-gray-400 font-bold">:</span>
+                                                    <div className="relative w-20">
+                                                        <select
+                                                            value={startTime ? startTime.split(':')[1] : ''}
+                                                            onChange={(e) => {
+                                                                const h = startTime ? startTime.split(':')[0] : '09';
+                                                                const m = e.target.value;
+                                                                setStartTime(`${h}:${m}`);
+                                                            }}
+                                                            className="w-full pl-3 pr-8 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white"
+                                                        >
+                                                            {['00', '15', '30', '45'].map((m) => (
+                                                                <option key={m} value={m}>{m}</option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-bold text-gray-500 mb-1">終了時間</label>
-                                                <div className="relative">
-                                                    <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                                    <input
-                                                        type="time"
-                                                        step="900"
-                                                        value={endTime}
-                                                        onChange={(e) => setEndTime(e.target.value)}
-                                                        className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700"
-                                                    />
+                                                <div className="flex gap-2 items-center">
+                                                    <div className="relative flex-1">
+                                                        <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                                        <select
+                                                            value={endTime ? endTime.split(':')[0] : ''}
+                                                            onChange={(e) => {
+                                                                const h = e.target.value;
+                                                                const m = endTime ? endTime.split(':')[1] : '00';
+                                                                setEndTime(`${h}:${m}`);
+                                                            }}
+                                                            className="w-full pl-9 pr-8 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white"
+                                                        >
+                                                            <option value="" disabled>時</option>
+                                                            {Array.from({ length: 24 }).map((_, i) => (
+                                                                <option key={i} value={i.toString().padStart(2, '0')}>
+                                                                    {i.toString().padStart(2, '0')}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+                                                    </div>
+                                                    <span className="text-gray-400 font-bold">:</span>
+                                                    <div className="relative w-20">
+                                                        <select
+                                                            value={endTime ? endTime.split(':')[1] : ''}
+                                                            onChange={(e) => {
+                                                                const h = endTime ? endTime.split(':')[0] : '18';
+                                                                const m = e.target.value;
+                                                                setEndTime(`${h}:${m}`);
+                                                            }}
+                                                            className="w-full pl-3 pr-8 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white"
+                                                        >
+                                                            {['00', '15', '30', '45'].map((m) => (
+                                                                <option key={m} value={m}>{m}</option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

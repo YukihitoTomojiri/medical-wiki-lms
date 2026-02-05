@@ -13,6 +13,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 @Service
 @RequiredArgsConstructor
@@ -32,18 +34,21 @@ public class AttendanceRequestService {
         // Validate time inputs for specific types
         if ((type == AttendanceRequest.RequestType.LATE || type == AttendanceRequest.RequestType.EARLY_DEPARTURE)
                 && startTime == null) {
-            throw new IllegalArgumentException("Start time is required for Late/Early Departure requests.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Start time is required for Late/Early Departure requests.");
         }
         // Basic time order validation if both are present
         if (startTime != null && endTime != null && startTime.isAfter(endTime)) {
-            throw new IllegalArgumentException("Start time cannot be after end time");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start time cannot be after end time");
         }
         // 15-minute interval validation
         if (startTime != null && startTime.getMinute() % 15 != 0) {
-            throw new IllegalArgumentException("Start time must be in 15-minute intervals (00, 15, 30, 45).");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Start time must be in 15-minute intervals (00, 15, 30, 45).");
         }
         if (endTime != null && endTime.getMinute() % 15 != 0) {
-            throw new IllegalArgumentException("End time must be in 15-minute intervals (00, 15, 30, 45).");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "End time must be in 15-minute intervals (00, 15, 30, 45).");
         }
 
         User user = userRepository.findById(userId)
@@ -55,8 +60,9 @@ public class AttendanceRequestService {
         // Balance Check Logic for PAID_LEAVE
         if (type == AttendanceRequest.RequestType.PAID_LEAVE) {
             if (user.getPaidLeaveDays() < daysRequested) {
-                throw new IllegalArgumentException("Insufficient paid leave balance. Requested: " + daysRequested
-                        + ", Available: " + user.getPaidLeaveDays());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Insufficient paid leave balance. Requested: " + daysRequested
+                                + ", Available: " + user.getPaidLeaveDays());
             }
         }
 
@@ -122,35 +128,6 @@ public class AttendanceRequestService {
                 if (user.getPaidLeaveDays() < daysRequested) {
                     throw new IllegalStateException("User has insufficient balance to approve this request");
                 }
-                // Assuming paidLeaveDays is Integer, we might need to change it to Double or
-                // handle half days carefully.
-                // Since DB `paid_leave_days` is int, and user asked for "Half Day" support...
-                // Option A: Change DB to Float/Double.
-                // Option B: Store as `0.5` days but represented in Int? No.
-                // I should assume the requirement implies upgrading the balance system or
-                // rounding.
-                // Given the instructions, I'll update User entity to store days as Double or
-                // handle floor/ceil.
-                // Since I cannot change User entity table easily without migration (though I
-                // can with `jpa`), let's assume `paidLeaveDays` is strictly Int for now and
-                // fail?
-                // Wait, if I implement 0.5 logic, `paidLeaveDays` MUST be double.
-                // Let's modify User entity type in next step if generic Int is insufficient.
-                // ACTUALLY, I will floor it for now: 20 - 0.5 = 19.5 -> 19? Or maybe I should
-                // update User entity to double now.
-                // Let's update `User.java` to use Double for `paidLeaveDays` if possible, OR
-                // just subtract 1 for now if lazy.
-                // But `HALF_DAY` implies 0.5.
-                // I will update User to Double. It is a necessary change.
-
-                // For now in this file, I'll cast but notice the Entity is Integer.
-                // I'll update the User entity in the next tool call to Double.
-
-                // Let's assume User is being updated to Double.
-                // But wait, `User` entity is `Integer`.
-                // I will add a `TODO` or handle it by casting to int (ceil) for safety or error
-                // if not divisible?
-                // Actually, let's just create a new tool call to update User entity to Double.
                 user.setPaidLeaveDays(user.getPaidLeaveDays() - daysRequested);
                 userRepository.save(user);
             }

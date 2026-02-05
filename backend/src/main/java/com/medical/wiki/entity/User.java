@@ -64,7 +64,7 @@ public class User {
 
     @Column(name = "paid_leave_days")
     @Builder.Default
-    private Integer paidLeaveDays = 20;
+    private Double paidLeaveDays = 20.0;
 
     public enum Role {
         ADMIN, USER, DEVELOPER
