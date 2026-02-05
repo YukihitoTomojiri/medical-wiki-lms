@@ -434,22 +434,39 @@ export const api = {
         return res.json();
     },
 
-    // Paid Leave
-    submitPaidLeave: async (userId: number, startDate: string, endDate: string, reason: string): Promise<any> => {
-        const res = await fetch(`${API_BASE}/paid-leaves`, {
-            method: 'POST',
-            headers: getHeaders(userId),
-            body: JSON.stringify({ startDate, endDate, reason }),
+    // Personal Dashboard
+    getMyDashboard: async (userId: number): Promise<any> => {
+        const response = await fetch(`${API_BASE}/my/summary`, {
+            headers: {
+                'X-User-Id': userId.toString()
+            }
         });
-        return res.json();
+        if (!response.ok) throw new Error('Failed to fetch dashboard');
+        return response.json();
+    },
+
+    // Paid Leaves
+    submitPaidLeave: async (userId: number, startDate: string, endDate: string, reason: string): Promise<any> => {
+        const response = await fetch(`${API_BASE}/leaves/apply`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-Id': userId.toString()
+            },
+            body: JSON.stringify({ startDate, endDate, reason })
+        });
+        if (!response.ok) throw new Error('Failed to submit leave request');
+        return response.json();
     },
 
     getMyPaidLeaves: async (userId: number): Promise<any[]> => {
-        const res = await fetch(`${API_BASE}/paid-leaves/my`, {
-            headers: getHeaders(userId),
+        const response = await fetch(`${API_BASE}/leaves/history`, {
+            headers: {
+                'X-User-Id': userId.toString()
+            }
         });
-        if (!res.ok) return [];
-        return res.json();
+        if (!response.ok) throw new Error('Failed to fetch leave requests');
+        return response.json();
     },
 
     getAllPaidLeaves: async (userId: number): Promise<any[]> => {

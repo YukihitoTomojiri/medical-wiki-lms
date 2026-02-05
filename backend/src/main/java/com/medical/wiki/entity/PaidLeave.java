@@ -30,6 +30,9 @@ public class PaidLeave {
     @Column(nullable = false)
     private String reason;
 
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;

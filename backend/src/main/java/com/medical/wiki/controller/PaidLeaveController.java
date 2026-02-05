@@ -18,14 +18,14 @@ public class PaidLeaveController {
 
     private final PaidLeaveService service;
 
-    @PostMapping("/paid-leaves")
+    @PostMapping("/leaves/apply")
     public PaidLeaveDto submitRequest(
             @RequestHeader(value = "X-User-Id") Long userId,
             @RequestBody PaidLeaveRequest request) {
         return service.submitRequest(userId, request.getStartDate(), request.getEndDate(), request.getReason());
     }
 
-    @GetMapping("/paid-leaves/my")
+    @GetMapping("/leaves/history")
     public List<PaidLeaveDto> getMyRequests(@RequestHeader(value = "X-User-Id") Long userId) {
         return service.getMyRequests(userId);
     }
@@ -39,13 +39,19 @@ public class PaidLeaveController {
     @PutMapping("/admin/paid-leaves/{id}/approve")
     @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
     public PaidLeaveDto approveRequest(@PathVariable Long id) {
-        return service.updateStatus(id, PaidLeave.Status.APPROVED);
+        return service.updateStatus(id, PaidLeave.Status.APPROVED, null);
     }
 
     @PutMapping("/admin/paid-leaves/{id}/reject")
     @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
-    public PaidLeaveDto rejectRequest(@PathVariable Long id) {
-        return service.updateStatus(id, PaidLeave.Status.REJECTED);
+    public PaidLeaveDto rejectRequest(@PathVariable Long id, @RequestBody(required = false) RejectionRequest request) {
+        String reason = request != null ? request.getReason() : null;
+        return service.updateStatus(id, PaidLeave.Status.REJECTED, reason);
+    }
+
+    @Data
+    public static class RejectionRequest {
+        private String reason;
     }
 
     @Data

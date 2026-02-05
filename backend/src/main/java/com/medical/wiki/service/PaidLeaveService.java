@@ -26,16 +26,20 @@ public class PaidLeaveService {
             throw new IllegalArgumentException("Start date must be before or equal to end date");
         }
 
-        // Simple check for past dates, can be relaxed if needed
-        if (startDate.isBefore(LocalDate.now())) {
-            // System policy: Allow past dates? Assuming strict for now, but usually for HR
-            // it might be allowed.
-            // Let's allow past dates for flexible workflow unless specified strictly.
-            // throw new IllegalArgumentException("Cannot submit leave for past dates");
-        }
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Calculate requested days
+        long daysRequested = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
+
+        // Check balance (Simplified: Assuming single day excluding weekends is not
+        // required yet, just pure date diff)
+        // If strictly business days, we need more logic. For MVP/prototype, date diff
+        // is fine.
+        if (user.getPaidLeaveDays() < daysRequested) {
+            throw new IllegalArgumentException("Insufficient paid leave balance. Requested: " + daysRequested
+                    + ", Available: " + user.getPaidLeaveDays());
+        }
 
         PaidLeave paidLeave = PaidLeave.builder()
                 .user(user)
@@ -63,9 +67,26 @@ public class PaidLeaveService {
     }
 
     @Transactional
-    public PaidLeaveDto updateStatus(Long id, PaidLeave.Status status) {
+    public PaidLeaveDto updateStatus(Long id, PaidLeave.Status status, String rejectionReason) {
         PaidLeave paidLeave = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
+
+        if (paidLeave.getStatus() != PaidLeave.Status.PENDING) {
+            throw new IllegalStateException("Can only update PENDING requests");
+        }
+
+        if (status == PaidLeave.Status.APPROVED) {
+            long daysRequested = java.time.temporal.ChronoUnit.DAYS.between(paidLeave.getStartDate(),
+                    paidLeave.getEndDate()) + 1;
+            User user = paidLeave.getUser();
+            if (user.getPaidLeaveDays() < daysRequested) {
+                throw new IllegalStateException("User has insufficient balance to approve this request");
+            }
+            user.setPaidLeaveDays((int) (user.getPaidLeaveDays() - daysRequested));
+            userRepository.save(user);
+        } else if (status == PaidLeave.Status.REJECTED) {
+            paidLeave.setRejectionReason(rejectionReason);
+        }
 
         paidLeave.setStatus(status);
         return PaidLeaveDto.fromEntity(repository.save(paidLeave));

@@ -4,7 +4,7 @@ import { User } from './types';
 import Login from './pages/Login';
 import ManualList from './pages/ManualList';
 import ManualDetail from './pages/ManualDetail';
-import PersonalDashboard from './pages/PersonalDashboard';
+import MyDashboard from './pages/MyDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import DeveloperDashboard from './pages/DeveloperDashboard';
 import AllUsersAdmin from './pages/AllUsersAdmin';
@@ -70,7 +70,8 @@ function App() {
                     <Route path="/" element={<Navigate to="/manuals" replace />} />
                     <Route path="/manuals" element={<ManualList user={user} />} />
                     <Route path="/manuals/:id" element={<ManualDetail user={user} />} />
-                    <Route path="/dashboard" element={<PersonalDashboard user={user} />} />
+                    <Route path="/my-dashboard" element={<MyDashboard user={user} />} />
+                    <Route path="/dashboard" element={<Navigate to="/my-dashboard" replace />} />
                     {user.role === 'DEVELOPER' && (
                         <Route path="/developer" element={<DeveloperDashboard />} />
                     )}

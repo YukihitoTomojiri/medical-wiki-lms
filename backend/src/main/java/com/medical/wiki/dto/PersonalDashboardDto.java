@@ -13,6 +13,7 @@ public class PersonalDashboardDto {
 
     private int pendingLeaveRequestsCount;
     private int approvedLeaveRequestsCount;
+    private int paidLeaveDays;
 
     private int unreadNotificationsCount;
 }

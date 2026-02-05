@@ -18,6 +18,7 @@ public class PaidLeaveDto {
     private LocalDate startDate;
     private LocalDate endDate;
     private String reason;
+    private String rejectionReason;
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -32,6 +33,7 @@ public class PaidLeaveDto {
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
                 .reason(entity.getReason())
+                .rejectionReason(entity.getRejectionReason())
                 .status(entity.getStatus().name())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())

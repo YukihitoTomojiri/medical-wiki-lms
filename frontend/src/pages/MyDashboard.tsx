@@ -10,16 +10,16 @@ import {
     Clock,
     XCircle,
     Plus,
-    LayoutDashboard,
-    ArrowRight
+    ArrowRight,
+    AlertCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-interface PersonalDashboardProps {
+interface MyDashboardProps {
     user: User;
 }
 
-export default function PersonalDashboard({ user }: PersonalDashboardProps) {
+export default function MyDashboard({ user }: MyDashboardProps) {
     const [dashboardData, setDashboardData] = useState<any>(null);
     const [progress, setProgress] = useState<Progress[]>([]);
     const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
@@ -39,7 +39,7 @@ export default function PersonalDashboard({ user }: PersonalDashboardProps) {
     const loadData = async () => {
         try {
             const [dashData, progressData, leaveData] = await Promise.all([
-                api.getPersonalDashboard(user.id),
+                api.getMyDashboard(user.id),
                 api.getMyProgress(user.id),
                 api.getMyPaidLeaves(user.id)
             ]);
@@ -64,7 +64,7 @@ export default function PersonalDashboard({ user }: PersonalDashboardProps) {
             setReason('');
             // Reload leaves and dashboard stats
             const [dashData, leaveData] = await Promise.all([
-                api.getPersonalDashboard(user.id),
+                api.getMyDashboard(user.id),
                 api.getMyPaidLeaves(user.id)
             ]);
             setDashboardData(dashData);
@@ -88,19 +88,12 @@ export default function PersonalDashboard({ user }: PersonalDashboardProps) {
 
     return (
         <div className="space-y-6 max-w-6xl mx-auto">
-            {/* Header Area */}
+            {/* Header Area - Removed Admin Link for Separation */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">個人ダッシュボード</h2>
+                    <h2 className="text-2xl font-bold text-gray-800">Myダッシュボード</h2>
                     <p className="text-gray-500 mt-1">ようこそ、{user.name}さん。今日のタスクを確認しましょう。</p>
                 </div>
-                {/* Developer Role Shortcut */}
-                {(user.role === 'DEVELOPER' || user.role === 'ADMIN') && (
-                    <Link to="/admin" className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-xl text-sm font-bold shadow-lg hover:bg-gray-700 transition-all">
-                        <LayoutDashboard size={16} />
-                        管理者メニューへ
-                    </Link>
-                )}
             </div>
 
             {/* Summary Cards */}
@@ -130,11 +123,11 @@ export default function PersonalDashboard({ user }: PersonalDashboardProps) {
                     <div className="relative">
                         <div className="flex items-center gap-2 text-gray-500 mb-2">
                             <Calendar size={18} className="text-emerald-500" />
-                            <span className="text-xs font-bold uppercase tracking-wider">有給申請状況</span>
+                            <span className="text-xs font-bold uppercase tracking-wider">有給残日数</span>
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-black text-gray-800">{dashboardData?.approvedLeaveRequestsCount}</span>
-                            <span className="text-sm text-gray-400">承認済</span>
+                            <span className="text-3xl font-black text-gray-800">{dashboardData?.paidLeaveDays}</span>
+                            <span className="text-sm text-gray-400">日</span>
                         </div>
                         <div className="mt-3 flex items-center text-xs text-emerald-600 font-medium">
                             <Clock size={14} className="mr-1" />
@@ -299,7 +292,15 @@ export default function PersonalDashboard({ user }: PersonalDashboardProps) {
                                                     <td className="px-6 py-4 text-sm font-bold text-gray-700 whitespace-nowrap">
                                                         {req.startDate} <span className="text-gray-300 mx-1">~</span> {req.endDate}
                                                     </td>
-                                                    <td className="px-6 py-4 text-sm text-gray-600">{req.reason}</td>
+                                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                                        <div>{req.reason}</div>
+                                                        {req.status === 'REJECTED' && req.rejectionReason && (
+                                                            <div className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                                                                <AlertCircle size={10} />
+                                                                却下理由: {req.rejectionReason}
+                                                            </div>
+                                                        )}
+                                                    </td>
                                                     <td className="px-6 py-4 text-right">{getLeaveStatusBadge(req.status)}</td>
                                                 </tr>
                                             )) : (

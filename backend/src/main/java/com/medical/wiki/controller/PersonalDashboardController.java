@@ -21,14 +21,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PersonalDashboardController {
 
+    private final com.medical.wiki.repository.UserRepository userRepository;
     private final ProgressRepository progressRepository;
-    private final PaidLeaveRepository paidLeaveRepository;
     private final ManualRepository manualRepository;
+    private final PaidLeaveRepository paidLeaveRepository;
 
-    @GetMapping("/my/dashboard")
+    @GetMapping("/my/summary")
     public PersonalDashboardDto getDashboard(@RequestHeader(value = "X-User-Id") Long userId) {
         List<Progress> progressList = progressRepository.findByUserIdOrderByReadAtDesc(userId);
         long totalManuals = manualRepository.count();
+
+        com.medical.wiki.entity.User user = userRepository.findById(userId).orElseThrow();
 
         // Calculate monthly read count
         LocalDate now = LocalDate.now();
@@ -52,6 +55,7 @@ public class PersonalDashboardController {
                 .lastReadDate(lastReadDate)
                 .pendingLeaveRequestsCount(pendingLeaves)
                 .approvedLeaveRequestsCount(approvedLeaves)
+                .paidLeaveDays(user.getPaidLeaveDays() != null ? user.getPaidLeaveDays() : 0)
                 .unreadNotificationsCount(0) // Mock
                 .build();
     }
