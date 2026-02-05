@@ -8,16 +8,22 @@ import {
     TrendingUp,
     CheckCircle2,
     ChevronDown,
-    ChevronUp
+    ChevronUp,
+    FileDown,
+    Send,
+    AlertTriangle,
+    BookOpen
 } from 'lucide-react';
 
 export default function AdminDashboard() {
     const [usersProgress, setUsersProgress] = useState<UserProgress[]>([]);
+    const [laggingManuals, setLaggingManuals] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [facilityFilter, setFacilityFilter] = useState('');
     const [departmentFilter, setDepartmentFilter] = useState('');
     const [expandedUser, setExpandedUser] = useState<number | null>(null);
+    const [exporting, setExporting] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -25,12 +31,46 @@ export default function AdminDashboard() {
 
     const loadData = async () => {
         try {
-            const data = await api.getAllUsersProgress();
-            setUsersProgress(data);
+            const [progressData, laggingData] = await Promise.all([
+                api.getAllUsersProgress(),
+                api.getLaggingManuals(1)
+            ]);
+            setUsersProgress(progressData);
+            setLaggingManuals(laggingData);
         } catch (error) {
             console.error('Failed to load data:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleExport = async () => {
+        setExporting(true);
+        try {
+            const blob = await api.exportComplianceCsv(1, facilityFilter);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `compliance_report_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            alert('エクスポートに失敗しました');
+        } finally {
+            setExporting(false);
+        }
+    };
+
+    const handleRemind = async (userId: number, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm('督促メールを送信しますか？')) return;
+        try {
+            await api.remindUser(1, userId);
+            alert('送信しました');
+        } catch (error) {
+            alert('送信に失敗しました');
         }
     };
 
@@ -59,47 +99,69 @@ export default function AdminDashboard() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
             </div>
         );
     }
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div>
-                <h2 className="text-2xl font-bold text-gray-800">管理者ダッシュボード</h2>
-                <p className="text-gray-500 mt-1">全職員の読了状況を確認できます</p>
+            <div className="flex justify-between items-end">
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800">管理者ダッシュボード</h2>
+                    <p className="text-gray-500 mt-1">全職員の読了状況を確認・管理できます</p>
+                </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-5 text-white shadow-xl shadow-primary-500/20">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-5 text-white shadow-xl shadow-orange-500/20">
                     <div className="flex items-center gap-3 mb-2">
-                        <Users size={20} className="text-primary-200" />
-                        <span className="text-primary-100">総ユーザー数</span>
+                        <Users size={20} className="text-orange-200" />
+                        <span className="text-orange-100 font-bold">総ユーザー数</span>
                     </div>
-                    <p className="text-3xl font-bold">{totalUsers}名</p>
+                    <p className="text-3xl font-black">{totalUsers}<span className="text-sm font-medium ml-1">名</span></p>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 border border-primary-200 shadow-xl shadow-primary-500/10">
+                <div className="bg-white rounded-2xl p-5 border border-orange-100 shadow-xl shadow-orange-500/5">
                     <div className="flex items-center gap-3 mb-2">
-                        <TrendingUp size={20} className="text-primary-500" />
-                        <span className="text-primary-600 font-medium">平均進捗率</span>
+                        <TrendingUp size={20} className="text-orange-500" />
+                        <span className="text-orange-600 font-bold">平均進捗率</span>
                     </div>
-                    <p className="text-3xl font-bold text-primary-600">{averageProgress}%</p>
+                    <p className="text-3xl font-black text-orange-600">{averageProgress}<span className="text-sm font-medium ml-1">%</span></p>
                 </div>
 
-                <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-5 text-white shadow-xl shadow-amber-500/20">
+                <div className="bg-gradient-to-br from-amber-400 to-amber-500 rounded-2xl p-5 text-white shadow-xl shadow-amber-500/20">
                     <div className="flex items-center gap-3 mb-2">
-                        <CheckCircle2 size={20} className="text-amber-200" />
-                        <span className="text-amber-100">全読了者</span>
+                        <CheckCircle2 size={20} className="text-amber-100" />
+                        <span className="text-amber-50 font-bold">全読了者</span>
                     </div>
-                    <p className="text-3xl font-bold">{completedUsers}名</p>
+                    <p className="text-3xl font-black">{completedUsers}<span className="text-sm font-medium ml-1">名</span></p>
+                </div>
+
+                {/* Lagging Manuals Widget */}
+                <div className="bg-white rounded-2xl p-4 border border-red-100 shadow-sm overflow-hidden">
+                    <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle size={16} className="text-red-500" />
+                        <span className="text-xs font-bold text-red-600 uppercase tracking-wider">進捗遅延マニュアル TOP3</span>
+                    </div>
+                    <div className="space-y-2">
+                        {laggingManuals.length > 0 ? laggingManuals.map((m, i) => (
+                            <div key={m.id} className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-2 truncate flex-1">
+                                    <span className="w-4 h-4 flex items-center justify-center bg-red-50 text-red-600 rounded font-bold text-[10px]">{i + 1}</span>
+                                    <span className="text-gray-700 truncate" title={m.title}>{m.title}</span>
+                                </div>
+                                <span className="font-bold text-red-500">{m.completionRate}%</span>
+                            </div>
+                        )) : (
+                            <div className="text-center text-xs text-gray-400 py-2">データなし</div>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            {/* Filters */}
+            {/* Filters & Actions */}
             <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -108,7 +170,7 @@ export default function AdminDashboard() {
                         placeholder="氏名・社員番号で検索..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all bg-white"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all bg-white font-medium text-gray-700 placeholder:text-gray-400"
                     />
                 </div>
                 <div className="relative">
@@ -117,9 +179,9 @@ export default function AdminDashboard() {
                         value={facilityFilter}
                         onChange={(e) => {
                             setFacilityFilter(e.target.value);
-                            setDepartmentFilter(''); // Reset department when facility changes
+                            setDepartmentFilter('');
                         }}
-                        className="pl-12 pr-10 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all bg-white appearance-none cursor-pointer min-w-[180px]"
+                        className="pl-12 pr-10 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all bg-white appearance-none cursor-pointer min-w-[180px] font-bold text-gray-600"
                     >
                         <option value="">すべての施設</option>
                         {facilities.map((facility) => (
@@ -132,7 +194,7 @@ export default function AdminDashboard() {
                     <select
                         value={departmentFilter}
                         onChange={(e) => setDepartmentFilter(e.target.value)}
-                        className="pl-12 pr-10 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all bg-white appearance-none cursor-pointer min-w-[180px]"
+                        className="pl-12 pr-10 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all bg-white appearance-none cursor-pointer min-w-[180px] font-bold text-gray-600"
                         disabled={!facilityFilter}
                     >
                         <option value="">すべての部署</option>
@@ -141,6 +203,14 @@ export default function AdminDashboard() {
                         ))}
                     </select>
                 </div>
+                <button
+                    onClick={handleExport}
+                    disabled={exporting}
+                    className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-xl font-bold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                >
+                    <FileDown size={20} className="text-orange-500" />
+                    <span className="hidden sm:inline">CSV出力</span>
+                </button>
             </div>
 
             {/* User Progress Table */}
@@ -149,10 +219,10 @@ export default function AdminDashboard() {
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">職員</th>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 hidden sm:table-cell">施設</th>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">進捗</th>
-                                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-600">読了数</th>
+                                <th className="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-wider">職員</th>
+                                <th className="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-wider hidden sm:table-cell">施設 / 部署</th>
+                                <th className="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-wider">進捗</th>
+                                <th className="px-6 py-4 text-right text-xs font-black text-gray-400 uppercase tracking-wider">Action</th>
                                 <th className="px-6 py-4 w-10"></th>
                             </tr>
                         </thead>
@@ -161,71 +231,84 @@ export default function AdminDashboard() {
                                 <>
                                     <tr
                                         key={userProgress.userId}
-                                        className="hover:bg-gray-50 transition-colors cursor-pointer"
+                                        className="hover:bg-orange-50/30 transition-colors cursor-pointer"
                                         onClick={() => setExpandedUser(expandedUser === userProgress.userId ? null : userProgress.userId)}
                                     >
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-500 rounded-full flex items-center justify-center text-white font-bold shrink-0">
+                                                <div className="w-10 h-10 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center text-orange-600 font-black shrink-0 border border-orange-200">
                                                     {userProgress.name.charAt(0)}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-gray-800">{userProgress.name}</p>
-                                                    <p className="text-sm text-gray-500">{userProgress.employeeId}</p>
+                                                    <p className="font-bold text-gray-800">{userProgress.name}</p>
+                                                    <p className="text-xs font-mono text-gray-400">#{userProgress.employeeId}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 hidden sm:table-cell">
                                             <div className="flex flex-col">
-                                                <span className="font-medium text-gray-700">{userProgress.facility}</span>
-                                                <span className="text-xs text-gray-500">{userProgress.department}</span>
+                                                <span className="font-bold text-gray-600 text-sm">{userProgress.facility}</span>
+                                                <span className="text-xs font-medium text-gray-400">{userProgress.department}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="flex-1 min-w-[100px] max-w-[150px] bg-gray-100 rounded-full h-2.5">
+                                                <div className="flex-1 min-w-[100px] max-w-[150px] bg-gray-100 rounded-full h-2">
                                                     <div
-                                                        className={`h-2.5 rounded-full transition-all ${userProgress.progressPercentage === 100
-                                                            ? 'bg-gradient-to-r from-emerald-400 to-teal-500'
+                                                        className={`h-2 rounded-full transition-all duration-500 ${userProgress.progressPercentage === 100
+                                                            ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
                                                             : userProgress.progressPercentage >= 50
-                                                                ? 'bg-gradient-to-r from-primary-400 to-primary-500'
-                                                                : 'bg-gradient-to-r from-amber-400 to-orange-500'
+                                                                ? 'bg-orange-500'
+                                                                : 'bg-red-500'
                                                             }`}
                                                         style={{ width: `${userProgress.progressPercentage}%` }}
                                                     />
                                                 </div>
-                                                <span className="text-sm font-medium text-gray-600 w-12">
+                                                <span className="text-sm font-bold text-gray-600 w-12 text-right">
                                                     {userProgress.progressPercentage}%
                                                 </span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <span className="font-semibold text-gray-800">{userProgress.readManuals}</span>
-                                            <span className="text-gray-400"> / {userProgress.totalManuals}</span>
+                                            {userProgress.progressPercentage < 100 && (
+                                                <button
+                                                    onClick={(e) => handleRemind(userProgress.userId, e)}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-500 text-xs font-bold hover:text-orange-600 hover:border-orange-200 hover:bg-orange-50 transition-all active:scale-95 shadow-sm"
+                                                    title="督促を送る"
+                                                >
+                                                    <Send size={14} />
+                                                    <span className="hidden sm:inline">督促</span>
+                                                </button>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4">
                                             {expandedUser === userProgress.userId ? (
-                                                <ChevronUp size={20} className="text-gray-400" />
+                                                <ChevronUp size={20} className="text-gray-300" />
                                             ) : (
-                                                <ChevronDown size={20} className="text-gray-400" />
+                                                <ChevronDown size={20} className="text-gray-300" />
                                             )}
                                         </td>
                                     </tr>
-                                    {expandedUser === userProgress.userId && userProgress.progressList.length > 0 && (
+                                    {expandedUser === userProgress.userId && (
                                         <tr>
-                                            <td colSpan={5} className="px-6 py-4 bg-gray-50">
-                                                <div className="pl-12 space-y-2">
-                                                    <p className="text-sm font-medium text-gray-600 mb-2">読了済みマニュアル:</p>
+                                            <td colSpan={5} className="px-6 py-0 pb-6 border-b border-gray-50 bg-gray-50/30">
+                                                <div className="pl-12 pt-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                                                    <div className="flex items-center gap-2 mb-3 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                                                        <BookOpen size={14} />
+                                                        Completed Manuals
+                                                    </div>
                                                     <div className="flex flex-wrap gap-2">
-                                                        {userProgress.progressList.map((p) => (
+                                                        {userProgress.progressList.length > 0 ? userProgress.progressList.map((p) => (
                                                             <span
                                                                 key={p.id}
-                                                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm"
+                                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-600 shadow-sm"
                                                             >
-                                                                <CheckCircle2 size={14} className="text-emerald-500" />
+                                                                <CheckCircle2 size={12} className="text-emerald-500" />
                                                                 {p.manualTitle}
                                                             </span>
-                                                        ))}
+                                                        )) : (
+                                                            <span className="text-sm text-gray-400 italic">読了したマニュアルはありません</span>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </td>
@@ -239,8 +322,9 @@ export default function AdminDashboard() {
 
                 {filteredUsers.length === 0 && (
                     <div className="px-6 py-12 text-center">
-                        <Users className="mx-auto text-gray-400 mb-4" size={40} />
-                        <p className="text-gray-500">該当する職員が見つかりません</p>
+                        <Users className="mx-auto text-gray-300 mb-4" size={48} />
+                        <p className="text-gray-500 font-bold">該当する職員が見つかりません</p>
+                        <p className="text-xs text-gray-400 mt-1">検索条件を変更してください</p>
                     </div>
                 )}
             </div>

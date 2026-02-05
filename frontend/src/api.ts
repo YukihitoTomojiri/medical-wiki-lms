@@ -289,13 +289,28 @@ export const api = {
     exportComplianceCsv: async (userId: number, facility?: string, start?: string, end?: string): Promise<Blob> => {
         const params = new URLSearchParams();
         if (facility && facility !== 'all') params.append('facility', facility);
-        if (start) params.append('start', start);
-        if (end) params.append('end', end);
-        const url = `${API_BASE}/admin/compliance/export/csv${params.toString() ? '?' + params.toString() : ''}`;
+        if (start) params.append('startDate', start);
+        if (end) params.append('endDate', end);
+        const url = `${API_BASE}/admin/export/compliance${params.toString() ? '?' + params.toString() : ''}`;
         const res = await fetch(url, {
             headers: getHeaders(userId),
         });
         return res.blob();
+    },
+
+    remindUser: async (userId: number, targetUserId: number): Promise<void> => {
+        await fetch(`${API_BASE}/admin/notifications/remind/${targetUserId}`, {
+            method: 'POST',
+            headers: getHeaders(userId),
+        });
+    },
+
+    getLaggingManuals: async (userId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/admin/manuals/lagging`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
     },
 
     exportCompliancePdf: async (userId: number, facility?: string, start?: string, end?: string): Promise<Blob> => {
