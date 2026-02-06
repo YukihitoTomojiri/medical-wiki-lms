@@ -56,6 +56,10 @@ public class UserService {
             user.setDepartment(dto.department());
         if (dto.email() != null)
             user.setEmail(dto.email());
+        if (dto.paidLeaveDays() != null)
+            user.setPaidLeaveDays(dto.paidLeaveDays());
+        if (dto.joinedDate() != null)
+            user.setJoinedDate(dto.joinedDate());
 
         User updatedUser = userRepository.save(user);
 
@@ -67,8 +71,10 @@ public class UserService {
         loggingService.log(
                 "USER_UPDATE",
                 user.getName() + " (" + user.getEmployeeId() + ")",
-                String.format("Updated Role: %s, Facility: %s, Department: %s, Email: %s", dto.role(), dto.facility(),
-                        dto.department(), dto.email()),
+                String.format(
+                        "Updated Role: %s, Facility: %s, Department: %s, Email: %s, PaidLeaveDays: %s, JoinedDate: %s",
+                        dto.role(), dto.facility(), dto.department(), dto.email(), dto.paidLeaveDays(),
+                        dto.joinedDate()),
                 executorName);
 
         return UserDto.fromEntity(updatedUser);

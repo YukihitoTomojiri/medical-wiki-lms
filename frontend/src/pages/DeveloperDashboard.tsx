@@ -375,19 +375,15 @@ export default function DeveloperDashboard() {
     const saveEdit = async (id: number) => {
         try {
             addLog(`Updating user ID:${id}...`, 'info');
-            await Promise.all([
-                api.updateUser(1, id, {
-                    role: editForm.role,
-                    facility: editForm.facility,
-                    department: editForm.department,
-                    email: editForm.email
-                }),
-                api.updateUserLeaveSettings(1, id, {
-                    paidLeaveDays: editForm.paidLeaveDays || 0,
-                    joinedDate: editForm.joinedDate || ''
-                })
-            ]);
-            addLog(`User updated successfully`, 'success');
+            await api.updateUser(1, id, {
+                role: editForm.role,
+                facility: editForm.facility,
+                department: editForm.department,
+                email: editForm.email,
+                paidLeaveDays: editForm.paidLeaveDays,
+                joinedDate: editForm.joinedDate
+            });
+            addLog(`User updated successfully: ID:${id}`, 'success');
             setEditingUserId(null);
             fetchData(); // Refresh list to get latest data
         } catch (error) {

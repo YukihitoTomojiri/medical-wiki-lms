@@ -37,7 +37,7 @@ public class UserDto {
                 .mustChangePassword(user.getMustChangePassword())
                 .invitationToken(user.getInvitationToken())
                 .email(user.getEmail())
-                .paidLeaveDays(user.getPaidLeaveDays())
+                .paidLeaveDays(user.getPaidLeaveDays() != null ? user.getPaidLeaveDays() : 0.0)
                 .joinedDate(user.getJoinedDate())
                 .build();
     }
