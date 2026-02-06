@@ -61,7 +61,22 @@ export default function MyDashboard({ user }: MyDashboardProps) {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await api.submitAttendanceRequest(user.id, requestType, durationType, startDate, endDate, startTime, endTime, reason);
+            // For LATE/EARLY_DEPARTURE, ensure we have a full HH:mm format
+            // If startTime/endTime are empty, send as null to avoid parsing errors
+            const finalStartTime = (requestType === 'LATE' || requestType === 'EARLY_DEPARTURE') ? (startTime || null) : null;
+            const finalEndTime = (requestType === 'LATE' || requestType === 'EARLY_DEPARTURE') ? (endTime || null) : null;
+            const finalDurationType = requestType === 'PAID_LEAVE' ? durationType : null;
+
+            await api.submitAttendanceRequest(
+                user.id,
+                requestType,
+                finalDurationType as any,
+                startDate,
+                endDate,
+                finalStartTime as any,
+                finalEndTime as any,
+                reason
+            );
             alert('申請しました');
             setStartDate('');
             setEndDate('');
@@ -77,8 +92,9 @@ export default function MyDashboard({ user }: MyDashboardProps) {
             ]);
             setDashboardData(dashData);
             setLeaveRequests(leaveData);
-        } catch (error) {
-            alert('申請に失敗しました。日付などを確認してください。');
+        } catch (error: any) {
+            console.error('Submission failed:', error);
+            alert(`申請に失敗しました: ${error.message}`);
         } finally {
             setIsSubmitting(false);
         }

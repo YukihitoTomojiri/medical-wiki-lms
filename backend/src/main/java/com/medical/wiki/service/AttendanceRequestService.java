@@ -41,14 +41,16 @@ public class AttendanceRequestService {
         if (startTime != null && endTime != null && startTime.isAfter(endTime)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start time cannot be after end time");
         }
-        // 15-minute interval validation
-        if (startTime != null && startTime.getMinute() % 15 != 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Start time must be in 15-minute intervals (00, 15, 30, 45).");
-        }
-        if (endTime != null && endTime.getMinute() % 15 != 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "End time must be in 15-minute intervals (00, 15, 30, 45).");
+        // 15-minute interval validation (Only for Late/Early Departure)
+        if (type == AttendanceRequest.RequestType.LATE || type == AttendanceRequest.RequestType.EARLY_DEPARTURE) {
+            if (startTime != null && startTime.getMinute() % 15 != 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Start time must be in 15-minute intervals (00, 15, 30, 45).");
+            }
+            if (endTime != null && endTime.getMinute() % 15 != 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "End time must be in 15-minute intervals (00, 15, 30, 45).");
+            }
         }
 
         User user = userRepository.findById(userId)
