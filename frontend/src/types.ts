@@ -11,6 +11,8 @@ export interface User {
     mustChangePassword?: boolean;
     invitationToken?: string;
     email?: string;
+    paidLeaveDays?: number;
+    joinedDate?: string;
 }
 
 export interface Manual {
@@ -61,6 +63,8 @@ export interface UserUpdateRequest {
     facility?: string;
     department?: string;
     email?: string;
+    paidLeaveDays?: number;
+    joinedDate?: string;
 }
 
 export interface UserCreateRequest {
@@ -71,6 +75,8 @@ export interface UserCreateRequest {
     department: string;
     role: 'ADMIN' | 'USER' | 'DEVELOPER';
     email?: string;
+    paidLeaveDays?: number;
+    joinedDate?: string;
 }
 
 
