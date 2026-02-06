@@ -13,6 +13,10 @@ export interface User {
     email?: string;
     paidLeaveDays?: number;
     joinedDate?: string;
+    initialAdjustmentDays?: number;
+    statutoryLeaveDays?: number;
+    usedLeaveDays?: number;
+    remainingLeaveDays?: number;
 }
 
 export interface Manual {
@@ -65,6 +69,7 @@ export interface UserUpdateRequest {
     email?: string;
     paidLeaveDays?: number;
     joinedDate?: string;
+    initialAdjustmentDays?: number;
 }
 
 export interface UserCreateRequest {
@@ -77,6 +82,7 @@ export interface UserCreateRequest {
     email?: string;
     paidLeaveDays?: number;
     joinedDate?: string;
+    initialAdjustmentDays?: number;
 }
 
 

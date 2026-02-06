@@ -46,6 +46,9 @@ public class SecurityAnomaly {
     @Column(name = "ip_address")
     private String ipAddress;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     public enum AnomalyType {
         LATE_NIGHT_ACCESS, // 深夜帯アクセス (00:00 - 05:00 JST)
         RAPID_ACCESS, // 短時間閾値超えアクセス

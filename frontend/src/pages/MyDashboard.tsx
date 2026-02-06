@@ -153,9 +153,24 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                             <span className="text-3xl font-black text-gray-800">{dashboardData?.paidLeaveDays}</span>
                             <span className="text-sm text-gray-400">日</span>
                         </div>
-                        <div className="mt-3 flex items-center text-xs text-emerald-600 font-medium">
-                            <Clock size={14} className="mr-1" />
-                            申請中: {dashboardData?.pendingLeaveRequestsCount}件
+
+                        <div className="mt-4 grid grid-cols-2 gap-y-1.5 border-t border-gray-50 pt-3">
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black text-gray-400 uppercase leading-none mb-0.5">法定付与</span>
+                                <span className="text-xs font-bold text-gray-600">{dashboardData?.statutoryLeaveDays ?? 0}日</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black text-gray-400 uppercase leading-none mb-0.5">調整/繰越</span>
+                                <span className="text-xs font-bold text-blue-600">{dashboardData?.initialAdjustmentDays ?? 0}日</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black text-gray-400 uppercase leading-none mb-0.5">消化済み</span>
+                                <span className="text-xs font-bold text-orange-600">{dashboardData?.usedLeaveDays ?? 0}日</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black text-gray-400 uppercase leading-none mb-0.5">申請中</span>
+                                <span className="text-xs font-bold text-amber-600">{dashboardData?.pendingLeaveRequestsCount ?? 0}件</span>
+                            </div>
                         </div>
                     </div>
                 </div>

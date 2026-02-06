@@ -27,7 +27,7 @@ public class ManualService {
     private final String uploadDir = "/app/uploads/manuals";
 
     public List<ManualDto> getAllManuals(Long userId) {
-        List<Manual> manuals = manualRepository.findAllByOrderByCreatedAtDesc();
+        List<Manual> manuals = manualRepository.findAllByDeletedAtIsNullOrderByCreatedAtDesc();
         Set<Long> readManualIds = progressRepository.findByUserId(userId)
                 .stream()
                 .map(p -> p.getManual().getId())
@@ -39,7 +39,7 @@ public class ManualService {
     }
 
     public List<ManualDto> getManualsByCategory(String category, Long userId) {
-        List<Manual> manuals = manualRepository.findByCategory(category);
+        List<Manual> manuals = manualRepository.findByCategoryAndDeletedAtIsNull(category);
         Set<Long> readManualIds = progressRepository.findByUserId(userId)
                 .stream()
                 .map(p -> p.getManual().getId())
@@ -103,7 +103,7 @@ public class ManualService {
     }
 
     public List<String> getAllCategories() {
-        return manualRepository.findAll().stream()
+        return manualRepository.findAllByDeletedAtIsNullOrderByCreatedAtDesc().stream()
                 .map(Manual::getCategory)
                 .distinct()
                 .sorted()

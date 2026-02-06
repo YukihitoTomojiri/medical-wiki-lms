@@ -67,6 +67,10 @@ public class User {
     @Builder.Default
     private Double paidLeaveDays = 0.0;
 
+    @Column(name = "initial_adjustment_days")
+    @Builder.Default
+    private Double initialAdjustmentDays = 0.0;
+
     @Column(name = "joined_date")
     private LocalDate joinedDate;
 

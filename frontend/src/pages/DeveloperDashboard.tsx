@@ -363,7 +363,8 @@ export default function DeveloperDashboard() {
             department: user.department,
             email: user.email,
             paidLeaveDays: user.paidLeaveDays,
-            joinedDate: user.joinedDate
+            joinedDate: user.joinedDate,
+            initialAdjustmentDays: user.initialAdjustmentDays
         });
     };
 
@@ -381,7 +382,8 @@ export default function DeveloperDashboard() {
                 department: editForm.department,
                 email: editForm.email,
                 paidLeaveDays: editForm.paidLeaveDays,
-                joinedDate: editForm.joinedDate
+                joinedDate: editForm.joinedDate,
+                initialAdjustmentDays: editForm.initialAdjustmentDays
             });
             addLog(`User updated successfully: ID:${id}`, 'success');
             setEditingUserId(null);
@@ -433,7 +435,8 @@ export default function DeveloperDashboard() {
         role: 'USER' as const,
         email: '',
         paidLeaveDays: 0,
-        joinedDate: ''
+        joinedDate: '',
+        initialAdjustmentDays: 0
     });
     const [csvError, setCsvError] = useState<string | null>(null);
 
@@ -459,7 +462,8 @@ export default function DeveloperDashboard() {
                     role: 'USER',
                     email: '',
                     paidLeaveDays: 0,
-                    joinedDate: ''
+                    joinedDate: '',
+                    initialAdjustmentDays: 0
                 });
                 fetchData();
             } else {
@@ -946,7 +950,7 @@ export default function DeveloperDashboard() {
                                         </div>
                                     )}
 
-                                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                                         <div className="md:col-span-1">
                                             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">ID</label>
                                             <input
@@ -1014,7 +1018,7 @@ export default function DeveloperDashboard() {
                                             />
                                         </div>
                                         <div className="md:col-span-1">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Paid Leave Days</label>
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Paid Leave (Statutory)</label>
                                             <input
                                                 type="number"
                                                 step="0.5"
@@ -1022,6 +1026,18 @@ export default function DeveloperDashboard() {
                                                 value={registerForm.paidLeaveDays}
                                                 onChange={e => setRegisterForm({ ...registerForm, paidLeaveDays: parseFloat(e.target.value) || 0 })}
                                                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                                placeholder="0.0"
+                                            />
+                                        </div>
+                                        <div className="md:col-span-1">
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Carry-over Adjustment</label>
+                                            <input
+                                                type="number"
+                                                step="0.5"
+                                                value={registerForm.initialAdjustmentDays}
+                                                onChange={e => setRegisterForm({ ...registerForm, initialAdjustmentDays: parseFloat(e.target.value) || 0 })}
+                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                                placeholder="0.0"
                                             />
                                         </div>
                                         <div className="md:col-span-1">
@@ -1209,26 +1225,40 @@ export default function DeveloperDashboard() {
                                                                         />
                                                                     </div>
                                                                     <div className="flex flex-col">
-                                                                        <span className="text-[8px] font-black text-gray-400 uppercase">Leave Bal</span>
+                                                                        <span className="text-[8px] font-black text-gray-400 uppercase">Carry-over</span>
                                                                         <input
                                                                             type="number"
                                                                             step="0.5"
                                                                             min="0"
-                                                                            value={editForm.paidLeaveDays || 0}
-                                                                            onChange={e => setEditForm({ ...editForm, paidLeaveDays: parseFloat(e.target.value) || 0 })}
+                                                                            value={editForm.initialAdjustmentDays || 0}
+                                                                            onChange={e => setEditForm({ ...editForm, initialAdjustmentDays: parseFloat(e.target.value) || 0 })}
                                                                             className="text-[10px] p-1 rounded border border-gray-200"
                                                                         />
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                <div className="flex flex-col">
+                                                                <div className="flex flex-col gap-1">
                                                                     <div className="flex items-center gap-1">
                                                                         <Calendar size={10} className="text-gray-400" />
                                                                         <span className="text-[10px] font-bold text-gray-600">{user.joinedDate || '未設定'}</span>
                                                                     </div>
-                                                                    <div className="flex items-center gap-1 mt-0.5">
-                                                                        <Clock size={10} className="text-orange-400" />
-                                                                        <span className="text-[11px] font-black text-orange-600">{user.paidLeaveDays ?? 0} <span className="text-[8px] font-bold">days</span></span>
+                                                                    <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 mt-1 border-t border-gray-100 pt-1">
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-[7px] font-black text-gray-400 uppercase leading-none">Statutory</span>
+                                                                            <span className="text-[9px] font-bold text-gray-600">{user.statutoryLeaveDays ?? 0}d</span>
+                                                                        </div>
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-[7px] font-black text-gray-400 uppercase leading-none">Adj/Carry</span>
+                                                                            <span className="text-[9px] font-bold text-blue-600">{user.initialAdjustmentDays ?? 0}d</span>
+                                                                        </div>
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-[7px] font-black text-gray-400 uppercase leading-none">Used</span>
+                                                                            <span className="text-[9px] font-bold text-orange-600">{user.usedLeaveDays ?? 0}d</span>
+                                                                        </div>
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-[7px] font-black text-gray-400 uppercase leading-none">Total</span>
+                                                                            <span className="text-[10px] font-black text-emerald-600">{user.remainingLeaveDays ?? 0}d</span>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             )}

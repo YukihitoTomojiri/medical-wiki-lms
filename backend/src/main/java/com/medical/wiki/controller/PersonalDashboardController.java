@@ -25,13 +25,12 @@ public class PersonalDashboardController {
     private final ProgressRepository progressRepository;
     private final ManualRepository manualRepository;
     private final PaidLeaveRepository paidLeaveRepository;
+    private final com.medical.wiki.service.PaidLeaveService paidLeaveService;
 
     @GetMapping("/my/summary")
     public PersonalDashboardDto getDashboard(@RequestHeader(value = "X-User-Id") Long userId) {
         List<Progress> progressList = progressRepository.findByUserIdOrderByReadAtDesc(userId);
         long totalManuals = manualRepository.count();
-
-        com.medical.wiki.entity.User user = userRepository.findById(userId).orElseThrow();
 
         // Calculate monthly read count
         LocalDate now = LocalDate.now();
@@ -47,16 +46,21 @@ public class PersonalDashboardController {
 
         int pendingLeaves = (int) paidLeaveRepository.countByUserIdAndStatus(userId, PaidLeave.Status.PENDING);
         int approvedLeaves = (int) paidLeaveRepository.countByUserIdAndStatus(userId, PaidLeave.Status.APPROVED);
-
+        double usedDays = paidLeaveService.calculateUsedDays(userId);
         return PersonalDashboardDto.builder()
                 .completedManualsCount(progressList.size())
                 .totalManualsCount((int) totalManuals)
                 .monthlyReadCount(monthlyCount)
                 .lastReadDate(lastReadDate)
+                .paidLeaveDays(paidLeaveService.calculateRemainingDays(userId))
+                .statutoryLeaveDays(paidLeaveService.calculateStatutoryEntitlement(userId))
+                .initialAdjustmentDays(userRepository.findById(userId)
+                        .map(u -> u.getInitialAdjustmentDays() != null ? u.getInitialAdjustmentDays() : 0.0)
+                        .orElse(0.0))
+                .usedLeaveDays(usedDays)
                 .pendingLeaveRequestsCount(pendingLeaves)
                 .approvedLeaveRequestsCount(approvedLeaves)
-                .paidLeaveDays(user.getPaidLeaveDays() != null ? user.getPaidLeaveDays() : 0.0)
-                .unreadNotificationsCount(0) // Mock
+                .unreadNotificationsCount(0) // TODO: Implement notifications
                 .build();
     }
 }

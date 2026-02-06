@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.UUID;
 import java.security.SecureRandom;
@@ -20,6 +19,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final LoggingService loggingService;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final PaidLeaveService paidLeaveService;
 
     public List<UserDto> getAllUsers(String facility) {
         List<User> users;
@@ -29,7 +29,11 @@ public class UserService {
             users = userRepository.findAllByDeletedAtIsNull();
         }
         return users.stream()
-                .map(UserDto::fromEntity)
+                .map(u -> {
+                    UserDto dto = UserDto.fromEntity(u);
+                    paidLeaveService.enrichUserDto(dto);
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -60,6 +64,8 @@ public class UserService {
             user.setPaidLeaveDays(dto.paidLeaveDays());
         if (dto.joinedDate() != null)
             user.setJoinedDate(dto.joinedDate());
+        if (dto.initialAdjustmentDays() != null)
+            user.setInitialAdjustmentDays(dto.initialAdjustmentDays());
 
         User updatedUser = userRepository.save(user);
 
@@ -72,12 +78,14 @@ public class UserService {
                 "USER_UPDATE",
                 user.getName() + " (" + user.getEmployeeId() + ")",
                 String.format(
-                        "Updated Role: %s, Facility: %s, Department: %s, Email: %s, PaidLeaveDays: %s, JoinedDate: %s",
+                        "Updated Role: %s, Facility: %s, Department: %s, Email: %s, PaidLeaveDays: %s, JoinedDate: %s, InitialAdjustment: %s",
                         dto.role(), dto.facility(), dto.department(), dto.email(), dto.paidLeaveDays(),
-                        dto.joinedDate()),
+                        dto.joinedDate(), dto.initialAdjustmentDays()),
                 executorName);
 
-        return UserDto.fromEntity(updatedUser);
+        UserDto responseDto = UserDto.fromEntity(updatedUser);
+        paidLeaveService.enrichUserDto(responseDto);
+        return responseDto;
     }
 
     @Transactional
@@ -118,6 +126,7 @@ public class UserService {
                 .role(dto.role())
                 .email(dto.email())
                 .paidLeaveDays(dto.paidLeaveDays() != null ? dto.paidLeaveDays() : 0.0)
+                .initialAdjustmentDays(dto.initialAdjustmentDays() != null ? dto.initialAdjustmentDays() : 0.0)
                 .joinedDate(dto.joinedDate())
                 .createdAt(java.time.LocalDateTime.now())
                 .updatedAt(java.time.LocalDateTime.now())

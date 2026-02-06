@@ -1,6 +1,7 @@
 package com.medical.wiki.service;
 
 import com.medical.wiki.dto.PaidLeaveDto;
+import com.medical.wiki.dto.UserDto;
 import com.medical.wiki.entity.PaidLeave;
 import com.medical.wiki.entity.User;
 import com.medical.wiki.repository.PaidLeaveRepository;
@@ -19,6 +20,8 @@ public class PaidLeaveService {
 
     private final PaidLeaveRepository repository;
     private final UserRepository userRepository;
+    private final LeaveCalculationService leaveCalculationService;
+    private final com.medical.wiki.repository.AttendanceRequestRepository attendanceRequestRepository;
 
     @Transactional
     public PaidLeaveDto submitRequest(Long userId, LocalDate startDate, LocalDate endDate, String reason) {
@@ -79,10 +82,14 @@ public class PaidLeaveService {
             double daysRequested = java.time.temporal.ChronoUnit.DAYS.between(paidLeave.getStartDate(),
                     paidLeave.getEndDate()) + 1;
             User user = paidLeave.getUser();
-            if (user.getPaidLeaveDays() < daysRequested) {
+            double currentBalance = calculateRemainingDays(user.getId());
+            if (currentBalance < daysRequested) {
                 throw new IllegalStateException("User has insufficient balance to approve this request");
             }
-            user.setPaidLeaveDays(user.getPaidLeaveDays() - daysRequested);
+            // Logic change: We no longer manually subtract from user.paidLeaveDays here
+            // because calculateRemainingDays is dynamic based on approved requests.
+            // But we might want to update the cache field in User table for performance.
+            user.setPaidLeaveDays(currentBalance - daysRequested);
             userRepository.save(user);
         } else if (status == PaidLeave.Status.REJECTED) {
             paidLeave.setRejectionReason(rejectionReason);
@@ -90,5 +97,59 @@ public class PaidLeaveService {
 
         paidLeave.setStatus(status);
         return PaidLeaveDto.fromEntity(repository.save(paidLeave));
+    }
+
+    public double calculateUsedDays(Long userId) {
+        // From PaidLeave entities
+        double fromPaidLeaves = repository.findByUserIdAndStatus(userId, PaidLeave.Status.APPROVED).stream()
+                .mapToDouble(pl -> java.time.temporal.ChronoUnit.DAYS.between(pl.getStartDate(), pl.getEndDate()) + 1)
+                .sum();
+
+        // From AttendanceRequest entities
+        double fromAttendanceRequests = attendanceRequestRepository
+                .findByUserIdAndStatus(userId, com.medical.wiki.entity.AttendanceRequest.Status.APPROVED).stream()
+                .filter(ar -> ar.getType() == com.medical.wiki.entity.AttendanceRequest.RequestType.PAID_LEAVE)
+                .mapToDouble(ar -> {
+                    long baseDays = java.time.temporal.ChronoUnit.DAYS.between(ar.getStartDate(), ar.getEndDate()) + 1;
+                    if (ar.getDurationType() == com.medical.wiki.entity.AttendanceRequest.DurationType.FULL_DAY) {
+                        return (double) baseDays;
+                    } else {
+                        // Assuming half-day requests are usually for a single date in this system
+                        return baseDays * 0.5;
+                    }
+                })
+                .sum();
+
+        return fromPaidLeaves + fromAttendanceRequests;
+    }
+
+    public double calculateStatutoryEntitlement(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return leaveCalculationService.calculateStatutoryAmount(user.getJoinedDate());
+    }
+
+    public double calculateTotalEntitlement(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return calculateStatutoryEntitlement(userId)
+                + (user.getInitialAdjustmentDays() != null ? user.getInitialAdjustmentDays() : 0.0);
+    }
+
+    public double calculateRemainingDays(Long userId) {
+        return calculateTotalEntitlement(userId) - calculateUsedDays(userId);
+    }
+
+    public void enrichUserDto(UserDto dto) {
+        if (dto.getId() == null)
+            return;
+        double statutory = calculateStatutoryEntitlement(dto.getId());
+        double used = calculateUsedDays(dto.getId());
+        double total = statutory + (dto.getInitialAdjustmentDays() != null ? dto.getInitialAdjustmentDays() : 0.0);
+
+        dto.setStatutoryLeaveDays(statutory);
+        dto.setUsedLeaveDays(used);
+        dto.setRemainingLeaveDays(total - used);
+        dto.setPaidLeaveDays(total - used); // Synced
     }
 }

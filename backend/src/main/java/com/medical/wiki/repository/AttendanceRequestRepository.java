@@ -12,5 +12,7 @@ public interface AttendanceRequestRepository extends JpaRepository<AttendanceReq
 
     List<AttendanceRequest> findAllByOrderByStartDateDesc();
 
+    List<AttendanceRequest> findByUserIdAndStatus(Long userId, AttendanceRequest.Status status);
+
     long countByUserIdAndStatus(Long userId, AttendanceRequest.Status status);
 }

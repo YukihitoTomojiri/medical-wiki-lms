@@ -33,4 +33,7 @@ public class SystemLog {
 
     @Column(name = "ip_address")
     private String ipAddress;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

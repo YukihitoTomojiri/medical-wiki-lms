@@ -26,4 +26,7 @@ public class Progress {
 
     @Column(name = "read_at")
     private LocalDateTime readAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }
