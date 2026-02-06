@@ -489,6 +489,14 @@ export const api = {
         return res.json();
     },
 
+    getAllPaidLeaves: async (userId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/admin/paid-leaves`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
     approvePaidLeave: async (userId: number, id: number): Promise<any> => {
         const res = await fetch(`${API_BASE}/admin/paid-leaves/${id}/approve`, {
             method: 'PUT',
@@ -512,5 +520,13 @@ export const api = {
         });
         return res.json();
     },
+    updateUserLeaveSettings: async (userId: number, id: number, settings: { paidLeaveDays: number, joinedDate: string }): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/users/${id}/leave-settings`, {
+            method: 'PATCH',
+            headers: getHeaders(userId),
+            body: JSON.stringify(settings)
+        });
+        return res.json();
+    }
 };
 

@@ -100,4 +100,16 @@ public class AdminController {
                 .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
                 .body(csvData);
     }
+
+    @PatchMapping("/users/{id}/leave-settings")
+    public UserDto updateLeaveSettings(@PathVariable Long id, @RequestBody LeaveSettingsRequest request,
+            @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
+        return userService.updateLeaveSettings(id, request.getPaidLeaveDays(), request.getJoinedDate(), executorId);
+    }
+
+    @lombok.Data
+    public static class LeaveSettingsRequest {
+        private Double paidLeaveDays;
+        private LocalDate joinedDate;
+    }
 }

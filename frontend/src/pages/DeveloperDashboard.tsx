@@ -361,7 +361,9 @@ export default function DeveloperDashboard() {
             role: user.role,
             facility: user.facility,
             department: user.department,
-            email: user.email
+            email: user.email,
+            paidLeaveDays: user.paidLeaveDays,
+            joinedDate: user.joinedDate
         });
     };
 
@@ -377,9 +379,11 @@ export default function DeveloperDashboard() {
                 role: editForm.role,
                 facility: editForm.facility,
                 department: editForm.department,
-                email: editForm.email
+                email: editForm.email,
+                paidLeaveDays: editForm.paidLeaveDays,
+                joinedDate: editForm.joinedDate
             });
-            addLog(`User updated successfully`, 'success');
+            addLog(`User updated successfully: ID:${id}`, 'success');
             setEditingUserId(null);
             fetchData(); // Refresh list to get latest data
         } catch (error) {
@@ -427,7 +431,9 @@ export default function DeveloperDashboard() {
         facility: '本館',
         department: '3階病棟',
         role: 'USER' as const,
-        email: ''
+        email: '',
+        paidLeaveDays: 0,
+        joinedDate: ''
     });
     const [csvError, setCsvError] = useState<string | null>(null);
 
@@ -451,7 +457,9 @@ export default function DeveloperDashboard() {
                     facility: '本館',
                     department: '3階病棟',
                     role: 'USER',
-                    email: ''
+                    email: '',
+                    paidLeaveDays: 0,
+                    joinedDate: ''
                 });
                 fetchData();
             } else {
@@ -997,6 +1005,26 @@ export default function DeveloperDashboard() {
                                             </select>
                                         </div>
                                         <div className="md:col-span-1">
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Joined Date</label>
+                                            <input
+                                                type="date"
+                                                value={registerForm.joinedDate}
+                                                onChange={e => setRegisterForm({ ...registerForm, joinedDate: e.target.value })}
+                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                            />
+                                        </div>
+                                        <div className="md:col-span-1">
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Paid Leave Days</label>
+                                            <input
+                                                type="number"
+                                                step="0.5"
+                                                min="0"
+                                                value={registerForm.paidLeaveDays}
+                                                onChange={e => setRegisterForm({ ...registerForm, paidLeaveDays: parseFloat(e.target.value) || 0 })}
+                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                            />
+                                        </div>
+                                        <div className="md:col-span-1">
                                             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Role</label>
                                             <select
                                                 value={registerForm.role}
@@ -1121,7 +1149,8 @@ export default function DeveloperDashboard() {
                                                     />
                                                 </th>
                                                 <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Node ID / Name</th>
-                                                <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest w-40">Status</th>
+                                                <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                                                <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest w-48">Leave Info</th>
                                                 <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Facility / Dept</th>
                                                 <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
                                             </tr>
@@ -1166,6 +1195,43 @@ export default function DeveloperDashboard() {
                                                                     {nodeInfo?.status || 'UP'}
                                                                 </span>
                                                             </div>
+                                                        </td>
+                                                        <td className="px-4 py-4 w-48">
+                                                            {isEditing ? (
+                                                                <div className="space-y-1">
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-[8px] font-black text-gray-400 uppercase">Joined</span>
+                                                                        <input
+                                                                            type="date"
+                                                                            value={editForm.joinedDate || ''}
+                                                                            onChange={e => setEditForm({ ...editForm, joinedDate: e.target.value })}
+                                                                            className="text-[10px] p-1 rounded border border-gray-200"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-[8px] font-black text-gray-400 uppercase">Leave Bal</span>
+                                                                        <input
+                                                                            type="number"
+                                                                            step="0.5"
+                                                                            min="0"
+                                                                            value={editForm.paidLeaveDays || 0}
+                                                                            onChange={e => setEditForm({ ...editForm, paidLeaveDays: parseFloat(e.target.value) || 0 })}
+                                                                            className="text-[10px] p-1 rounded border border-gray-200"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex flex-col">
+                                                                    <div className="flex items-center gap-1">
+                                                                        <Calendar size={10} className="text-gray-400" />
+                                                                        <span className="text-[10px] font-bold text-gray-600">{user.joinedDate || '未設定'}</span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1 mt-0.5">
+                                                                        <Clock size={10} className="text-orange-400" />
+                                                                        <span className="text-[11px] font-black text-orange-600">{user.paidLeaveDays ?? 0} <span className="text-[8px] font-bold">days</span></span>
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </td>
                                                         <td className="px-4 py-4">
                                                             {isEditing ? (

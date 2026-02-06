@@ -20,6 +20,8 @@ public class UserDto {
     private Boolean mustChangePassword;
     private String invitationToken;
     private String email;
+    private Double paidLeaveDays;
+    private java.time.LocalDate joinedDate;
 
     public static UserDto fromEntity(User user) {
         return UserDto.builder()
@@ -35,6 +37,8 @@ public class UserDto {
                 .mustChangePassword(user.getMustChangePassword())
                 .invitationToken(user.getInvitationToken())
                 .email(user.getEmail())
+                .paidLeaveDays(user.getPaidLeaveDays() != null ? user.getPaidLeaveDays() : 0.0)
+                .joinedDate(user.getJoinedDate())
                 .build();
     }
 }

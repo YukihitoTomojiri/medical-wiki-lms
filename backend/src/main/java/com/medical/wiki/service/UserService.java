@@ -56,6 +56,10 @@ public class UserService {
             user.setDepartment(dto.department());
         if (dto.email() != null)
             user.setEmail(dto.email());
+        if (dto.paidLeaveDays() != null)
+            user.setPaidLeaveDays(dto.paidLeaveDays());
+        if (dto.joinedDate() != null)
+            user.setJoinedDate(dto.joinedDate());
 
         User updatedUser = userRepository.save(user);
 
@@ -67,8 +71,10 @@ public class UserService {
         loggingService.log(
                 "USER_UPDATE",
                 user.getName() + " (" + user.getEmployeeId() + ")",
-                String.format("Updated Role: %s, Facility: %s, Department: %s, Email: %s", dto.role(), dto.facility(),
-                        dto.department(), dto.email()),
+                String.format(
+                        "Updated Role: %s, Facility: %s, Department: %s, Email: %s, PaidLeaveDays: %s, JoinedDate: %s",
+                        dto.role(), dto.facility(), dto.department(), dto.email(), dto.paidLeaveDays(),
+                        dto.joinedDate()),
                 executorName);
 
         return UserDto.fromEntity(updatedUser);
@@ -111,6 +117,8 @@ public class UserService {
                 .department(dto.department())
                 .role(dto.role())
                 .email(dto.email())
+                .paidLeaveDays(dto.paidLeaveDays() != null ? dto.paidLeaveDays() : 0.0)
+                .joinedDate(dto.joinedDate())
                 .createdAt(java.time.LocalDateTime.now())
                 .updatedAt(java.time.LocalDateTime.now())
                 .mustChangePassword(true)
@@ -335,4 +343,27 @@ public class UserService {
         return sb.toString();
     }
 
+    @Transactional
+    public UserDto updateLeaveSettings(Long id, Double paidLeaveDays, java.time.LocalDate joinedDate, Long executorId) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (paidLeaveDays != null) {
+            user.setPaidLeaveDays(paidLeaveDays);
+        }
+        if (joinedDate != null) {
+            user.setJoinedDate(joinedDate);
+        }
+
+        User updatedUser = userRepository.save(user);
+
+        String executorName = resolveExecutorName(executorId);
+        loggingService.log(
+                "USER_LEAVE_UPDATE",
+                user.getName() + " (" + user.getEmployeeId() + ")",
+                String.format("Updated PaidLeaveDays: %s, JoinedDate: %s", paidLeaveDays, joinedDate),
+                executorName);
+
+        return UserDto.fromEntity(updatedUser);
+    }
 }

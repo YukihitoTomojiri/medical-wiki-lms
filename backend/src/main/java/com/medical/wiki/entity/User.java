@@ -2,6 +2,7 @@ package com.medical.wiki.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -64,7 +65,10 @@ public class User {
 
     @Column(name = "paid_leave_days")
     @Builder.Default
-    private Double paidLeaveDays = 20.0;
+    private Double paidLeaveDays = 0.0;
+
+    @Column(name = "joined_date")
+    private LocalDate joinedDate;
 
     public enum Role {
         ADMIN, USER, DEVELOPER
