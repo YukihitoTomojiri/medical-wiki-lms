@@ -464,7 +464,10 @@ export const api = {
             },
             body: JSON.stringify({ type, durationType, startDate, endDate, startTime, endTime, reason })
         });
-        if (!response.ok) throw new Error('Failed to submit attendance request');
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Failed to submit attendance request');
+        }
         return response.json();
     },
 
