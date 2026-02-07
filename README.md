@@ -225,14 +225,15 @@
   ]
   ```
 
-#### 2026-02-08: ユーザー履歴における過去データの表示不具合（集計漏れ）の解消
-- **課題**: 2月・3月の申請データ（`AttendanceRequest` 由来）がダッシュボードの要約カードにカウントされず、またフロントエンドでの表示も不安定になっていた。
+#### 2026-02-08: 管理者画面における「未承認申請」の表示不具合（データソース漏れ）の解消
+- **課題**: 「有給休暇申請一覧」が `paid_leaves` テーブルのみを参照していたため、以前の `attendance_requests` テーブルに保存された未承認データが表示されていなかった。
 - **修正内容**:
-  1. **Backend**: `PersonalDashboardController` を修正し、`PaidLeave` と `AttendanceRequest` の両テーブルから「申請中」「承認済み」の件数を合算して返すよう統合。
-  2. **Frontend**: `MyDashboard.tsx` のソートロジックを強化。`createdAt` が存在しない場合のフォールバック（`startDate` 参照）を追加し、React の `key` をユニーク化。
+  1. **Frontend**: `PaidLeaveManagement.tsx` において、`api.getAllPaidLeaves` と `api.getAllAttendanceRequests` の両方を呼び出し、リストを統合して表示するよう修正。
+  2. **Frontend**: 種別カラムを追加し、`AttendanceRequest` 由来のデータ（ABSENCE, PAID_LEAVE等）も判別可能に。
+  3. **Backend**: 勤怠申請の承認/却下API（`admin/attendance/requests/{id}/approve`等）をフロントエンドから利用可能に整備。
 - **結果**: 🎉 **成功**
-  - `honkan001` の要約カードに全14件（12 + 2）が正しくカウントされることを確認。
-  - 履歴一覧において、2月〜5月の全データが欠落なく表示されることを確認。
+  - 開発者アカウントでログインし、`honkan001` の全14件（旧テーブル12件、新テーブル2件）が申請一覧にすべて並ぶことを確認。
+  - 施設フィルタ設定にかかわらず、開発者は全施設・全期間のデータを閲覧・管理可能であることを実証。
 
 
 

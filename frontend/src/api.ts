@@ -545,6 +545,22 @@ export const api = {
         return res.json();
     },
 
+    approveAttendanceRequest: async (userId: number, id: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/attendance/requests/${id}/approve`, {
+            method: 'PUT',
+            headers: getHeaders(userId),
+        });
+        return res.json();
+    },
+
+    rejectAttendanceRequest: async (userId: number, id: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/attendance/requests/${id}/reject`, {
+            method: 'PUT',
+            headers: getHeaders(userId),
+        });
+        return res.json();
+    },
+
     // Personal Dashboard
     getPersonalDashboard: async (userId: number): Promise<any> => {
         const res = await fetch(`${API_BASE}/my/dashboard`, {

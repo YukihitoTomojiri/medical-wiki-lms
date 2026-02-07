@@ -22,11 +22,23 @@ export default function PaidLeaveManagement() {
 
     const loadData = async () => {
         try {
-            const [requestData, usersData] = await Promise.all([
+            const [requestData, attData, usersData] = await Promise.all([
                 api.getAllPaidLeaves(user.id),
+                api.getAllAttendanceRequests(user.id),
                 api.getUsers(user.id)
             ]);
-            setRequests(requestData);
+
+            // Unify data
+            const unified = [
+                ...requestData.map(r => ({ ...r, isAttendance: false })),
+                ...attData.map(a => ({ ...a, isAttendance: true }))
+            ].sort((a, b) => {
+                const dateA = new Date(a.createdAt || a.startDate || 0).getTime();
+                const dateB = new Date(b.createdAt || b.startDate || 0).getTime();
+                return dateB - dateA;
+            });
+
+            setRequests(unified);
             setUsers(usersData);
         } catch (error) {
             console.error(error);
@@ -35,20 +47,28 @@ export default function PaidLeaveManagement() {
         }
     };
 
-    const handleApprove = async (id: number) => {
+    const handleApprove = async (id: number, isAttendance: boolean) => {
         if (!confirm('承認しますか？')) return;
         try {
-            await api.approvePaidLeave(user.id, id);
+            if (isAttendance) {
+                await api.approveAttendanceRequest(user.id, id);
+            } else {
+                await api.approvePaidLeave(user.id, id);
+            }
             loadData();
         } catch (error) {
             alert('操作に失敗しました');
         }
     };
 
-    const handleReject = async (id: number) => {
+    const handleReject = async (id: number, isAttendance: boolean) => {
         if (!confirm('却下しますか？')) return;
         try {
-            await api.rejectPaidLeave(user.id, id);
+            if (isAttendance) {
+                await api.rejectAttendanceRequest(user.id, id);
+            } else {
+                await api.rejectPaidLeave(user.id, id);
+            }
             loadData();
         } catch (error) {
             alert('操作に失敗しました');
@@ -122,7 +142,7 @@ export default function PaidLeaveManagement() {
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                         {requests.length > 0 ? requests.map((req) => (
-                            <tr key={req.id} className="hover:bg-gray-50/50">
+                            <tr key={`${req.isAttendance ? 'att' : 'leave'}-${req.id}`} className="hover:bg-gray-50/50">
                                 <td className="px-6 py-4 font-bold text-gray-700">{req.userName}</td>
                                 <td className="px-6 py-4">
                                     <div className="flex flex-col text-xs">
@@ -134,9 +154,16 @@ export default function PaidLeaveManagement() {
                                     {req.startDate} ~ {req.endDate}
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-bold rounded">
-                                        {req.leaveType === 'FULL' ? '全日' : req.leaveType === 'HALF_AM' ? '午前半休' : '午後半休'}
-                                    </span>
+                                    <div className="flex flex-col gap-1">
+                                        <span className={`px-2 py-0.5 text-[10px] font-bold rounded w-fit ${req.isAttendance ? 'bg-gray-100 text-gray-500' : 'bg-blue-50 text-blue-700'}`}>
+                                            {req.isAttendance ? req.type : 'PAID_LEAVE'}
+                                        </span>
+                                        {!req.isAttendance && (
+                                            <span className="text-[10px] text-gray-400 font-bold ml-1">
+                                                {req.leaveType === 'FULL' ? '全日' : req.leaveType === 'HALF_AM' ? '午前半休' : '午後半休'}
+                                            </span>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" title={req.reason}>{req.reason}</td>
                                 <td className="px-6 py-4">{getStatusBadge(req.status)}</td>
@@ -144,13 +171,13 @@ export default function PaidLeaveManagement() {
                                     {req.status === 'PENDING' && (
                                         <div className="flex justify-end gap-2">
                                             <button
-                                                onClick={() => handleApprove(req.id)}
+                                                onClick={() => handleApprove(req.id, req.isAttendance)}
                                                 className="px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors"
                                             >
                                                 承認
                                             </button>
                                             <button
-                                                onClick={() => handleReject(req.id)}
+                                                onClick={() => handleReject(req.id, req.isAttendance)}
                                                 className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors"
                                             >
                                                 却下
