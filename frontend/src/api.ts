@@ -481,6 +481,38 @@ export const api = {
         return response.json();
     },
 
+    getMyPaidLeaves: async (userId: number): Promise<any[]> => {
+        const response = await fetch(`${API_BASE}/leaves/history`, {
+            headers: {
+                'X-User-Id': userId.toString()
+            }
+        });
+        if (!response.ok) throw new Error('Failed to fetch paid leave history');
+        return response.json();
+    },
+
+    submitPaidLeave: async (
+        userId: number,
+        startDate: string,
+        endDate: string,
+        reason: string,
+        leaveType: string
+    ): Promise<any> => {
+        const response = await fetch(`${API_BASE}/leaves/apply`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-Id': userId.toString()
+            },
+            body: JSON.stringify({ startDate, endDate, reason, leaveType })
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Failed to submit paid leave');
+        }
+        return response.json();
+    },
+
     getAllAttendanceRequests: async (userId: number): Promise<any[]> => {
         const res = await fetch(`${API_BASE}/admin/attendance/requests`, {
             headers: getHeaders(userId),

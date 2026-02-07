@@ -225,25 +225,15 @@
   ]
   ```
 
-#### 2026-02-08: 既存ユーザー honkan001 による同期検証
-- **テスト目的**: 既存ユーザー `honkan001` の申請が開発者画面で施設フィルタをバイパスして表示されるかを確認。
-- **実施手順**:
-  1. 既存ユーザー `honkan001` (ID: 3, 施設: 本館) として有給休暇（全日, 2026-05-10）を申請。
-  2. 開発者アカウント (ID: 1) で申請一覧を取得し、申請ID: 29 が含まれているか確認。
+#### 2026-02-08: 有給申請データの不整合（SSoT）の解消
+- **課題**: ユーザー画面（MyDashboard）が `AttendanceRequest` (テーブル: `attendance_requests`) を使用し、管理者画面が `PaidLeave` (テーブル: `paid_leaves`) を参照していたため、申請データが管理者に届かない不整合が発生していた。
+- **修正内容**:
+  1. **Frontend**: `MyDashboard.tsx` の有給申請処理を `api.submitPaidLeave` へ切り替え。
+  2. **Frontend**: 申請履歴（History）の取得時に `api.getMyAttendanceRequests` と `api.getMyPaidLeaves` の両方をフェッチして統合表示するよう変更。
+  3. **Backend**: `AttendanceRequestService` において `PAID_LEAVE` 種別の保存を禁止し、専用APIの使用を促すエラー（400 Bad Request）を投げるよう制限を追加。
 - **結果**: 🎉 **成功**
-  - 開発者画面にて `honkan001` の申請（申請ID: 29）が正常に取得できることを確認。
-  - 施設フィルタの影響を受けず、全件抽出が機能していることを実証。
-- **エビデンス**:
-  ```json
-  {
-    "id": 29,
-    "userId": 3,
-    "userName": "佐藤 美咲",
-    "userFacility": "本館",
-    "startDate": "2026-05-10",
-    "status": "PENDING"
-  }
-  ```
+  - `honkan001` が申請した「2026/05/10」のデータが `paid_leaves` テーブルにのみ 1件 存在することを確認。
+  - ユーザーの「申請履歴」と開発者の「申請一覧」の両方で、全く同じレコードが表示されることを確認。
 
 
 

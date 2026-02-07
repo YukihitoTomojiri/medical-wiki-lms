@@ -59,16 +59,10 @@ public class AttendanceRequestService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Helper to calculate days for balance check
-        double daysRequested = calculateDays(type, durationType, startDate, endDate);
-
-        // Balance Check Logic for PAID_LEAVE
+        // Balance Check Logic for PAID_LEAVE - MOVED TO PaidLeaveService
         if (type == AttendanceRequest.RequestType.PAID_LEAVE) {
-            if (user.getPaidLeaveDays() < daysRequested) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Insufficient paid leave balance. Requested: " + daysRequested
-                                + ", Available: " + user.getPaidLeaveDays());
-            }
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Paid leave requests must be submitted through the dedicated /leaves/apply endpoint.");
         }
 
         AttendanceRequest request = AttendanceRequest.builder()
@@ -88,17 +82,8 @@ public class AttendanceRequestService {
 
     private double calculateDays(AttendanceRequest.RequestType type, AttendanceRequest.DurationType durationType,
             LocalDate startDate, LocalDate endDate) {
-        if (type != AttendanceRequest.RequestType.PAID_LEAVE)
-            return 0;
-
-        long dateDiff = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
-
-        if (dateDiff == 1 && (durationType == AttendanceRequest.DurationType.HALF_DAY_AM
-                || durationType == AttendanceRequest.DurationType.HALF_DAY_PM)) {
-            return 0.5;
-        }
-
-        return (double) dateDiff;
+        // PAID_LEAVE calculation logic moved to PaidLeaveService
+        return 0;
     }
 
     @Transactional(readOnly = true)
@@ -155,17 +140,8 @@ public class AttendanceRequestService {
         }
 
         if (status == AttendanceRequest.Status.APPROVED) {
-            // Deduct Logic
-            if (request.getType() == AttendanceRequest.RequestType.PAID_LEAVE) {
-                double daysRequested = calculateDays(request.getType(), request.getDurationType(),
-                        request.getStartDate(), request.getEndDate());
-                User user = request.getUser();
-                if (user.getPaidLeaveDays() < daysRequested) {
-                    throw new IllegalStateException("User has insufficient balance to approve this request");
-                }
-                user.setPaidLeaveDays(user.getPaidLeaveDays() - daysRequested);
-                userRepository.save(user);
-            }
+            // Deduct Logic - MOVED TO PaidLeaveService for PAID_LEAVE types.
+            // Other types (ABSENCE, LATE, etc.) don't currently deduct days.
         } else if (status == AttendanceRequest.Status.REJECTED) {
             request.setRejectionReason(rejectionReason);
         }

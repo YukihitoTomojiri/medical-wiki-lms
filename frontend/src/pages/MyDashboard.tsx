@@ -42,14 +42,22 @@ export default function MyDashboard({ user }: MyDashboardProps) {
 
     const loadData = async () => {
         try {
-            const [dashData, progressData, leaveData] = await Promise.all([
+            const [dashData, progressData, attData, leaveData] = await Promise.all([
                 api.getMyDashboard(user.id),
                 api.getMyProgress(user.id),
-                api.getMyAttendanceRequests(user.id)
+                api.getMyAttendanceRequests(user.id),
+                api.getMyPaidLeaves(user.id)
             ]);
             setDashboardData(dashData);
             setProgress(progressData);
-            setLeaveRequests(leaveData);
+
+            // Unify history
+            const unified = [
+                ...attData.map(a => ({ ...a, isAttendance: true })),
+                ...leaveData.map(l => ({ ...l, type: 'PAID_LEAVE', isAttendance: false }))
+            ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+            setLeaveRequests(unified);
         } catch (error) {
             console.error(error);
         } finally {
@@ -61,22 +69,28 @@ export default function MyDashboard({ user }: MyDashboardProps) {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            // For LATE/EARLY_DEPARTURE, ensure we have a full HH:mm format
-            // If startTime/endTime are empty, send as null to avoid parsing errors
-            const finalStartTime = (requestType === 'LATE' || requestType === 'EARLY_DEPARTURE') ? (startTime || null) : null;
-            const finalEndTime = (requestType === 'LATE' || requestType === 'EARLY_DEPARTURE') ? (endTime || null) : null;
-            const finalDurationType = requestType === 'PAID_LEAVE' ? durationType : null;
+            if (requestType === 'PAID_LEAVE') {
+                let mappedType = 'FULL';
+                if (durationType === 'HALF_DAY_AM') mappedType = 'HALF_AM';
+                if (durationType === 'HALF_DAY_PM') mappedType = 'HALF_PM';
 
-            await api.submitAttendanceRequest(
-                user.id,
-                requestType,
-                finalDurationType as any,
-                startDate,
-                endDate,
-                finalStartTime as any,
-                finalEndTime as any,
-                reason
-            );
+                await api.submitPaidLeave(user.id, startDate, endDate, reason, mappedType);
+            } else {
+                const finalStartTime = (requestType === 'LATE' || requestType === 'EARLY_DEPARTURE') ? (startTime || null) : null;
+                const finalEndTime = (requestType === 'LATE' || requestType === 'EARLY_DEPARTURE') ? (endTime || null) : null;
+
+                await api.submitAttendanceRequest(
+                    user.id,
+                    requestType,
+                    null,
+                    startDate,
+                    endDate,
+                    finalStartTime as any,
+                    finalEndTime as any,
+                    reason
+                );
+            }
+
             alert('申請しました');
             setStartDate('');
             setEndDate('');
@@ -85,13 +99,9 @@ export default function MyDashboard({ user }: MyDashboardProps) {
             setReason('');
             setRequestType('PAID_LEAVE');
             setDurationType('FULL_DAY');
-            // Reload leaves and dashboard stats
-            const [dashData, leaveData] = await Promise.all([
-                api.getMyDashboard(user.id),
-                api.getMyAttendanceRequests(user.id)
-            ]);
-            setDashboardData(dashData);
-            setLeaveRequests(leaveData);
+
+            // Reload
+            loadData();
         } catch (error: any) {
             console.error('Submission failed:', error);
             alert(`申請に失敗しました: ${error.message}`);
