@@ -60,8 +60,23 @@ public class PaidLeaveService {
     }
 
     @Transactional(readOnly = true)
-    public List<PaidLeaveDto> getAllRequests() {
-        return repository.findAllByOrderByStartDateDesc().stream()
+    public List<PaidLeaveDto> getAllRequests(Long requesterId) {
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        List<PaidLeave> leaves;
+        if (requester.getRole() == User.Role.DEVELOPER) {
+            // DEVELOPER: GLOBAL access
+            leaves = repository.findAllByOrderByStartDateDesc();
+        } else if (requester.getRole() == User.Role.ADMIN) {
+            // ADMIN: FACILITY access
+            leaves = repository.findByUser_FacilityOrderByStartDateDesc(requester.getFacility());
+        } else {
+            // USER: SELF only (safety fallback)
+            leaves = repository.findByUserIdOrderByStartDateDesc(requesterId);
+        }
+
+        return leaves.stream()
                 .map(PaidLeaveDto::fromEntity)
                 .collect(Collectors.toList());
     }

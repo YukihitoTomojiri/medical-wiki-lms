@@ -32,8 +32,8 @@ public class PaidLeaveController {
 
     @GetMapping("/admin/paid-leaves")
     @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
-    public List<PaidLeaveDto> getAllRequests() {
-        return service.getAllRequests();
+    public List<PaidLeaveDto> getAllRequests(@RequestHeader(value = "X-User-Id") Long userId) {
+        return service.getAllRequests(userId);
     }
 
     @PutMapping("/admin/paid-leaves/{id}/approve")
