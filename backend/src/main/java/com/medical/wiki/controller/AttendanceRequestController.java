@@ -34,8 +34,8 @@ public class AttendanceRequestController {
 
     @GetMapping("/admin/attendance/requests")
     @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
-    public List<AttendanceRequestDto> getAllRequests() {
-        return service.getAllRequests();
+    public List<AttendanceRequestDto> getAllRequests(@RequestHeader(value = "X-User-Id") Long userId) {
+        return service.getAllRequests(userId);
     }
 
     @PutMapping("/admin/attendance/requests/{id}/approve")

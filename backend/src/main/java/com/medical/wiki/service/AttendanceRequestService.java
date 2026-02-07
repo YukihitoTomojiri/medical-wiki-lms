@@ -3,7 +3,9 @@ package com.medical.wiki.service;
 import com.medical.wiki.dto.AttendanceRequestDto;
 import com.medical.wiki.entity.AttendanceRequest;
 import com.medical.wiki.entity.User;
+import com.medical.wiki.entity.UserFacilityMapping;
 import com.medical.wiki.repository.AttendanceRequestRepository;
+import com.medical.wiki.repository.UserFacilityMappingRepository;
 import com.medical.wiki.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ public class AttendanceRequestService {
 
     private final AttendanceRequestRepository repository;
     private final UserRepository userRepository;
+    private final UserFacilityMappingRepository facilityMappingRepository;
 
     @Transactional
     public AttendanceRequestDto submitRequest(Long userId, AttendanceRequest.RequestType type,
@@ -105,9 +108,39 @@ public class AttendanceRequestService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Get all requests based on requester's role:
+     * - DEVELOPER: ALL facilities (global access)
+     * - ADMIN: Only facilities they manage (via user_facility_mapping)
+     * - USER: Only their own (should use getMyRequests instead)
+     */
     @Transactional(readOnly = true)
-    public List<AttendanceRequestDto> getAllRequests() {
-        return repository.findAllByOrderByStartDateDesc().stream()
+    public List<AttendanceRequestDto> getAllRequests(Long requesterId) {
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        List<AttendanceRequest> requests;
+        if (requester.getRole() == User.Role.DEVELOPER) {
+            // DEVELOPER: GLOBAL access - bypass facility filter
+            requests = repository.findByDeletedAtIsNullOrderByStartDateDesc();
+        } else if (requester.getRole() == User.Role.ADMIN) {
+            // ADMIN: Access only to facilities they manage
+            List<String> managedFacilities = facilityMappingRepository
+                    .findByUserIdAndDeletedAtIsNull(requesterId)
+                    .stream()
+                    .map(UserFacilityMapping::getFacilityName)
+                    .collect(Collectors.toList());
+            // Add their own facility if not already there
+            if (!managedFacilities.contains(requester.getFacility())) {
+                managedFacilities.add(requester.getFacility());
+            }
+            requests = repository.findByUser_FacilityInAndDeletedAtIsNullOrderByStartDateDesc(managedFacilities);
+        } else {
+            // USER: SELF only (fallback)
+            requests = repository.findByUserIdOrderByStartDateDesc(requesterId);
+        }
+
+        return requests.stream()
                 .map(AttendanceRequestDto::fromEntity)
                 .collect(Collectors.toList());
     }

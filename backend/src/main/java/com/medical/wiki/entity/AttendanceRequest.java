@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@org.hibernate.annotations.SQLDelete(sql = "UPDATE attendance_requests SET deleted_at = NOW() WHERE id = ?")
+@org.hibernate.annotations.Where(clause = "deleted_at IS NULL")
 public class AttendanceRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
