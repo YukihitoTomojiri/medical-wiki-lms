@@ -527,6 +527,23 @@ export const api = {
             body: JSON.stringify(settings)
         });
         return res.json();
+    },
+
+    grantPaidLeave: async (adminUserId: number, targetUserId: number, daysToGrant: number, reason: string): Promise<void> => {
+        const res = await fetch(`${API_BASE}/admin/users/${targetUserId}/grant-leave`, {
+            method: 'POST',
+            headers: getHeaders(adminUserId),
+            body: JSON.stringify({ daysToGrant, reason })
+        });
+        if (!res.ok) throw new Error('Failed to grant paid leave');
+    },
+
+    getAccrualHistory: async (adminUserId: number, targetUserId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/admin/users/${targetUserId}/accrual-history`, {
+            headers: getHeaders(adminUserId),
+        });
+        if (!res.ok) return [];
+        return res.json();
     }
 };
 

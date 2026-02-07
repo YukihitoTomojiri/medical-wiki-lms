@@ -20,6 +20,7 @@ public class PaidLeaveDto {
     private String reason;
     private String rejectionReason;
     private String status;
+    private String leaveType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -35,6 +36,7 @@ public class PaidLeaveDto {
                 .reason(entity.getReason())
                 .rejectionReason(entity.getRejectionReason())
                 .status(entity.getStatus().name())
+                .leaveType(entity.getLeaveType() != null ? entity.getLeaveType().name() : "FULL")
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
