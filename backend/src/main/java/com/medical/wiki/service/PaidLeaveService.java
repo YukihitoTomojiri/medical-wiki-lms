@@ -128,6 +128,13 @@ public class PaidLeaveService {
         return PaidLeaveDto.fromEntity(repository.save(paidLeave));
     }
 
+    @Transactional
+    public void bulkApprove(List<Long> ids) {
+        for (Long id : ids) {
+            updateStatus(id, PaidLeave.Status.APPROVED, null);
+        }
+    }
+
     /**
      * Grant paid leave days to a user (ADMIN/DEVELOPER only)
      */

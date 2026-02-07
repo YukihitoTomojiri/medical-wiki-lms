@@ -52,6 +52,12 @@ public class PaidLeaveController {
         return service.updateStatus(id, PaidLeave.Status.APPROVED, null);
     }
 
+    @PostMapping("/admin/paid-leaves/bulk-approve")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
+    public void bulkApprove(@RequestBody List<Long> ids) {
+        service.bulkApprove(ids);
+    }
+
     @PutMapping("/admin/paid-leaves/{id}/reject")
     @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
     public PaidLeaveDto rejectRequest(@PathVariable Long id, @RequestBody(required = false) RejectionRequest request) {

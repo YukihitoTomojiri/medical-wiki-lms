@@ -149,4 +149,11 @@ public class AttendanceRequestService {
         request.setStatus(status);
         return AttendanceRequestDto.fromEntity(repository.save(request));
     }
+
+    @Transactional
+    public void bulkApprove(List<Long> ids) {
+        for (Long id : ids) {
+            updateStatus(id, AttendanceRequest.Status.APPROVED, null);
+        }
+    }
 }

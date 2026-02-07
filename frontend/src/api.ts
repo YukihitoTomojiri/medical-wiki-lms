@@ -561,6 +561,30 @@ export const api = {
         return res.json();
     },
 
+    bulkApprovePaidLeaves: async (userId: number, ids: number[]): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/paid-leaves/bulk-approve`, {
+            method: 'POST',
+            headers: {
+                ...getHeaders(userId),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(ids),
+        });
+        return res.status === 200;
+    },
+
+    bulkApproveAttendanceRequests: async (userId: number, ids: number[]): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/attendance/requests/bulk-approve`, {
+            method: 'POST',
+            headers: {
+                ...getHeaders(userId),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(ids),
+        });
+        return res.status === 200;
+    },
+
     // Personal Dashboard
     getPersonalDashboard: async (userId: number): Promise<any> => {
         const res = await fetch(`${API_BASE}/my/dashboard`, {
