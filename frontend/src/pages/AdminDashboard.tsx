@@ -57,7 +57,7 @@ export default function AdminDashboard() {
             {/* Content Area */}
             <div className="animate-in fade-in duration-300">
                 {activeTab === 'dashboard' && <ComplianceDashboard />}
-                {activeTab === 'paid_leaves' && <PaidLeaveManagement />}
+                {activeTab === 'paid_leaves' && <PaidLeaveManagement user={user} />}
                 {activeTab === 'organization' && <OrganizationManagement />}
             </div>
         </div>

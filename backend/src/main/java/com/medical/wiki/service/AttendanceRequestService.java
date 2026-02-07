@@ -106,10 +106,32 @@ public class AttendanceRequestService {
     }
 
     @Transactional(readOnly = true)
-    public List<AttendanceRequestDto> getAllRequests() {
-        return repository.findAllByOrderByStartDateDesc().stream()
+    public List<AttendanceRequestDto> getAllRequests(Long requesterId) {
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        List<AttendanceRequest> requests;
+        if (requester.getRole() == User.Role.DEVELOPER) {
+            requests = repository.findAllByOrderByStartDateDesc();
+        } else {
+            requests = repository.findByUserFacilityOrderByStartDateDesc(requester.getFacility());
+        }
+
+        return requests.stream()
                 .map(AttendanceRequestDto::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public long getPendingCount(Long requesterId) {
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        if (requester.getRole() == User.Role.DEVELOPER) {
+            return repository.countByStatus(AttendanceRequest.Status.PENDING);
+        } else {
+            return repository.countByUserFacilityAndStatus(requester.getFacility(), AttendanceRequest.Status.PENDING);
+        }
     }
 
     @Transactional

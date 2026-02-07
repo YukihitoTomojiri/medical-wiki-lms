@@ -12,4 +12,10 @@ public interface PaidLeaveRepository extends JpaRepository<PaidLeave, Long> {
     List<PaidLeave> findByUserIdAndStatus(Long userId, PaidLeave.Status status);
 
     long countByUserIdAndStatus(Long userId, PaidLeave.Status status);
+
+    List<PaidLeave> findByUserFacilityOrderByStartDateDesc(String facility);
+
+    long countByUserFacilityAndStatus(String facility, PaidLeave.Status status);
+
+    long countByStatus(PaidLeave.Status status);
 }

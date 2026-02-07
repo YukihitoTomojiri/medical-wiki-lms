@@ -89,6 +89,7 @@ export default function DeveloperDashboard() {
     });
     const [securityAlerts, setSecurityAlerts] = useState<any[]>([]);
     const [alertStats, setAlertStats] = useState({ totalOpen: 0, criticalOpen: 0, alerts24h: 0 });
+    const [adminSummary, setAdminSummary] = useState({ pendingPaidLeaves: 0, pendingAttendanceRequests: 0, totalUsers: 0 });
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -225,8 +226,9 @@ export default function DeveloperDashboard() {
         setLoading(true);
         try {
             addLog('Fetching system data...', 'info');
-            const [usersData] = await Promise.all([
+            const [usersData, summaryData] = await Promise.all([
                 api.getUsers(1),
+                api.getAdminSummary(1),
                 api.getManuals(1).catch(() => []),
                 api.getAllUsersProgress().catch(() => []),
                 fetchDiagnostics(),
@@ -235,6 +237,7 @@ export default function DeveloperDashboard() {
                 fetchSecurityAlerts()
             ]);
             setUserList(usersData);
+            setAdminSummary(summaryData);
             // Load organization master for dropdowns
             try {
                 const facs = await api.getFacilities();
@@ -730,6 +733,19 @@ export default function DeveloperDashboard() {
                                     <p className={`font-bold text-xl leading-tight ${alertStats.alerts24h === 0 ? 'text-emerald-600' :
                                         alertStats.alerts24h < 5 ? 'text-yellow-600' : 'text-red-600'}`}>
                                         {alertStats.alerts24h}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Pending Requests */}
+                            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                                <div className={`p-2.5 rounded-xl ${adminSummary.pendingPaidLeaves + adminSummary.pendingAttendanceRequests === 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
+                                    <Calendar size={20} />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-xs text-gray-500 font-medium leading-tight">未承認の申請</p>
+                                    <p className={`font-bold text-xl leading-tight ${adminSummary.pendingPaidLeaves + adminSummary.pendingAttendanceRequests === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                        {adminSummary.pendingPaidLeaves + adminSummary.pendingAttendanceRequests}
                                     </p>
                                 </div>
                             </div>

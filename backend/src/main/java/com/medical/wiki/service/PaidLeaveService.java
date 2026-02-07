@@ -63,8 +63,18 @@ public class PaidLeaveService {
     }
 
     @Transactional(readOnly = true)
-    public List<PaidLeaveDto> getAllRequests() {
-        return repository.findAllByOrderByStartDateDesc().stream()
+    public List<PaidLeaveDto> getAllRequests(Long requesterId) {
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        List<PaidLeave> leaves;
+        if (requester.getRole() == User.Role.DEVELOPER) {
+            leaves = repository.findAllByOrderByStartDateDesc();
+        } else {
+            leaves = repository.findByUserFacilityOrderByStartDateDesc(requester.getFacility());
+        }
+
+        return leaves.stream()
                 .map(PaidLeaveDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -151,5 +161,17 @@ public class PaidLeaveService {
         dto.setUsedLeaveDays(used);
         dto.setRemainingLeaveDays(total - used);
         dto.setPaidLeaveDays(total - used); // Synced
+    }
+
+    @Transactional(readOnly = true)
+    public long getPendingCount(Long requesterId) {
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        if (requester.getRole() == User.Role.DEVELOPER) {
+            return repository.countByStatus(PaidLeave.Status.PENDING);
+        } else {
+            return repository.countByUserFacilityAndStatus(requester.getFacility(), PaidLeave.Status.PENDING);
+        }
     }
 }

@@ -489,6 +489,22 @@ export const api = {
         return res.json();
     },
 
+    getSearchHistory: async (userId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/admin/search-history`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    getAdminSummary: async (userId: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/summary`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return { pendingPaidLeaves: 0, pendingAttendanceRequests: 0, totalUsers: 0 };
+        return res.json();
+    },
+
     getAllPaidLeaves: async (userId: number): Promise<any[]> => {
         const res = await fetch(`${API_BASE}/admin/paid-leaves`, {
             headers: getHeaders(userId),

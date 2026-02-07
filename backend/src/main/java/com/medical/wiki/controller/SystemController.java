@@ -29,6 +29,8 @@ public class SystemController {
     private final ProgressService progressService;
     private final LoggingService loggingService;
     private final ComplianceExportService complianceExportService;
+    private final com.medical.wiki.service.PaidLeaveService paidLeaveService;
+    private final com.medical.wiki.service.AttendanceRequestService attendanceRequestService;
     // private final SystemStatusService systemStatusService;
 
     @GetMapping("/system")
@@ -37,6 +39,15 @@ public class SystemController {
                 "status", "UP",
                 "database", "Connected",
                 "version", "1.1.0"));
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<?> getAdminSummary(@RequestHeader("X-User-Id") Long userId) {
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("pendingPaidLeaves", paidLeaveService.getPendingCount(userId));
+        summary.put("pendingAttendanceRequests", attendanceRequestService.getPendingCount(userId));
+        summary.put("totalUsers", userService.getAllUsers(null).size());
+        return ResponseEntity.ok(summary);
     }
 
     @GetMapping("/system/diagnostics")

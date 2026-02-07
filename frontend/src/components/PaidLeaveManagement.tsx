@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api';
 import { CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { User } from '../types';
 
-export default function PaidLeaveManagement() {
+interface PaidLeaveManagementProps {
+    user?: User;
+}
+
+export default function PaidLeaveManagement({ user: propUser }: PaidLeaveManagementProps) {
+    const [user] = useState<User>(() => propUser || JSON.parse(localStorage.getItem('user') || '{}'));
     const [requests, setRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -12,7 +18,7 @@ export default function PaidLeaveManagement() {
 
     const loadData = async () => {
         try {
-            const data = await api.getAllPaidLeaves(1); // UserId 1 as admin placeholder
+            const data = await api.getAllPaidLeaves(user.id);
             setRequests(data);
         } catch (error) {
             console.error(error);
@@ -24,7 +30,7 @@ export default function PaidLeaveManagement() {
     const handleApprove = async (id: number) => {
         if (!confirm('承認しますか？')) return;
         try {
-            await api.approvePaidLeave(1, id);
+            await api.approvePaidLeave(user.id, id);
             loadData();
         } catch (error) {
             alert('操作に失敗しました');
@@ -34,7 +40,7 @@ export default function PaidLeaveManagement() {
     const handleReject = async (id: number) => {
         if (!confirm('却下しますか？')) return;
         try {
-            await api.rejectPaidLeave(1, id);
+            await api.rejectPaidLeave(user.id, id);
             loadData();
         } catch (error) {
             alert('操作に失敗しました');
