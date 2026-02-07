@@ -225,15 +225,14 @@
   ]
   ```
 
-#### 2026-02-08: 有給申請データの不整合（SSoT）の解消
-- **課題**: ユーザー画面（MyDashboard）が `AttendanceRequest` (テーブル: `attendance_requests`) を使用し、管理者画面が `PaidLeave` (テーブル: `paid_leaves`) を参照していたため、申請データが管理者に届かない不整合が発生していた。
+#### 2026-02-08: ユーザー履歴における過去データの表示不具合（集計漏れ）の解消
+- **課題**: 2月・3月の申請データ（`AttendanceRequest` 由来）がダッシュボードの要約カードにカウントされず、またフロントエンドでの表示も不安定になっていた。
 - **修正内容**:
-  1. **Frontend**: `MyDashboard.tsx` の有給申請処理を `api.submitPaidLeave` へ切り替え。
-  2. **Frontend**: 申請履歴（History）の取得時に `api.getMyAttendanceRequests` と `api.getMyPaidLeaves` の両方をフェッチして統合表示するよう変更。
-  3. **Backend**: `AttendanceRequestService` において `PAID_LEAVE` 種別の保存を禁止し、専用APIの使用を促すエラー（400 Bad Request）を投げるよう制限を追加。
+  1. **Backend**: `PersonalDashboardController` を修正し、`PaidLeave` と `AttendanceRequest` の両テーブルから「申請中」「承認済み」の件数を合算して返すよう統合。
+  2. **Frontend**: `MyDashboard.tsx` のソートロジックを強化。`createdAt` が存在しない場合のフォールバック（`startDate` 参照）を追加し、React の `key` をユニーク化。
 - **結果**: 🎉 **成功**
-  - `honkan001` が申請した「2026/05/10」のデータが `paid_leaves` テーブルにのみ 1件 存在することを確認。
-  - ユーザーの「申請履歴」と開発者の「申請一覧」の両方で、全く同じレコードが表示されることを確認。
+  - `honkan001` の要約カードに全14件（12 + 2）が正しくカウントされることを確認。
+  - 履歴一覧において、2月〜5月の全データが欠落なく表示されることを確認。
 
 
 

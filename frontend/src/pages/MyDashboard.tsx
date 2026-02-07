@@ -55,7 +55,11 @@ export default function MyDashboard({ user }: MyDashboardProps) {
             const unified = [
                 ...attData.map(a => ({ ...a, isAttendance: true })),
                 ...leaveData.map(l => ({ ...l, type: 'PAID_LEAVE', isAttendance: false }))
-            ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            ].sort((a, b) => {
+                const dateA = new Date(a.createdAt || a.startDate || 0).getTime();
+                const dateB = new Date(b.createdAt || b.startDate || 0).getTime();
+                return dateB - dateA;
+            });
 
             setLeaveRequests(unified);
         } catch (error) {
@@ -442,12 +446,15 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                         </thead>
                                         <tbody className="divide-y divide-gray-50">
                                             {leaveRequests.length > 0 ? leaveRequests.map((req) => (
-                                                <tr key={req.id} className="hover:bg-gray-50/50">
+                                                <tr key={`${req.isAttendance ? 'att' : 'leave'}-${req.id}`} className="hover:bg-gray-50/50">
                                                     <td className="px-6 py-4 text-sm font-bold text-gray-700 whitespace-nowrap">
                                                         {req.startDate} <span className="text-gray-300 mx-1">~</span> {req.endDate}
                                                     </td>
                                                     <td className="px-6 py-4 text-sm text-gray-600">
-                                                        <div>{req.reason}</div>
+                                                        <div className="flex items-center gap-2">
+                                                            {req.isAttendance && <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-mono">{req.type}</span>}
+                                                            <span>{req.reason}</span>
+                                                        </div>
                                                         {req.status === 'REJECTED' && req.rejectionReason && (
                                                             <div className="mt-1 text-xs text-red-500 flex items-center gap-1">
                                                                 <AlertCircle size={10} />
