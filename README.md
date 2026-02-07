@@ -174,6 +174,38 @@
   - `ROLE_DEVELOPER`: 全施設の全申請を閲覧・承認。
 - **論理削除**: 全テーブルに `deleted_at` カラムを実装し、データの完全性を維持。
 
+### 📊 現状の実装ステータス (2026-02-08 時点)
+
+#### 1. ロール別権限と操作範囲
+
+| ロール | できること | できないこと |
+|--------|-----------|-------------|
+| **ROLE_USER** | 自分の有給/勤怠申請の作成・閲覧、残日数確認 | 他人の申請閲覧、承認/却下、有給付与 |
+| **ROLE_ADMIN** | 有給申請: 管理施設内の閲覧・承認・却下、手動有給付与 | ⚠️ 勤怠申請: 現状は全件見える（RBACなし） |
+| **ROLE_DEVELOPER** | 全施設の全申請を閲覧・承認・却下、全ユーザーへの有給付与 | 特になし（最大権限） |
+
+#### 2. 機能別実装状況
+
+| 機能 | DB | API | UI | 備考 |
+|------|:--:|:---:|:--:|------|
+| 有給申請（全日/半日） | ✅ `paid_leaves.leave_type` | ✅ RBAC適用済 | ✅ | `PaidLeaveService.getAllRequests()` で施設フィルタ実装 |
+| 勤怠申請（遅刻/早退/欠勤） | ✅ `attendance_requests` | ⚠️ RBACなし | ✅ | `AttendanceRequestService.getAllRequests()` は全件取得 |
+| 15分単位の時間入力 | ✅ `start_time`, `end_time` | ✅ バリデーション済 | ✅ | 00/15/30/45分のみ許可 |
+| 複数施設管理 | ✅ `user_facility_mapping` | ✅ | ❌ UI未実装 | マッピングデータ登録UIがない |
+| 有給手動付与 | ✅ `paid_leave_accruals` | ✅ | ❌ UI未実装 | `grantPaidLeave` API は存在 |
+| 論理削除 | ✅ `deleted_at` カラム | ⚠️ 一部のみ | - | `PaidLeave` は対応済、`AttendanceRequest` は未対応 |
+
+#### 3. 今後の修正が必要な箇所
+
+> [!CAUTION]
+> **AttendanceRequestService にRBACが未実装**  
+> `getAllRequests()` が施設フィルタなしで全件返却しており、管理者が他施設の勤怠申請を閲覧できてしまいます。`PaidLeaveService` と同様のRBACロジックを実装する必要があります。
+
+- **勤怠申請のRBAC実装**: `AttendanceRequestService.getAllRequests(Long requesterId)` に変更し、`PaidLeaveService` と同様の施設フィルタロジックを追加。
+- **管理者の施設マッピングUI**: `user_facility_mapping` テーブルへの登録・編集画面。
+- **有給付与UI**: 管理者/開発者向けの「有給日数付与」ボタンと履歴表示コンポーネント。
+- **Soft Delete アノテーション**: `AttendanceRequest` エンティティに `@SQLDelete` / `@Where` を追加。
+
 ### UI変更履歴
 - **2026-02-05**: 勤怠申請の時間入力UIをカスタムドロップダウン（15分刻み）に刷新。カードの重なりを解消するためグリッドレイアウト（12カラム、5:7分割）を適用し、時間選択パーツをよりコンパクト（w-20/w-14）に最適化。
 
