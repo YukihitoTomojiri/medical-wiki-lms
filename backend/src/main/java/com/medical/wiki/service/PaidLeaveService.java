@@ -67,12 +67,22 @@ public class PaidLeaveService {
         User requester = userRepository.findById(requesterId)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
+        System.out.println("Processing getAllRequests for User: " + requester.getId() + ", Role: " + requester.getRole()
+                + ", Facility: " + requester.getFacility());
+
         List<PaidLeave> leaves;
-        if (requester.getRole() == User.Role.DEVELOPER) {
+        if (requester.getRole() == User.Role.DEVELOPER
+                || requester.getRole() == User.Role.ADMIN && "ALL".equals(requester.getFacility())) {
+            // DEVELOPER (or global ADMIN if we had one) sees ALL
+            System.out.println("User is DEVELOPER. Fetching ALL requests.");
             leaves = repository.findAllByOrderByStartDateDesc();
         } else {
+            // Normal ADMIN sees Facility only
+            System.out.println("User is ADMIN/USER. Fetching facility requests: " + requester.getFacility());
             leaves = repository.findByUserFacilityOrderByStartDateDesc(requester.getFacility());
         }
+
+        System.out.println("Found " + leaves.size() + " leaves.");
 
         return leaves.stream()
                 .map(PaidLeaveDto::fromEntity)
