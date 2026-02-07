@@ -226,10 +226,13 @@ export default function DeveloperDashboard() {
         setLoading(true);
         try {
             addLog('Fetching system data...', 'info');
+            // Use the actual logged-in user ID for API calls instead of hardcoded 1
+            const userId = userList.find(u => u.email === (JSON.parse(localStorage.getItem('user') || '{}').email))?.id || JSON.parse(localStorage.getItem('user') || '{}').id || 1;
+
             const [usersData, summaryData] = await Promise.all([
-                api.getUsers(1),
-                api.getAdminSummary(1),
-                api.getManuals(1).catch(() => []),
+                api.getUsers(userId),
+                api.getAdminSummary(userId),
+                api.getManuals(userId).catch(() => []),
                 api.getAllUsersProgress().catch(() => []),
                 fetchDiagnostics(),
                 fetchSystemResources(),
