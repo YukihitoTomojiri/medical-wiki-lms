@@ -2,6 +2,7 @@ package com.medical.wiki.controller;
 
 import com.medical.wiki.dto.PaidLeaveDto;
 import com.medical.wiki.entity.PaidLeave;
+import com.medical.wiki.entity.PaidLeaveAccrual;
 import com.medical.wiki.service.PaidLeaveService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,16 @@ public class PaidLeaveController {
     public PaidLeaveDto submitRequest(
             @RequestHeader(value = "X-User-Id") Long userId,
             @RequestBody PaidLeaveRequest request) {
-        return service.submitRequest(userId, request.getStartDate(), request.getEndDate(), request.getReason());
+        PaidLeave.LeaveType leaveType = PaidLeave.LeaveType.FULL;
+        if (request.getLeaveType() != null) {
+            try {
+                leaveType = PaidLeave.LeaveType.valueOf(request.getLeaveType().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // Default to FULL if invalid
+            }
+        }
+        return service.submitRequest(userId, request.getStartDate(), request.getEndDate(), request.getReason(),
+                leaveType);
     }
 
     @GetMapping("/leaves/history")
@@ -32,8 +42,8 @@ public class PaidLeaveController {
 
     @GetMapping("/admin/paid-leaves")
     @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
-    public List<PaidLeaveDto> getAllRequests() {
-        return service.getAllRequests();
+    public List<PaidLeaveDto> getAllRequests(@RequestHeader(value = "X-User-Id") Long userId) {
+        return service.getAllRequests(userId);
     }
 
     @PutMapping("/admin/paid-leaves/{id}/approve")
@@ -42,11 +52,32 @@ public class PaidLeaveController {
         return service.updateStatus(id, PaidLeave.Status.APPROVED, null);
     }
 
+    @PostMapping("/admin/paid-leaves/bulk-approve")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
+    public void bulkApprove(@RequestBody List<Long> ids) {
+        service.bulkApprove(ids);
+    }
+
     @PutMapping("/admin/paid-leaves/{id}/reject")
     @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
     public PaidLeaveDto rejectRequest(@PathVariable Long id, @RequestBody(required = false) RejectionRequest request) {
         String reason = request != null ? request.getReason() : null;
         return service.updateStatus(id, PaidLeave.Status.REJECTED, reason);
+    }
+
+    @PostMapping("/admin/users/{userId}/grant-leave")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
+    public void grantPaidLeave(
+            @PathVariable Long userId,
+            @RequestHeader(value = "X-User-Id") Long grantedById,
+            @RequestBody GrantLeaveRequest request) {
+        service.grantPaidLeaveDays(userId, request.getDaysToGrant(), grantedById, request.getReason());
+    }
+
+    @GetMapping("/admin/users/{userId}/accrual-history")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
+    public List<PaidLeaveAccrual> getAccrualHistory(@PathVariable Long userId) {
+        return service.getAccrualHistory(userId);
     }
 
     @Data
@@ -58,6 +89,13 @@ public class PaidLeaveController {
     public static class PaidLeaveRequest {
         private LocalDate startDate;
         private LocalDate endDate;
+        private String reason;
+        private String leaveType; // FULL, HALF_AM, HALF_PM
+    }
+
+    @Data
+    public static class GrantLeaveRequest {
+        private Double daysToGrant;
         private String reason;
     }
 }

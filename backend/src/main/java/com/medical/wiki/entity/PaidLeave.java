@@ -37,6 +37,11 @@ public class PaidLeave {
     @Column(nullable = false)
     private Status status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "leave_type")
+    @Builder.Default
+    private LeaveType leaveType = LeaveType.FULL;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -59,5 +64,9 @@ public class PaidLeave {
 
     public enum Status {
         PENDING, APPROVED, REJECTED
+    }
+
+    public enum LeaveType {
+        FULL, HALF_AM, HALF_PM
     }
 }

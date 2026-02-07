@@ -481,6 +481,38 @@ export const api = {
         return response.json();
     },
 
+    getMyPaidLeaves: async (userId: number): Promise<any[]> => {
+        const response = await fetch(`${API_BASE}/leaves/history`, {
+            headers: {
+                'X-User-Id': userId.toString()
+            }
+        });
+        if (!response.ok) throw new Error('Failed to fetch paid leave history');
+        return response.json();
+    },
+
+    submitPaidLeave: async (
+        userId: number,
+        startDate: string,
+        endDate: string,
+        reason: string,
+        leaveType: string
+    ): Promise<any> => {
+        const response = await fetch(`${API_BASE}/leaves/apply`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-Id': userId.toString()
+            },
+            body: JSON.stringify({ startDate, endDate, reason, leaveType })
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Failed to submit paid leave');
+        }
+        return response.json();
+    },
+
     getAllAttendanceRequests: async (userId: number): Promise<any[]> => {
         const res = await fetch(`${API_BASE}/admin/attendance/requests`, {
             headers: getHeaders(userId),
@@ -513,6 +545,46 @@ export const api = {
         return res.json();
     },
 
+    approveAttendanceRequest: async (userId: number, id: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/attendance/requests/${id}/approve`, {
+            method: 'PUT',
+            headers: getHeaders(userId),
+        });
+        return res.json();
+    },
+
+    rejectAttendanceRequest: async (userId: number, id: number): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/attendance/requests/${id}/reject`, {
+            method: 'PUT',
+            headers: getHeaders(userId),
+        });
+        return res.json();
+    },
+
+    bulkApprovePaidLeaves: async (userId: number, ids: number[]): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/paid-leaves/bulk-approve`, {
+            method: 'POST',
+            headers: {
+                ...getHeaders(userId),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(ids),
+        });
+        return res.status === 200;
+    },
+
+    bulkApproveAttendanceRequests: async (userId: number, ids: number[]): Promise<any> => {
+        const res = await fetch(`${API_BASE}/admin/attendance/requests/bulk-approve`, {
+            method: 'POST',
+            headers: {
+                ...getHeaders(userId),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(ids),
+        });
+        return res.status === 200;
+    },
+
     // Personal Dashboard
     getPersonalDashboard: async (userId: number): Promise<any> => {
         const res = await fetch(`${API_BASE}/my/dashboard`, {
@@ -526,6 +598,23 @@ export const api = {
             headers: getHeaders(userId),
             body: JSON.stringify(settings)
         });
+        return res.json();
+    },
+
+    grantPaidLeave: async (adminUserId: number, targetUserId: number, daysToGrant: number, reason: string): Promise<void> => {
+        const res = await fetch(`${API_BASE}/admin/users/${targetUserId}/grant-leave`, {
+            method: 'POST',
+            headers: getHeaders(adminUserId),
+            body: JSON.stringify({ daysToGrant, reason })
+        });
+        if (!res.ok) throw new Error('Failed to grant paid leave');
+    },
+
+    getAccrualHistory: async (adminUserId: number, targetUserId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/admin/users/${targetUserId}/accrual-history`, {
+            headers: getHeaders(adminUserId),
+        });
+        if (!res.ok) return [];
         return res.json();
     }
 };

@@ -3,7 +3,9 @@ package com.medical.wiki.service;
 import com.medical.wiki.dto.AttendanceRequestDto;
 import com.medical.wiki.entity.AttendanceRequest;
 import com.medical.wiki.entity.User;
+import com.medical.wiki.entity.UserFacilityMapping;
 import com.medical.wiki.repository.AttendanceRequestRepository;
+import com.medical.wiki.repository.UserFacilityMappingRepository;
 import com.medical.wiki.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ public class AttendanceRequestService {
 
     private final AttendanceRequestRepository repository;
     private final UserRepository userRepository;
+    private final UserFacilityMappingRepository facilityMappingRepository;
 
     @Transactional
     public AttendanceRequestDto submitRequest(Long userId, AttendanceRequest.RequestType type,
@@ -56,16 +59,10 @@ public class AttendanceRequestService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Helper to calculate days for balance check
-        double daysRequested = calculateDays(type, durationType, startDate, endDate);
-
-        // Balance Check Logic for PAID_LEAVE
+        // Balance Check Logic for PAID_LEAVE - MOVED TO PaidLeaveService
         if (type == AttendanceRequest.RequestType.PAID_LEAVE) {
-            if (user.getPaidLeaveDays() < daysRequested) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Insufficient paid leave balance. Requested: " + daysRequested
-                                + ", Available: " + user.getPaidLeaveDays());
-            }
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Paid leave requests must be submitted through the dedicated /leaves/apply endpoint.");
         }
 
         AttendanceRequest request = AttendanceRequest.builder()
@@ -85,17 +82,8 @@ public class AttendanceRequestService {
 
     private double calculateDays(AttendanceRequest.RequestType type, AttendanceRequest.DurationType durationType,
             LocalDate startDate, LocalDate endDate) {
-        if (type != AttendanceRequest.RequestType.PAID_LEAVE)
-            return 0;
-
-        long dateDiff = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
-
-        if (dateDiff == 1 && (durationType == AttendanceRequest.DurationType.HALF_DAY_AM
-                || durationType == AttendanceRequest.DurationType.HALF_DAY_PM)) {
-            return 0.5;
-        }
-
-        return (double) dateDiff;
+        // PAID_LEAVE calculation logic moved to PaidLeaveService
+        return 0;
     }
 
     @Transactional(readOnly = true)
@@ -105,9 +93,39 @@ public class AttendanceRequestService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Get all requests based on requester's role:
+     * - DEVELOPER: ALL facilities (global access)
+     * - ADMIN: Only facilities they manage (via user_facility_mapping)
+     * - USER: Only their own (should use getMyRequests instead)
+     */
     @Transactional(readOnly = true)
-    public List<AttendanceRequestDto> getAllRequests() {
-        return repository.findAllByOrderByStartDateDesc().stream()
+    public List<AttendanceRequestDto> getAllRequests(Long requesterId) {
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        List<AttendanceRequest> requests;
+        if (requester.getRole() == User.Role.DEVELOPER) {
+            // DEVELOPER: GLOBAL access - bypass facility filter
+            requests = repository.findByDeletedAtIsNullOrderByStartDateDesc();
+        } else if (requester.getRole() == User.Role.ADMIN) {
+            // ADMIN: Access only to facilities they manage
+            List<String> managedFacilities = facilityMappingRepository
+                    .findByUserIdAndDeletedAtIsNull(requesterId)
+                    .stream()
+                    .map(UserFacilityMapping::getFacilityName)
+                    .collect(Collectors.toList());
+            // Add their own facility if not already there
+            if (!managedFacilities.contains(requester.getFacility())) {
+                managedFacilities.add(requester.getFacility());
+            }
+            requests = repository.findByUser_FacilityInAndDeletedAtIsNullOrderByStartDateDesc(managedFacilities);
+        } else {
+            // USER: SELF only (fallback)
+            requests = repository.findByUserIdOrderByStartDateDesc(requesterId);
+        }
+
+        return requests.stream()
                 .map(AttendanceRequestDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -122,22 +140,20 @@ public class AttendanceRequestService {
         }
 
         if (status == AttendanceRequest.Status.APPROVED) {
-            // Deduct Logic
-            if (request.getType() == AttendanceRequest.RequestType.PAID_LEAVE) {
-                double daysRequested = calculateDays(request.getType(), request.getDurationType(),
-                        request.getStartDate(), request.getEndDate());
-                User user = request.getUser();
-                if (user.getPaidLeaveDays() < daysRequested) {
-                    throw new IllegalStateException("User has insufficient balance to approve this request");
-                }
-                user.setPaidLeaveDays(user.getPaidLeaveDays() - daysRequested);
-                userRepository.save(user);
-            }
+            // Deduct Logic - MOVED TO PaidLeaveService for PAID_LEAVE types.
+            // Other types (ABSENCE, LATE, etc.) don't currently deduct days.
         } else if (status == AttendanceRequest.Status.REJECTED) {
             request.setRejectionReason(rejectionReason);
         }
 
         request.setStatus(status);
         return AttendanceRequestDto.fromEntity(repository.save(request));
+    }
+
+    @Transactional
+    public void bulkApprove(List<Long> ids) {
+        for (Long id : ids) {
+            updateStatus(id, AttendanceRequest.Status.APPROVED, null);
+        }
     }
 }

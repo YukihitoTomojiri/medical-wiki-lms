@@ -32,16 +32,16 @@ public class AttendanceRequestController {
         return service.getMyRequests(userId);
     }
 
-    @GetMapping("/admin/attendance/requests")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
-    public List<AttendanceRequestDto> getAllRequests() {
-        return service.getAllRequests();
-    }
-
     @PutMapping("/admin/attendance/requests/{id}/approve")
     @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
     public AttendanceRequestDto approveRequest(@PathVariable Long id) {
         return service.updateStatus(id, AttendanceRequest.Status.APPROVED, null);
+    }
+
+    @PostMapping("/admin/attendance/requests/bulk-approve")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
+    public void bulkApprove(@RequestBody List<Long> ids) {
+        service.bulkApprove(ids);
     }
 
     @PutMapping("/admin/attendance/requests/{id}/reject")

@@ -25,6 +25,7 @@ public class PersonalDashboardController {
     private final ProgressRepository progressRepository;
     private final ManualRepository manualRepository;
     private final PaidLeaveRepository paidLeaveRepository;
+    private final com.medical.wiki.repository.AttendanceRequestRepository attendanceRequestRepository;
 
     @GetMapping("/my/summary")
     public PersonalDashboardDto getDashboard(@RequestHeader(value = "X-User-Id") Long userId) {
@@ -45,8 +46,16 @@ public class PersonalDashboardController {
         String lastReadDate = progressList.isEmpty() ? "-"
                 : progressList.get(0).getReadAt().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
 
-        int pendingLeaves = (int) paidLeaveRepository.countByUserIdAndStatus(userId, PaidLeave.Status.PENDING);
-        int approvedLeaves = (int) paidLeaveRepository.countByUserIdAndStatus(userId, PaidLeave.Status.APPROVED);
+        int pendingPaidLeaves = (int) paidLeaveRepository.countByUserIdAndStatus(userId, PaidLeave.Status.PENDING);
+        int approvedPaidLeaves = (int) paidLeaveRepository.countByUserIdAndStatus(userId, PaidLeave.Status.APPROVED);
+
+        int pendingAttRequests = (int) attendanceRequestRepository.countByUserIdAndStatus(userId,
+                com.medical.wiki.entity.AttendanceRequest.Status.PENDING);
+        int approvedAttRequests = (int) attendanceRequestRepository.countByUserIdAndStatus(userId,
+                com.medical.wiki.entity.AttendanceRequest.Status.APPROVED);
+
+        int pendingLeaves = pendingPaidLeaves + pendingAttRequests;
+        int approvedLeaves = approvedPaidLeaves + approvedAttRequests;
 
         return PersonalDashboardDto.builder()
                 .completedManualsCount(progressList.size())
