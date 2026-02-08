@@ -211,14 +211,25 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                 return (
                                     <div className="flex flex-col">
                                         <div className="flex items-baseline gap-2">
-                                            <span className="text-3xl font-black text-gray-800">{total}</span>
+                                            <span className="text-3xl font-black text-gray-800">{String(total).includes('.') ? total : `${total}.0`}</span>
                                             <span className="text-sm text-gray-400">日</span>
                                         </div>
-                                        {pending > 0 && (
-                                            <span className="text-[10px] text-gray-400 font-bold mt-1">
-                                                (申請中含む: {effective.toFixed(1)}日)
-                                            </span>
-                                        )}
+                                        <div className="flex flex-col gap-0.5 mt-1">
+                                            <div className="flex items-center gap-1.5" title="確定済みの残日数です（承認済み取得分を差し引いた値）">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+                                                <span className="text-[10px] text-gray-400 font-bold">
+                                                    確定残数: {total.toFixed(1)}日
+                                                </span>
+                                            </div>
+                                            {pending > 0 && (
+                                                <div className="flex items-center gap-1.5" title="申請中の休暇が承認された場合の予想残日数です">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+                                                    <span className="text-[10px] text-gray-400 font-bold">
+                                                        実質残数: {effective.toFixed(1)}日 (申請中: -{pending.toFixed(1)}日)
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 );
                             })()}

@@ -123,8 +123,11 @@ public class PaidLeaveService {
             if (user.getPaidLeaveDays() < daysRequested) {
                 throw new IllegalStateException("User has insufficient balance to approve this request");
             }
-            user.setPaidLeaveDays(user.getPaidLeaveDays() - daysRequested);
-            userRepository.save(user);
+            // Approve first, then recalculate
+            paidLeave.setStatus(status);
+            repository.save(paidLeave);
+            calculateCurrentBalance(user.getId());
+            return PaidLeaveDto.fromEntity(paidLeave);
         } else if (status == PaidLeave.Status.REJECTED) {
             paidLeave.setRejectionReason(rejectionReason);
         }
@@ -170,5 +173,63 @@ public class PaidLeaveService {
     @Transactional(readOnly = true)
     public List<PaidLeaveAccrual> getAccrualHistory(Long userId) {
         return accrualRepository.findByUserIdAndDeletedAtIsNullOrderByGrantedAtDesc(userId);
+    }
+
+    /**
+     * Recalculate and update the user's paid leave balance based on accruals and
+     * usage.
+     */
+    @Transactional
+    public void calculateCurrentBalance(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 1. Get total granted
+        Double totalGranted = accrualRepository.sumGrantedDays(userId);
+        if (totalGranted == null) {
+            // Migration logic: If no accrual history, use current balance as initial grant
+            // (Snapshot)
+            if (user.getPaidLeaveDays() > 0) {
+                totalGranted = user.getPaidLeaveDays();
+                // Create initial accrual record
+                PaidLeaveAccrual initialAccrual = PaidLeaveAccrual.builder()
+                        .user(user)
+                        .daysGranted(totalGranted)
+                        .grantedBy(user) // Self-granted for migration
+                        .reason("Initial Balance Migration")
+                        .build();
+                accrualRepository.save(initialAccrual);
+            } else {
+                totalGranted = 0.0;
+            }
+        }
+
+        // 2. Get total used from APPROVED leaves
+        List<PaidLeave> approvedLeaves = repository.findByUserIdOrderByStartDateDesc(userId).stream()
+                .filter(l -> l.getStatus() == PaidLeave.Status.APPROVED)
+                .collect(Collectors.toList());
+
+        double totalUsed = 0.0;
+        for (PaidLeave leave : approvedLeaves) {
+            double baseDays = (double) java.time.temporal.ChronoUnit.DAYS.between(leave.getStartDate(),
+                    leave.getEndDate()) + 1;
+            double days = (leave.getLeaveType() == PaidLeave.LeaveType.FULL) ? baseDays : baseDays * 0.5;
+            totalUsed += days;
+        }
+
+        // 3. Update User balance
+        user.setPaidLeaveDays(totalGranted - totalUsed);
+        userRepository.save(user);
+    }
+
+    /**
+     * Fix balance consistency for all users (Admin only)
+     */
+    @Transactional
+    public void fixBalanceConsistency() {
+        List<User> users = userRepository.findAll();
+        for (User user : users) {
+            calculateCurrentBalance(user.getId());
+        }
     }
 }
