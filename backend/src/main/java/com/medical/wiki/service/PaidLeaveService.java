@@ -321,10 +321,56 @@ public class PaidLeaveService {
             }
         }
 
+        // 6. Compliance Check (5 days rule)
+        Double obligatoryDaysTaken = 0.0;
+        Double obligatoryTarget = 5.0;
+        Boolean isObligationMet = false;
+        Boolean isWarning = false;
+        Double daysRemainingToObligation = 5.0;
+
+        if (nextGrantDate != null && user.getJoinedDate() != null) {
+            LocalDate firstGrantDate = user.getJoinedDate().plusMonths(6);
+            LocalDate currentCycleStart = nextGrantDate.minusYears(1);
+
+            // Valid cycle check: must be at least the first grant date
+            if (!currentCycleStart.isBefore(firstGrantDate)) {
+                for (PaidLeave leave : approvedLeaves) {
+                    // Count if start date is within current cycle [currentCycleStart,
+                    // nextGrantDate)
+                    if (leave.getStartDate().isAfter(currentCycleStart.minusDays(1))
+                            && leave.getStartDate().isBefore(nextGrantDate)) {
+                        double baseDays = (double) java.time.temporal.ChronoUnit.DAYS.between(leave.getStartDate(),
+                                leave.getEndDate()) + 1;
+                        double days = (leave.getLeaveType() == PaidLeave.LeaveType.FULL) ? baseDays : baseDays * 0.5;
+                        obligatoryDaysTaken += days;
+                    }
+                }
+
+                isObligationMet = obligatoryDaysTaken >= obligatoryTarget;
+                daysRemainingToObligation = Math.max(0.0, obligatoryTarget - obligatoryDaysTaken);
+
+                // Warning: Met=False AND > 9 months passed in cycle
+                long monthsPassed = java.time.temporal.ChronoUnit.MONTHS.between(currentCycleStart, today);
+                if (!isObligationMet && monthsPassed >= 9) {
+                    isWarning = true;
+                }
+            } else {
+                // Before first grant -> No obligation yet
+                obligatoryTarget = 0.0;
+                daysRemainingToObligation = 0.0;
+                isObligationMet = true;
+            }
+        }
+
         return com.medical.wiki.dto.PaidLeaveStatusDto.builder()
                 .remainingDays(remaining)
                 .nextGrantDate(nextGrantDate)
                 .nextGrantDays(nextGrantDays)
+                .obligatoryDaysTaken(obligatoryDaysTaken)
+                .obligatoryTarget(obligatoryTarget)
+                .isObligationMet(isObligationMet)
+                .isWarning(isWarning)
+                .daysRemainingToObligation(daysRemainingToObligation)
                 .build();
     }
 

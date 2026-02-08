@@ -619,7 +619,16 @@ export const api = {
         if (!res.ok) throw new Error('Failed to grant paid leave');
     },
 
-    getLeaveStatus: async (userId: number): Promise<{ remainingDays: number; nextGrantDate: string; nextGrantDays: number }> => {
+    getLeaveStatus: async (userId: number): Promise<{
+        remainingDays: number;
+        nextGrantDate: string;
+        nextGrantDays: number;
+        obligatoryDaysTaken?: number;
+        obligatoryTarget?: number;
+        isObligationMet?: boolean;
+        isWarning?: boolean;
+        daysRemainingToObligation?: number;
+    }> => {
         const response = await fetch(`${API_BASE}/users/me/leave-status`, {
             headers: getHeaders(userId)
         });
