@@ -30,6 +30,7 @@ public class AdminController {
     private final ProgressRepository progressRepository;
     private final UserRepository userRepository;
     private final ComplianceExportService exportService;
+    private final com.medical.wiki.service.PaidLeaveService paidLeaveService;
 
     @GetMapping("/audit-logs")
     public List<AuditLogDto> getAuditLogs() {
@@ -105,6 +106,12 @@ public class AdminController {
     public UserDto updateLeaveSettings(@PathVariable Long id, @RequestBody LeaveSettingsRequest request,
             @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
         return userService.updateLeaveSettings(id, request.getPaidLeaveDays(), request.getJoinedDate(), executorId);
+    }
+
+    @GetMapping("/leave-monitoring")
+    public List<com.medical.wiki.dto.AdminLeaveMonitoringDto> getLeaveMonitoring(
+            @RequestHeader(value = "X-User-Id", required = true) Long adminId) {
+        return paidLeaveService.getLeaveMonitoringList(adminId);
     }
 
     @lombok.Data

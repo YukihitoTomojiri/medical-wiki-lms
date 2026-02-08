@@ -1,5 +1,24 @@
 import { User, Manual, Progress, UserProgress, LoginRequest, LoginResponse, UserUpdateRequest, UserCreateRequest } from './types';
 
+export interface AdminLeaveMonitoring {
+    userId: number;
+    userName: string;
+    employeeId: string;
+    facilityName: string;
+    joinedDate: string;
+    currentPaidLeaveDays: number;
+    obligatoryDaysTaken: number;
+    obligatoryTarget: number;
+    isObligationMet: boolean;
+    needsAttention: boolean;
+    daysRemainingToObligation: number;
+    currentCycleStart: string;
+    currentCycleEnd: string;
+    baseDate: string;
+    targetEndDate: string;
+    isViolation: boolean;
+}
+
 const API_BASE = '/api';
 
 const getHeaders = (userId?: number): HeadersInit => {
@@ -619,7 +638,16 @@ export const api = {
         if (!res.ok) throw new Error('Failed to grant paid leave');
     },
 
-    getLeaveStatus: async (userId: number): Promise<{ remainingDays: number; nextGrantDate: string; nextGrantDays: number }> => {
+    getLeaveStatus: async (userId: number): Promise<{
+        remainingDays: number;
+        nextGrantDate: string;
+        nextGrantDays: number;
+        obligatoryDaysTaken?: number;
+        obligatoryTarget?: number;
+        isObligationMet?: boolean;
+        isWarning?: boolean;
+        daysRemainingToObligation?: number;
+    }> => {
         const response = await fetch(`${API_BASE}/users/me/leave-status`, {
             headers: getHeaders(userId)
         });
@@ -630,6 +658,14 @@ export const api = {
     getAccrualHistory: async (adminUserId: number, targetUserId: number): Promise<any[]> => {
         const res = await fetch(`${API_BASE}/admin/users/${targetUserId}/accrual-history`, {
             headers: getHeaders(adminUserId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    getAdminLeaveMonitoring: async (userId: number): Promise<AdminLeaveMonitoring[]> => {
+        const res = await fetch(`${API_BASE}/admin/leave-monitoring`, {
+            headers: getHeaders(userId)
         });
         if (!res.ok) return [];
         return res.json();

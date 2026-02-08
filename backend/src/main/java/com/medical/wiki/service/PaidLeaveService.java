@@ -321,10 +321,56 @@ public class PaidLeaveService {
             }
         }
 
+        // 6. Compliance Check (5 days rule)
+        Double obligatoryDaysTaken = 0.0;
+        Double obligatoryTarget = 5.0;
+        Boolean isObligationMet = false;
+        Boolean isWarning = false;
+        Double daysRemainingToObligation = 5.0;
+
+        if (nextGrantDate != null && user.getJoinedDate() != null) {
+            LocalDate firstGrantDate = user.getJoinedDate().plusMonths(6);
+            LocalDate currentCycleStart = nextGrantDate.minusYears(1);
+
+            // Valid cycle check: must be at least the first grant date
+            if (!currentCycleStart.isBefore(firstGrantDate)) {
+                for (PaidLeave leave : approvedLeaves) {
+                    // Count if start date is within current cycle [currentCycleStart,
+                    // nextGrantDate)
+                    if (leave.getStartDate().isAfter(currentCycleStart.minusDays(1))
+                            && leave.getStartDate().isBefore(nextGrantDate)) {
+                        double baseDays = (double) java.time.temporal.ChronoUnit.DAYS.between(leave.getStartDate(),
+                                leave.getEndDate()) + 1;
+                        double days = (leave.getLeaveType() == PaidLeave.LeaveType.FULL) ? baseDays : baseDays * 0.5;
+                        obligatoryDaysTaken += days;
+                    }
+                }
+
+                isObligationMet = obligatoryDaysTaken >= obligatoryTarget;
+                daysRemainingToObligation = Math.max(0.0, obligatoryTarget - obligatoryDaysTaken);
+
+                // Warning: Met=False AND > 9 months passed in cycle
+                long monthsPassed = java.time.temporal.ChronoUnit.MONTHS.between(currentCycleStart, today);
+                if (!isObligationMet && monthsPassed >= 9) {
+                    isWarning = true;
+                }
+            } else {
+                // Before first grant -> No obligation yet
+                obligatoryTarget = 0.0;
+                daysRemainingToObligation = 0.0;
+                isObligationMet = true;
+            }
+        }
+
         return com.medical.wiki.dto.PaidLeaveStatusDto.builder()
                 .remainingDays(remaining)
                 .nextGrantDate(nextGrantDate)
                 .nextGrantDays(nextGrantDays)
+                .obligatoryDaysTaken(obligatoryDaysTaken)
+                .obligatoryTarget(obligatoryTarget)
+                .isObligationMet(isObligationMet)
+                .isWarning(isWarning)
+                .daysRemainingToObligation(daysRemainingToObligation)
                 .build();
     }
 
@@ -365,5 +411,171 @@ public class PaidLeaveService {
                 userRepository.save(user);
             }
         });
+    }
+
+    /**
+     * Get Leave Monitoring List for Admin Dashboard
+     */
+    @Transactional(readOnly = true)
+    public List<com.medical.wiki.dto.AdminLeaveMonitoringDto> getLeaveMonitoringList(Long adminId) {
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        if (admin.getRole() == User.Role.USER) {
+            throw new org.springframework.security.access.AccessDeniedException("User does not have permission");
+        }
+
+        List<User> targetUsers;
+        if (admin.getRole() == User.Role.DEVELOPER) {
+            targetUsers = userRepository.findAllByDeletedAtIsNull();
+        } else {
+            // ADMIN
+            List<String> managedFacilities = facilityMappingRepository
+                    .findByUserIdAndDeletedAtIsNull(adminId)
+                    .stream()
+                    .map(UserFacilityMapping::getFacilityName)
+                    .collect(Collectors.toList());
+            if (!managedFacilities.contains(admin.getFacility())) {
+                managedFacilities.add(admin.getFacility());
+            }
+            targetUsers = userRepository.findByFacilityInAndDeletedAtIsNull(managedFacilities);
+        }
+
+        LocalDate today = LocalDate.now();
+
+        return targetUsers.stream().map(user -> {
+            if (user.getJoinedDate() == null) {
+                // If no joined date, cannot calculate. Return empty/null state.
+                return com.medical.wiki.dto.AdminLeaveMonitoringDto.builder()
+                        .userId(user.getId())
+                        .userName(user.getName())
+                        .employeeId(user.getEmployeeId())
+                        .facilityName(user.getFacility())
+                        .joinedDate(null)
+                        .currentPaidLeaveDays(0.0)
+                        .obligatoryDaysTaken(0.0)
+                        .obligatoryTarget(5.0)
+                        .isObligationMet(false)
+                        .needsAttention(false)
+                        .daysRemainingToObligation(0.0)
+                        .currentCycleStart(null)
+                        .currentCycleEnd(null)
+                        .baseDate(null)
+                        .targetEndDate(null)
+                        .isViolation(false)
+                        .build();
+            }
+
+            // 1. Calculate Base Date (Current Cycle Start)
+            LocalDate firstBaseDate = user.getJoinedDate().plusMonths(6);
+            LocalDate currentCycleStart = firstBaseDate;
+
+            // Allow future joined users (currentCycleStart > today)?
+            // If strictly following rule "Apply Period: [Latest Base] ~ [Latest Base + 1y]"
+            // We find the cycle that covers Today, OR the cycle about to start if Today <
+            // FirstBase.
+
+            if (today.isBefore(firstBaseDate)) {
+                // Not yet reached first base date.
+                currentCycleStart = firstBaseDate;
+            } else {
+                // Find latest base date <= today
+                // E.g. First: 2020-04-01. Today: 2023-05-01.
+                // 2020-04, 2021-04, 2022-04, 2023-04 (match).
+                // Simple math:
+                // Years passed = ChronoUnit.YEARS.between(firstBaseDate, today);
+                // currentCycleStart = firstBaseDate.plusYears(yearsPassed);
+                // Verify: 2020-04-01 to 2023-05-01 is 3 years.
+                // 2020 + 3 = 2023-04-01. Correct.
+                long years = java.time.temporal.ChronoUnit.YEARS.between(firstBaseDate, today);
+                if (years < 0)
+                    years = 0; // Should be handled by if-before check, but safety.
+                currentCycleStart = firstBaseDate.plusYears(years);
+            }
+
+            LocalDate currentCycleEnd = currentCycleStart.plusYears(1).minusDays(1);
+
+            // Previous Cycle
+            LocalDate previousCycleStart = currentCycleStart.minusYears(1);
+            LocalDate previousCycleEnd = currentCycleStart.minusDays(1);
+
+            // 2. Count Approved Leaves
+            List<PaidLeave> allLeaves = repository.findByUserIdAndStatusOrderByStartDateAsc(user.getId(),
+                    PaidLeave.Status.APPROVED);
+
+            double currentCount = countApprovedDaysInPeriod(allLeaves, currentCycleStart, currentCycleEnd);
+            double previousCount = countApprovedDaysInPeriod(allLeaves, previousCycleStart, previousCycleEnd);
+
+            // 3. Alerts
+            // Violation: If previous period valid (started after/on firstBaseDate) AND
+            // count < 5.0
+            boolean isViolation = false;
+            if (!previousCycleStart.isBefore(firstBaseDate)) {
+                if (previousCount < 5.0) {
+                    isViolation = true;
+                }
+            }
+
+            // Warning: If current period active AND close to end (< 3 months) AND count <
+            // 5.0
+            boolean needsAttention = false;
+            // "Period has ended yet < 5 days" -> This is Violation.
+            // "Period close to end (< 3 months)"
+            LocalDate threeMonthsBeforeEnd = currentCycleEnd.minusMonths(3);
+            if (currentCount < 5.0 && today.isAfter(threeMonthsBeforeEnd)) {
+                needsAttention = true;
+            }
+
+            // Calculate remaining balance for display (Total available)
+            // Reuse existing logic or simple fetch?
+            // Existing calculateCurrentBalance is heavy but correct for Balance.
+            // We can call it.
+            com.medical.wiki.dto.PaidLeaveStatusDto balanceStatus = calculateCurrentBalance(user.getId());
+
+            return com.medical.wiki.dto.AdminLeaveMonitoringDto.builder()
+                    .userId(user.getId())
+                    .userName(user.getName())
+                    .employeeId(user.getEmployeeId())
+                    .facilityName(user.getFacility())
+                    .joinedDate(user.getJoinedDate())
+                    .currentPaidLeaveDays(balanceStatus.getRemainingDays())
+                    .obligatoryDaysTaken(currentCount)
+                    .obligatoryTarget(5.0)
+                    .isObligationMet(currentCount >= 5.0)
+                    .needsAttention(needsAttention)
+                    .daysRemainingToObligation(Math.max(0, 5.0 - currentCount))
+                    .currentCycleStart(currentCycleStart)
+                    .currentCycleEnd(currentCycleEnd)
+                    .baseDate(currentCycleStart) // Alias
+                    .targetEndDate(currentCycleEnd) // Alias
+                    .isViolation(isViolation)
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
+    private double countApprovedDaysInPeriod(List<PaidLeave> leaves, LocalDate start, LocalDate end) {
+        return leaves.stream()
+                .filter(l -> !l.getEndDate().isBefore(start) && !l.getStartDate().isAfter(end))
+                .mapToDouble(l -> {
+                    // Overlap calculation? Or just count if startDate is in range?
+                    // "Count approved leaves in periods".
+                    // If spans, strictly intersection?
+                    // User didn't specify. Assuming "Start Date falls in period" or intersection.
+                    // Precise intersection is safer.
+                    LocalDate effectiveStart = l.getStartDate().isBefore(start) ? start : l.getStartDate();
+                    LocalDate effectiveEnd = l.getEndDate().isAfter(end) ? end : l.getEndDate();
+
+                    if (effectiveStart.isAfter(effectiveEnd))
+                        return 0.0;
+
+                    // Logic for days. Assuming leave_type applies to the whole range if simple.
+                    // But standard is 1 day usually.
+                    // If multi-day FULL: count business days? application assumes pure days.
+                    // LeaveType: FULL=1.0 per day. HALF=0.5 per day.
+                    long days = java.time.temporal.ChronoUnit.DAYS.between(effectiveStart, effectiveEnd) + 1;
+                    double unit = l.getLeaveType() == PaidLeave.LeaveType.FULL ? 1.0 : 0.5;
+                    return days * unit;
+                })
+                .sum();
     }
 }
