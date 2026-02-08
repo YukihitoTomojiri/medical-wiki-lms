@@ -485,7 +485,7 @@ export const api = {
         });
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || 'Failed to submit attendance request');
+            throw new Error(errorData.message || '勤怠申請の送信に失敗しました');
         }
         return response.json();
     },
@@ -536,7 +536,7 @@ export const api = {
         });
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || 'Failed to submit paid leave');
+            throw new Error(errorData.message || '有給申請の送信に失敗しました');
         }
         return response.json();
     },
@@ -635,7 +635,7 @@ export const api = {
             headers: getHeaders(adminUserId),
             body: JSON.stringify({ daysToGrant, reason })
         });
-        if (!res.ok) throw new Error('Failed to grant paid leave');
+        if (!res.ok) throw new Error('有給付与に失敗しました');
     },
 
     getLeaveStatus: async (userId: number): Promise<{

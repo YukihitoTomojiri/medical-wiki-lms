@@ -31,7 +31,7 @@ public class AttendanceRequestService {
             AttendanceRequest.DurationType durationType, LocalDate startDate, LocalDate endDate, LocalTime startTime,
             LocalTime endTime, String reason) {
         if (startDate.isAfter(endDate)) {
-            throw new IllegalArgumentException("Start date must be before or equal to end date");
+            throw new IllegalArgumentException("開始日は終了日以前の日付を入力してください。");
         }
 
         // Validate time inputs for specific types
@@ -42,7 +42,7 @@ public class AttendanceRequestService {
         }
         // Basic time order validation if both are present
         if (startTime != null && endTime != null && startTime.isAfter(endTime)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start time cannot be after end time");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "開始時間は終了時間より前の時間を入力してください。");
         }
         // 15-minute interval validation (Only for Late/Early Departure)
         if (type == AttendanceRequest.RequestType.LATE || type == AttendanceRequest.RequestType.EARLY_DEPARTURE) {
@@ -142,7 +142,7 @@ public class AttendanceRequestService {
                 .orElseThrow(() -> new RuntimeException("Request not found"));
 
         if (request.getStatus() != AttendanceRequest.Status.PENDING) {
-            throw new IllegalStateException("Can only update PENDING requests");
+            throw new IllegalStateException("申請中のステータスのみ更新可能です。");
         }
 
         if (status == AttendanceRequest.Status.APPROVED) {
