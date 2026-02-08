@@ -63,7 +63,17 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                 return dateB - dateA;
             });
 
-            setLeaveRequests(unified);
+            // Filter out duplicates (Just in case)
+            // Keep the first item found for each date+type combo
+            const seen = new Set();
+            const uniqueRequests = unified.filter(item => {
+                const key = `${item.startDate}-${item.type || 'PAID_LEAVE'}`;
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+
+            setLeaveRequests(uniqueRequests);
         } catch (error) {
             console.error(error);
         } finally {
