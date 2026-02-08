@@ -24,7 +24,7 @@ public class PaidLeaveAccrual {
     private Double daysGranted;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "granted_by_id", nullable = false)
+    @JoinColumn(name = "granted_by_id", nullable = true)
     private User grantedBy;
 
     @Column
@@ -32,6 +32,9 @@ public class PaidLeaveAccrual {
 
     @Column(name = "granted_at", nullable = false)
     private LocalDateTime grantedAt;
+
+    @Column(name = "deadline")
+    private java.time.LocalDate deadline;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;

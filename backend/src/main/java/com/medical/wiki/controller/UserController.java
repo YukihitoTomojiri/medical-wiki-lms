@@ -38,6 +38,8 @@ public class UserController {
         return ResponseEntity.ok(java.util.Map.of("tempPassword", tempPassword));
     }
 
+    private final com.medical.wiki.service.PaidLeaveService paidLeaveService;
+
     @GetMapping("/me/history")
     public ResponseEntity<List<com.medical.wiki.dto.HistoryDto>> getMyHistory(
             @RequestHeader(value = "X-User-Id") Long userId,
@@ -47,6 +49,12 @@ public class UserController {
             startDate = java.time.LocalDate.now().minusYears(1);
         }
         return ResponseEntity.ok(userService.getHistory(userId, startDate));
+    }
+
+    @GetMapping("/me/leave-status")
+    public ResponseEntity<com.medical.wiki.dto.PaidLeaveStatusDto> getLeaveStatus(
+            @RequestHeader(value = "X-User-Id") Long userId) {
+        return ResponseEntity.ok(paidLeaveService.calculateCurrentBalance(userId));
     }
 
 }

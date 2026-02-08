@@ -146,6 +146,9 @@ public class PaidLeaveService {
     /**
      * Grant paid leave days to a user (ADMIN/DEVELOPER only)
      */
+    /**
+     * Grant paid leave days to a user (ADMIN/DEVELOPER only)
+     */
     @Transactional
     public void grantPaidLeaveDays(Long targetUserId, Double daysToGrant, Long grantedById, String reason) {
         User targetUser = userRepository.findById(targetUserId)
@@ -153,18 +156,19 @@ public class PaidLeaveService {
         User grantedBy = userRepository.findById(grantedById)
                 .orElseThrow(() -> new RuntimeException("Granting user not found"));
 
-        // Update user's balance
-        targetUser.setPaidLeaveDays(targetUser.getPaidLeaveDays() + daysToGrant);
-        userRepository.save(targetUser);
-
         // Record accrual history
         PaidLeaveAccrual accrual = PaidLeaveAccrual.builder()
                 .user(targetUser)
                 .daysGranted(daysToGrant)
                 .grantedBy(grantedBy)
                 .reason(reason)
+                .grantedAt(java.time.LocalDateTime.now())
+                .deadline(LocalDate.now().plusYears(2)) // Default 2 years expiration
                 .build();
         accrualRepository.save(accrual);
+
+        // Recalculate balance
+        calculateCurrentBalance(targetUserId);
     }
 
     /**
@@ -175,51 +179,153 @@ public class PaidLeaveService {
         return accrualRepository.findByUserIdAndDeletedAtIsNullOrderByGrantedAtDesc(userId);
     }
 
-    /**
-     * Recalculate and update the user's paid leave balance based on accruals and
-     * usage.
-     */
     @Transactional
-    public void calculateCurrentBalance(Long userId) {
+    public void grantMissingAccruals(User user) {
+        if (user.getJoinedDate() == null)
+            return;
+        LocalDate joinedDate = user.getJoinedDate();
+        LocalDate now = LocalDate.now();
+
+        // 50 years max loop
+        for (int i = 0; i < 50; i++) {
+            LocalDate grantDate = joinedDate.plusMonths(6).plusYears(i);
+            if (grantDate.isAfter(now)) {
+                break;
+            }
+
+            // Check if grant exists for this specific date (approximate check by deadline)
+            // Deadline = GrantDate + 2 years.
+            LocalDate expectedDeadline = grantDate.plusYears(2);
+
+            boolean exists = accrualRepository.findByUserIdAndDeletedAtIsNullOrderByGrantedAtDesc(user.getId()).stream()
+                    .anyMatch(a -> a.getDeadline() != null && a.getDeadline().equals(expectedDeadline));
+
+            if (!exists) {
+                double days = 0;
+                if (i == 0)
+                    days = 10;
+                else if (i == 1)
+                    days = 11;
+                else if (i == 2)
+                    days = 12;
+                else if (i == 3)
+                    days = 14;
+                else if (i == 4)
+                    days = 16;
+                else if (i == 5)
+                    days = 18;
+                else
+                    days = 20;
+
+                PaidLeaveAccrual accrual = PaidLeaveAccrual.builder()
+                        .user(user)
+                        .daysGranted(days)
+                        .grantedAt(grantDate.atStartOfDay())
+                        .deadline(expectedDeadline)
+                        .reason("Automatic Grant (" + (i + 0.5) + " years)")
+                        .build();
+                accrualRepository.save(accrual);
+            }
+        }
+    }
+
+    @Transactional
+    public com.medical.wiki.dto.PaidLeaveStatusDto calculateCurrentBalance(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 1. Get total granted
-        Double totalGranted = accrualRepository.sumGrantedDays(userId);
-        if (totalGranted == null) {
-            // Migration logic: If no accrual history, use current balance as initial grant
-            // (Snapshot)
-            if (user.getPaidLeaveDays() > 0) {
-                totalGranted = user.getPaidLeaveDays();
-                // Create initial accrual record
-                PaidLeaveAccrual initialAccrual = PaidLeaveAccrual.builder()
-                        .user(user)
-                        .daysGranted(totalGranted)
-                        .grantedBy(user) // Self-granted for migration
-                        .reason("Initial Balance Migration")
-                        .build();
-                accrualRepository.save(initialAccrual);
-            } else {
-                totalGranted = 0.0;
+        // 1. Ensure Grants
+        grantMissingAccruals(user);
+
+        // 2. Load Data
+        List<PaidLeaveAccrual> accruals = accrualRepository.findByUserIdAndDeletedAtIsNullOrderByGrantedAtAsc(userId);
+        List<PaidLeave> approvedLeaves = repository.findByUserIdAndStatusOrderByStartDateAsc(userId,
+                PaidLeave.Status.APPROVED);
+
+        // 3. Bucket Simulation
+        class AccrualBucket {
+            Double remaining;
+            LocalDate grantDate;
+            LocalDate deadline;
+
+            public AccrualBucket(PaidLeaveAccrual a) {
+                this.remaining = a.getDaysGranted();
+                this.grantDate = a.getGrantedAt().toLocalDate();
+                this.deadline = a.getDeadline() != null ? a.getDeadline() : a.getGrantedAt().toLocalDate().plusYears(2);
             }
         }
 
-        // 2. Get total used from APPROVED leaves
-        List<PaidLeave> approvedLeaves = repository.findByUserIdOrderByStartDateDesc(userId).stream()
-                .filter(l -> l.getStatus() == PaidLeave.Status.APPROVED)
-                .collect(Collectors.toList());
+        List<AccrualBucket> buckets = accruals.stream().map(AccrualBucket::new).collect(Collectors.toList());
 
-        double totalUsed = 0.0;
         for (PaidLeave leave : approvedLeaves) {
             double baseDays = (double) java.time.temporal.ChronoUnit.DAYS.between(leave.getStartDate(),
                     leave.getEndDate()) + 1;
-            double days = (leave.getLeaveType() == PaidLeave.LeaveType.FULL) ? baseDays : baseDays * 0.5;
-            totalUsed += days;
+            double needed = (leave.getLeaveType() == PaidLeave.LeaveType.FULL) ? baseDays : baseDays * 0.5;
+
+            while (needed > 0) {
+                // Find earliest valid bucket for this leave
+                LocalDate leaveDate = leave.getStartDate();
+                AccrualBucket bucket = buckets.stream()
+                        .filter(b -> !b.grantDate.isAfter(leaveDate) && b.deadline.isAfter(leaveDate)
+                                && b.remaining > 0)
+                        .findFirst()
+                        .orElse(null);
+
+                if (bucket == null) {
+                    // No valid grant found (legacy or overdrawn). Ignore deduct.
+                    break;
+                }
+
+                double deduct = Math.min(bucket.remaining, needed);
+                bucket.remaining -= deduct;
+                needed -= deduct;
+            }
         }
 
-        // 3. Update User balance
-        user.setPaidLeaveDays(totalGranted - totalUsed);
+        // 4. Sum remaining valid buckets
+        LocalDate today = LocalDate.now();
+        double remaining = buckets.stream()
+                .filter(b -> b.deadline.isAfter(today))
+                .mapToDouble(b -> b.remaining)
+                .sum();
+
+        // Update Entity
+        user.setPaidLeaveDays(remaining);
         userRepository.save(user);
+
+        // 5. Next Grant Info
+        LocalDate nextGrantDate = null;
+        Double nextGrantDays = 0.0;
+
+        if (user.getJoinedDate() != null) {
+            for (int i = 0; i < 50; i++) {
+                LocalDate d = user.getJoinedDate().plusMonths(6).plusYears(i);
+                if (d.isAfter(today)) {
+                    nextGrantDate = d;
+                    if (i == 0)
+                        nextGrantDays = 10.0;
+                    else if (i == 1)
+                        nextGrantDays = 11.0;
+                    else if (i == 2)
+                        nextGrantDays = 12.0;
+                    else if (i == 3)
+                        nextGrantDays = 14.0;
+                    else if (i == 4)
+                        nextGrantDays = 16.0;
+                    else if (i == 5)
+                        nextGrantDays = 18.0;
+                    else
+                        nextGrantDays = 20.0;
+                    break;
+                }
+            }
+        }
+
+        return com.medical.wiki.dto.PaidLeaveStatusDto.builder()
+                .remainingDays(remaining)
+                .nextGrantDate(nextGrantDate)
+                .nextGrantDays(nextGrantDays)
+                .build();
     }
 
     /**
@@ -231,5 +337,33 @@ public class PaidLeaveService {
         for (User user : users) {
             calculateCurrentBalance(user.getId());
         }
+    }
+
+    /**
+     * Demo Data Initialization
+     * Ensures honkan001 has joinedDate set for testing paid leave logic.
+     */
+    @org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
+    @Transactional
+    public void initDemoData() {
+        userRepository.findByEmployeeIdAndDeletedAtIsNull("honkan001").ifPresent(user -> {
+            boolean updated = false;
+            // Set joined date to 2024-04-01 (approx 2 years ago from 2026, or exactly 1.5y
+            // if 2025)
+            // Current time in simulation is 2026-02-08.
+            // If joined 2024-04-01:
+            // 2024-10-01 (0.5y) -> Grant 10 days. Deadline 2026-10-01. Valid.
+            // 2025-10-01 (1.5y) -> Grant 11 days. Deadline 2027-10-01. Valid.
+            // Total = 21 days - used.
+            if (user.getJoinedDate() == null) {
+                user.setJoinedDate(LocalDate.of(2024, 4, 1));
+                updated = true;
+            }
+            // Always recalculate to ensure grants exist
+            calculateCurrentBalance(user.getId());
+            if (updated) {
+                userRepository.save(user);
+            }
+        });
     }
 }
