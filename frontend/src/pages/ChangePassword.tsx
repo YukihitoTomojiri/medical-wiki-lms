@@ -19,6 +19,7 @@ export default function ChangePassword({ user, onComplete }: Props) {
         e.preventDefault();
         setError(null);
         if (password !== confirm) {
+            setError('パスワードが一致しません');
             setError('新しいパスワードが一致しません');
             return;
         }
@@ -56,7 +57,7 @@ export default function ChangePassword({ user, onComplete }: Props) {
                     </div>
                     <h1 className="text-2xl font-black tracking-tight mb-2">パスワード変更</h1>
                     <p className="text-slate-400 text-sm font-medium">
-                        セキュリティ保護のため、システムを利用する前にパスワードを更新してください。
+                        セキュリティ保護のため、新しいパスワードを設定してください。設定が完了するまでシステムの利用を制限しています。
                     </p>
                 </div>
 
@@ -70,35 +71,24 @@ export default function ChangePassword({ user, onComplete }: Props) {
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1 text-emerald-400/80">現在のパスワード</label>
-                            <input
-                                type="password"
-                                value={currentPassword}
-                                onChange={e => setCurrentPassword(e.target.value)}
-                                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal"
-                                placeholder="現在のパスワード"
-                                required
-                            />
-                        </div>
-                        <div className="pt-2 border-t border-gray-50">
                             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">新しいパスワード</label>
                             <input
                                 type="password"
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
                                 className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal"
-                                placeholder="8文字以上"
+                                placeholder="8文字以上で入力"
                                 required
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">新しいパスワード（確認）</label>
+                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">パスワード（確認）</label>
                             <input
                                 type="password"
                                 value={confirm}
                                 onChange={e => setConfirm(e.target.value)}
                                 className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal"
-                                placeholder="もう一度入力してください"
+                                placeholder="もう一度入力"
                                 required
                             />
                         </div>
