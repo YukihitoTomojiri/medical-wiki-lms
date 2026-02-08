@@ -15,6 +15,7 @@ import SetupAccount from './pages/SetupAccount';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import DevConsole from './pages/DevConsole';
+import SubmissionSuccessPage from './pages/SubmissionSuccessPage';
 
 
 function App() {
@@ -86,6 +87,7 @@ function App() {
                             <Route path="/admin/all-users" element={<AllUsersAdmin />} />
                         </>
                     )}
+                    <Route path="/submission-success" element={<SubmissionSuccessPage />} />
                     <Route path="*" element={<Navigate to="/manuals" replace />} />
                 </Routes>
             </Layout>

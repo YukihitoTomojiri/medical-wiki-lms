@@ -13,13 +13,14 @@ import {
     ArrowRight,
     AlertCircle
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface MyDashboardProps {
     user: User;
 }
 
 export default function MyDashboard({ user }: MyDashboardProps) {
+    const navigate = useNavigate();
     const [dashboardData, setDashboardData] = useState<any>(null);
     const [progress, setProgress] = useState<Progress[]>([]);
     const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
@@ -95,7 +96,6 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                 );
             }
 
-            alert('申請しました');
             setStartDate('');
             setEndDate('');
             setStartTime('');
@@ -104,8 +104,8 @@ export default function MyDashboard({ user }: MyDashboardProps) {
             setRequestType('PAID_LEAVE');
             setDurationType('FULL_DAY');
 
-            // Reload
-            loadData();
+            // Redirect to success page instead of alert
+            navigate('/submission-success');
         } catch (error: any) {
             console.error('Submission failed:', error);
             alert(`申請に失敗しました: ${error.message}`);
