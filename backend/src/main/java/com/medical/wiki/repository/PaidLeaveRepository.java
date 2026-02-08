@@ -10,6 +10,8 @@ import java.util.List;
 public interface PaidLeaveRepository extends JpaRepository<PaidLeave, Long> {
         List<PaidLeave> findByUserIdOrderByStartDateDesc(Long userId);
 
+        List<PaidLeave> findByUserIdAndStatusOrderByStartDateAsc(Long userId, PaidLeave.Status status);
+
         List<PaidLeave> findAllByOrderByStartDateDesc();
 
         long countByUserIdAndStatus(Long userId, PaidLeave.Status status);
