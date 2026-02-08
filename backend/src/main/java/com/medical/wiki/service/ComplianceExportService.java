@@ -93,7 +93,7 @@ public class ComplianceExportService {
             writer.flush();
             return baos.toByteArray();
         } catch (Exception e) {
-            throw new RuntimeException("CSV export failed: " + e.getMessage(), e);
+            throw new RuntimeException("CSV出力に失敗しました: " + e.getMessage(), e);
         }
     }
 

@@ -20,7 +20,7 @@ export default function SetupAccount({ onLogin }: Props) {
 
     useEffect(() => {
         if (!token) {
-            setError('Invalid invitation link. Token is missing.');
+            setError('招待リンクが無効です。トークンが含まれていません。');
         }
     }, [token]);
 
@@ -34,7 +34,7 @@ export default function SetupAccount({ onLogin }: Props) {
             return;
         }
         if (password.length < 8) {
-            setError('Password must be at least 8 characters');
+            setError('パスワードは8文字以上で入力してください');
             return;
         }
 
@@ -61,8 +61,8 @@ export default function SetupAccount({ onLogin }: Props) {
                     <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
                         <AlertTriangle size={32} />
                     </div>
-                    <h2 className="text-xl font-black text-gray-800 mb-2">Invalid Link</h2>
-                    <p className="text-sm text-gray-500 mb-6">This invitation link is invalid or incomplete.</p>
+                    <h2 className="text-xl font-black text-gray-800 mb-2">無効なリンク</h2>
+                    <p className="text-sm text-gray-500 mb-6">この招待リンクは無効か、不完全です。</p>
                     <button onClick={() => navigate('/login')} className="px-6 py-2 bg-slate-800 text-white rounded-lg font-bold text-sm">
                         Go to Login
                     </button>

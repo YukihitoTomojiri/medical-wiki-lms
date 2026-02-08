@@ -30,7 +30,7 @@ public class PaidLeaveService {
     public PaidLeaveDto submitRequest(Long userId, LocalDate startDate, LocalDate endDate, String reason,
             PaidLeave.LeaveType leaveType) {
         if (startDate.isAfter(endDate)) {
-            throw new IllegalArgumentException("Start date must be before or equal to end date");
+            throw new IllegalArgumentException("開始日は終了日以前の日付を入力してください。");
         }
 
         User user = userRepository.findById(userId)
@@ -46,7 +46,7 @@ public class PaidLeaveService {
         double daysRequested = (leaveType == PaidLeave.LeaveType.FULL) ? baseDays : baseDays * 0.5;
 
         if (user.getPaidLeaveDays() < daysRequested) {
-            throw new IllegalArgumentException("Insufficient paid leave balance. Requested: " + daysRequested
+            throw new IllegalArgumentException("有給休暇の残日数が不足しています。申請日数: " + daysRequested
                     + ", Available: " + user.getPaidLeaveDays());
         }
 
@@ -112,7 +112,7 @@ public class PaidLeaveService {
                 .orElseThrow(() -> new RuntimeException("Request not found"));
 
         if (paidLeave.getStatus() != PaidLeave.Status.PENDING) {
-            throw new IllegalStateException("Can only update PENDING requests");
+            throw new IllegalStateException("申請中のステータスのみ更新可能です。");
         }
 
         if (status == PaidLeave.Status.APPROVED) {
@@ -121,7 +121,7 @@ public class PaidLeaveService {
             double daysRequested = (paidLeave.getLeaveType() == PaidLeave.LeaveType.FULL) ? baseDays : baseDays * 0.5;
             User user = paidLeave.getUser();
             if (user.getPaidLeaveDays() < daysRequested) {
-                throw new IllegalStateException("User has insufficient balance to approve this request");
+                throw new IllegalStateException("有給残日数が不足しているため承認できません。");
             }
             // Approve first, then recalculate
             paidLeave.setStatus(status);
