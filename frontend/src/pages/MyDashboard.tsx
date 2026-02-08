@@ -462,7 +462,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                     <table className="w-full">
                                         <thead className="bg-white sticky top-0 z-10 shadow-sm">
                                             <tr>
-                                                <th className="px-5 py-2 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/80 backdrop-blur-sm">日付 / 申請タイプ</th>
+                                                <th className="px-5 py-2 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/80 backdrop-blur-sm">取得予定日</th>
                                                 <th className="px-5 py-2 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/80 backdrop-blur-sm">ステータス</th>
                                             </tr>
                                         </thead>
@@ -470,21 +470,40 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                             {leaveRequests.length > 0 ? leaveRequests.map((req) => (
                                                 <tr key={`${req.isAttendance ? 'att' : 'leave'}-${req.id}`} className="hover:bg-gray-50/80 transition-colors group">
                                                     <td className="px-5 py-2.5">
-                                                        <div className="flex items-center gap-2 mb-0.5">
-                                                            <span className="text-xs font-bold text-gray-800 font-mono">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className="text-sm font-black text-gray-800 font-mono tracking-tight">
                                                                 {req.startDate}
-                                                                {req.startDate !== req.endDate && <span className="text-gray-400 mx-1">~</span>}
+                                                                {req.startDate !== req.endDate && <span className="text-gray-300 mx-1">~</span>}
                                                                 {req.startDate !== req.endDate && req.endDate.slice(5)}
                                                             </span>
                                                         </div>
-                                                        <div className="flex items-center gap-2">
-                                                            {req.isAttendance ? (
-                                                                <span className="text-[9px] px-1 py-px rounded border border-gray-200 text-gray-500 font-mono uppercase">{req.type}</span>
-                                                            ) : (
-                                                                <span className="text-[9px] px-1 py-px rounded border border-emerald-100 bg-emerald-50 text-emerald-600 font-mono uppercase">有給</span>
-                                                            )}
-                                                            <span className="text-[10px] text-gray-400 truncate max-w-[150px]">{req.reason}</span>
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            {(() => {
+                                                                const typeMap: Record<string, string> = {
+                                                                    'PAID_LEAVE': '有給休暇',
+                                                                    'ABSENCE': '欠勤',
+                                                                    'LATE': '遅刻',
+                                                                    'EARLY_DEPARTURE': '早退'
+                                                                };
+                                                                const label = typeMap[req.type] || req.type || '有給休暇';
+                                                                const isPaid = req.type === 'PAID_LEAVE' || !req.type;
+
+                                                                return (
+                                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded border font-bold ${isPaid
+                                                                            ? 'border-emerald-100 bg-emerald-50 text-emerald-600'
+                                                                            : 'border-blue-100 bg-blue-50 text-blue-600'
+                                                                        }`}>
+                                                                        {label}
+                                                                    </span>
+                                                                );
+                                                            })()}
+                                                            <span className="text-[10px] text-gray-500 truncate max-w-[150px]">{req.reason}</span>
                                                         </div>
+                                                        {req.createdAt && (
+                                                            <div className="text-[9px] text-gray-400 font-mono">
+                                                                申請日: {new Date(req.createdAt).toLocaleDateString('ja-JP')}
+                                                            </div>
+                                                        )}
                                                         {req.status === 'REJECTED' && req.rejectionReason && (
                                                             <div className="mt-1 text-[10px] text-red-500 flex items-center gap-1 bg-red-50 px-2 py-1 rounded w-fit">
                                                                 <AlertCircle size={10} />
@@ -494,6 +513,11 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                                     </td>
                                                     <td className="px-5 py-2.5 text-right align-top">
                                                         {getLeaveStatusBadge(req.status)}
+                                                        {req.status === 'APPROVED' && req.updatedAt && (
+                                                            <div className="mt-1 text-[9px] text-emerald-600/70 font-mono">
+                                                                {new Date(req.updatedAt).toLocaleDateString('ja-JP')} 承認
+                                                            </div>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             )) : (
