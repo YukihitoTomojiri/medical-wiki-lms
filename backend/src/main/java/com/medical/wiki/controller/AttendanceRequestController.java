@@ -32,6 +32,12 @@ public class AttendanceRequestController {
         return service.getMyRequests(userId);
     }
 
+    @GetMapping("/admin/attendance/requests")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
+    public List<AttendanceRequestDto> getAllRequests(@RequestHeader(value = "X-User-Id") Long userId) {
+        return service.getAllRequests(userId);
+    }
+
     @PutMapping("/admin/attendance/requests/{id}/approve")
     @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
     public AttendanceRequestDto approveRequest(@PathVariable Long id) {

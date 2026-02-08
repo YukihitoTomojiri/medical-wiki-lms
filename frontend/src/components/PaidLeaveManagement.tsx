@@ -218,8 +218,8 @@ export default function PaidLeaveManagement() {
                                 const isPending = req.status === 'PENDING';
 
                                 return (
-                                    <tr key={sid} className={`transition-colors ${isSelected ? 'bg-indigo-50/30' : 'hover:bg-gray-50/30'}`}>
-                                        <td className="px-6 py-5">
+                                    <tr key={sid} className={`transition-colors border-b border-gray-50 ${isSelected ? 'bg-indigo-50/20' : 'hover:bg-gray-50/30'}`}>
+                                        <td className="px-6 py-3">
                                             <input
                                                 type="checkbox"
                                                 className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer disabled:opacity-30"
@@ -228,55 +228,55 @@ export default function PaidLeaveManagement() {
                                                 onChange={() => toggleSelect(sid)}
                                             />
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <div className="flex flex-col">
-                                                <span className="font-bold text-gray-800 text-sm">{req.userName}</span>
-                                                <span className="text-[10px] font-bold text-indigo-400 uppercase mt-0.5">{req.userFacility} / {req.userDepartment}</span>
+                                        <td className="px-6 py-3">
+                                            <div className="flex flex-col leading-tight">
+                                                <span className="font-bold text-gray-800 text-sm tracking-tight">{req.userName}</span>
+                                                <span className="text-[10px] font-bold text-gray-400 mt-0.5 uppercase tracking-wider">{req.userFacility} / {req.userDepartment}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <div className="flex flex-col">
-                                                <div className="flex items-center gap-1.5 font-bold text-gray-700 text-sm">
+                                        <td className="px-6 py-3">
+                                            <div className="flex flex-col leading-tight">
+                                                <div className="flex items-center gap-1.5 font-bold text-gray-700 text-sm tracking-tighter">
                                                     <span>{req.startDate}</span>
                                                     <span className="text-gray-300 font-normal">~</span>
                                                     <span>{req.endDate}</span>
                                                 </div>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className={`px-1.5 py-0.5 text-[10px] font-black rounded ${req.isAttendance ? 'bg-slate-100 text-slate-500' : 'bg-blue-100 text-blue-600'}`}>
+                                                <div className="flex items-center gap-2 mt-0.5">
+                                                    <span className={`px-1.5 py-0 rounded-md text-[9px] font-black uppercase tracking-tighter ${req.isAttendance ? 'bg-slate-100 text-slate-500' : 'bg-blue-50 text-blue-600 ring-1 ring-blue-100'}`}>
                                                         {req.isAttendance ? req.type : '有給休暇'}
                                                     </span>
                                                     {!req.isAttendance && (
-                                                        <span className="text-[10px] font-bold text-gray-400">
-                                                            [ {req.leaveType === 'FULL' ? '全日取得' : req.leaveType === 'HALF_AM' ? '午前半休' : '午後半休'} ]
+                                                        <span className="text-[9px] font-bold text-gray-400 tracking-tight">
+                                                            {req.leaveType === 'FULL' ? '全日取得' : req.leaveType === 'HALF_AM' ? '午前半休' : '午後半休'}
                                                         </span>
                                                     )}
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <p className="text-sm text-gray-600 max-w-xs truncate font-medium" title={req.reason}>
+                                        <td className="px-6 py-3">
+                                            <p className="text-[13px] text-gray-500 max-w-xs truncate font-medium leading-relaxed" title={req.reason}>
                                                 {req.reason}
                                             </p>
                                         </td>
-                                        <td className="px-6 py-5">{getStatusBadge(req.status)}</td>
-                                        <td className="px-6 py-5 text-right">
+                                        <td className="px-6 py-3 uppercase tracking-tighter">{getStatusBadge(req.status)}</td>
+                                        <td className="px-6 py-3 text-right">
                                             {isPending ? (
                                                 <div className="flex justify-end gap-2">
                                                     <button
                                                         onClick={() => handleApprove(req.id, req.isAttendance)}
-                                                        className="px-4 py-1.5 bg-white border border-emerald-200 text-emerald-600 rounded-xl text-[11px] font-black hover:bg-emerald-50 transition-all shadow-sm active:scale-95"
+                                                        className="px-3 py-1 bg-white border border-emerald-200 text-emerald-600 rounded-lg text-[11px] font-black hover:bg-emerald-600 hover:text-white transition-all shadow-sm active:scale-95"
                                                     >
                                                         承認
                                                     </button>
                                                     <button
                                                         onClick={() => handleReject(req.id, req.isAttendance)}
-                                                        className="px-4 py-1.5 bg-white border border-red-200 text-red-500 rounded-xl text-[11px] font-black hover:bg-red-50 transition-all shadow-sm active:scale-95"
+                                                        className="px-3 py-1 bg-white border border-red-200 text-red-500 rounded-lg text-[11px] font-black hover:bg-red-500 hover:text-white transition-all shadow-sm active:scale-95"
                                                     >
                                                         却下
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <span className="text-[10px] font-bold text-gray-300 uppercase tracking-tighter italic">Process Complete</span>
+                                                <span className="text-[9px] font-black text-gray-300 uppercase italic tracking-widest opacity-50">Locked</span>
                                             )}
                                         </td>
                                     </tr>
