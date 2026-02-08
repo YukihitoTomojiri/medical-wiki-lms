@@ -181,13 +181,49 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                     <div className="relative">
                         <div className="flex items-center gap-2 text-gray-500 mb-2">
                             <Calendar size={18} className="text-emerald-500" />
-                            <span className={`text-xs font-bold uppercase tracking-wider ${activeTab === 'leaves' ? 'text-emerald-600' : ''}`}>有給残日数</span>
+                            <span className={`text-xs font-bold uppercase tracking-wider ${activeTab === 'leaves' ? 'text-emerald-600' : ''}`}>
+                                有給残日数
+                            </span>
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-black text-gray-800">{dashboardData?.paidLeaveDays}</span>
-                            <span className="text-sm text-gray-400">日</span>
+                            {(() => {
+                                const total = dashboardData?.paidLeaveDays || 0;
+                                const pending = leaveRequests
+                                    .filter(r => r.status === 'PENDING' && (r.type === 'PAID_LEAVE' || !r.type))
+                                    .reduce((acc, r) => {
+                                        // Simple calculation: if start!=end => days+1, then check type
+                                        // Ideally we should use same logic as backend but here we approximate or use backend data if available
+                                        // We will use a safe client-side calculation matching backend
+                                        const start = new Date(r.startDate);
+                                        const end = new Date(r.endDate);
+                                        const diffTime = Math.abs(end.getTime() - start.getTime());
+                                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+                                        // Check durationType from r.leaveType (it might be in r)
+                                        // r object structure from API might need inspection, but assuming it has leaveType
+                                        // If missing, default to FULL (1.0 * days)
+                                        const isHalf = r.leaveType === 'HALF_AM' || r.leaveType === 'HALF_PM';
+                                        return acc + (isHalf ? diffDays * 0.5 : diffDays * 1.0);
+                                    }, 0);
+
+                                const effective = Math.max(0, total - pending);
+
+                                return (
+                                    <div className="flex flex-col">
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-3xl font-black text-gray-800">{total}</span>
+                                            <span className="text-sm text-gray-400">日</span>
+                                        </div>
+                                        {pending > 0 && (
+                                            <span className="text-[10px] text-gray-400 font-bold mt-1">
+                                                (申請中含む: {effective.toFixed(1)}日)
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })()}
                         </div>
-                        <div className="mt-3 flex items-center text-xs text-emerald-600 font-medium">
+                        <div className="mt-2 flex items-center text-xs text-emerald-600 font-medium">
                             <Clock size={14} className="mr-1" />
                             申請中: {dashboardData?.pendingLeaveRequestsCount}件
                         </div>

@@ -243,7 +243,16 @@ export default function PaidLeaveManagement() {
                                                 </div>
                                                 <div className="flex items-center gap-2 mt-0.5">
                                                     <span className={`px-1.5 py-0 rounded-md text-[9px] font-black uppercase tracking-tighter ${req.isAttendance ? 'bg-slate-100 text-slate-500' : 'bg-blue-50 text-blue-600 ring-1 ring-blue-100'}`}>
-                                                        {req.isAttendance ? req.type : '有給休暇'}
+                                                        {(() => {
+                                                            if (!req.isAttendance) return '有給休暇';
+                                                            const map: Record<string, string> = {
+                                                                'LATE': '遅刻',
+                                                                'EARLY_DEPARTURE': '早退',
+                                                                'EARLY_LEAVE': '早退', // Fallback
+                                                                'ABSENCE': '欠勤'
+                                                            };
+                                                            return map[req.type] || req.type;
+                                                        })()}
                                                     </span>
                                                     {!req.isAttendance && (
                                                         <span className="text-[9px] font-bold text-gray-400 tracking-tight">
