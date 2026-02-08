@@ -82,6 +82,7 @@ function App() {
                     {(user.role === 'ADMIN' || user.role === 'DEVELOPER') && (
                         <>
                             <Route path="/admin" element={<AdminDashboard />} />
+                            <Route path="/admin/users" element={<AdminUserManagement user={user} />} />
                             <Route path="/dev/console" element={<DevConsole />} />
                             <Route path="/admin/manuals/new" element={<ManualEdit user={user} />} />
                             <Route path="/admin/manuals/edit/:id" element={<ManualEdit user={user} />} />

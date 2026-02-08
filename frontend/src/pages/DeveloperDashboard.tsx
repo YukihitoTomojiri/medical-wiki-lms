@@ -20,8 +20,6 @@ import {
     AlertTriangle,
     Clock,
     Terminal,
-    Upload,
-    Plus,
     AlertCircle,
     FileDown,
     Building2,
@@ -110,11 +108,11 @@ export default function DeveloperDashboard() {
         }
     }, [location.pathname]);
 
-    // Restore / Bulk Register States
+    // Restore / Bulk Register States (used by AllUsersAdmin restore flow)
     const [showRestoreModal, setShowRestoreModal] = useState(false);
     const [restorableUsers, setRestorableUsers] = useState<User[]>([]);
-    const [pendingCsvData, setPendingCsvData] = useState<UserCreateRequest[]>([]);
-    const [isRegistering, setIsRegistering] = useState(false);
+    const [_pendingCsvData, setPendingCsvData] = useState<UserCreateRequest[]>([]);
+    const [_isRegistering, _setIsRegistering] = useState(false);
     const [registeredUser, setRegisteredUser] = useState<any>(null);
     const [showPostRegisterModal, setShowPostRegisterModal] = useState(false);
     const [modalConfig, setModalConfig] = useState<{ title?: string, defaultTab?: 'invite' | 'temp' }>({});
@@ -238,16 +236,7 @@ export default function DeveloperDashboard() {
                 const depts = await api.getDepartments();
                 setOrgFacilities(facs);
                 setOrgDepartments(depts);
-                // Auto-set initial register form values if data exists
-                if (facs.length > 0) {
-                    const firstFac = facs[0];
-                    const firstDept = depts.find((d: any) => d.facilityId === firstFac.id);
-                    setRegisterForm(prev => ({
-                        ...prev,
-                        facility: firstFac.name,
-                        department: firstDept?.name || ''
-                    }));
-                }
+                // Organization master loaded for remaining dropdowns
             } catch (e) {
                 console.error('Failed to load organization data', e);
             }
@@ -420,155 +409,7 @@ export default function DeveloperDashboard() {
         return matchesSearch && matchesStatus && matchesFacility;
     });
 
-    // Registration States
-    const [registerForm, setRegisterForm] = useState({
-        employeeId: '',
-        name: '',
-        password: '',
-        facility: '本館',
-        department: '3階病棟',
-        role: 'USER' as const,
-        email: '',
-        paidLeaveDays: 0,
-        joinedDate: ''
-    });
-    const [csvError, setCsvError] = useState<string | null>(null);
-
-    const handleSingleRegister = async () => {
-        if (!registerForm.employeeId || !registerForm.name) {
-            alert('IDと名前を入力してください');
-            return;
-        }
-        try {
-            addLog(`Registering user ${registerForm.employeeId}...`, 'info');
-            const res = await api.registerUser(1, registerForm);
-            if (res.id) {
-                addLog(`User registered successfully`, 'success');
-                setRegisteredUser(res);
-                setModalConfig({}); // Default for new registration
-                setShowPostRegisterModal(true);
-                setRegisterForm({
-                    employeeId: '',
-                    name: '',
-                    password: '',
-                    facility: '本館',
-                    department: '3階病棟',
-                    role: 'USER',
-                    email: '',
-                    paidLeaveDays: 0,
-                    joinedDate: ''
-                });
-                fetchData();
-            } else {
-                const errorMsg = res.message || 'Registration failed';
-                addLog(errorMsg, 'error');
-                setCsvError(errorMsg);
-            }
-        } catch (e: any) {
-            const msg = e.message || 'Registration failed';
-            addLog(msg, 'error');
-            setCsvError(msg);
-        }
-    };
-
-    const executeRestoreAndRegister = async (restoreIds: string[]) => {
-        if (pendingCsvData.length === 0 || isRegistering) return;
-        setIsRegistering(true);
-
-        try {
-            await api.bulkRegisterUsersV2(1, { users: pendingCsvData, restoreIds });
-            addLog(`Bulk process completed: ${pendingCsvData.length} users (Restored: ${restoreIds.length})`, 'success');
-            setPendingCsvData([]);
-            setRestorableUsers([]);
-            setShowRestoreModal(false);
-            setCsvError(null);
-            fetchData();
-            alert(`${pendingCsvData.length} 件の処理が完了しました（復元: ${restoreIds.length}件）`);
-        } catch (e: any) {
-            const msg = e.message || 'Error executing bulk register';
-            setCsvError(msg);
-            addLog(msg, 'error');
-        } finally {
-            setIsRegistering(false);
-        }
-    };
-
-    const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        setCsvError(null);
-
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            const text = event.target?.result as string;
-            const rows = text.split('\n').filter(row => row.trim() !== '');
-            const users: any[] = [];
-
-            try {
-                for (let i = 1; i < rows.length; i++) {
-                    const cols = rows[i].split(',').map(c => c.trim());
-                    if (cols.length < 5) continue;
-                    const name = cols[1];
-                    // クライアント側でも簡易チェック
-                    if (name && !name.includes(' ') && !name.includes('　')) {
-                        throw new Error(`${i + 1}行目の名前 [${name}] に姓名間のスペースがありません。`);
-                    }
-
-                    users.push({
-                        employeeId: cols[0],
-                        name: name,
-                        password: 'password123',
-                        facility: cols[2],
-                        department: cols[3],
-                        role: (cols[4] || 'USER').toUpperCase()
-                    });
-                }
-
-                if (users.length === 0) {
-                    setCsvError('有効なデータが見つかりませんでした');
-                    return;
-                }
-
-                addLog(`Validating ${users.length} users...`, 'info');
-
-                // Validate first
-                const validation = await api.validateBulkCsv(1, users);
-
-                if (validation.errors && validation.errors.length > 0) {
-                    setCsvError('以下のエラーがあります:\n' + validation.errors.join('\n'));
-                    addLog('CSV validation failed', 'error');
-                    return;
-                }
-
-                // Check for restorable users
-                if (validation.restorableUsers && validation.restorableUsers.length > 0) {
-                    setRestorableUsers(validation.restorableUsers);
-                    setPendingCsvData(users);
-                    setShowRestoreModal(true);
-                    addLog(`Found ${validation.restorableUsers.length} restorable users. Waiting for confirmation...`, 'info');
-                    return;
-                }
-
-                // If valid and no restorable users, proceed directly
-                const res = await api.bulkRegisterUsersV2(1, { users, restoreIds: [] });
-                if (res.success) {
-                    addLog('Bulk registration successful', 'success');
-                    fetchData();
-                    alert('一括登録が完了しました');
-                } else {
-                    addLog('Bulk registration failed', 'error');
-                    setCsvError(res.message);
-                }
-            } catch (err: any) {
-                setCsvError(err.message || 'CSVの解析またはサーバー通信に失敗しました。');
-                addLog('CSV Error: ' + err.message, 'error');
-            } finally {
-                // Clear input
-                e.target.value = '';
-            }
-        };
-        reader.readAsText(file);
-    };
+    // Note: User registration functions moved to AdminUserManagement
 
     const openResetModal = (user: User) => {
         setRegisteredUser(user);
@@ -596,13 +437,17 @@ export default function DeveloperDashboard() {
             <RestoreConfirmModal
                 isOpen={showRestoreModal}
                 restorableUsers={restorableUsers}
-                onConfirm={executeRestoreAndRegister}
+                onConfirm={() => {
+                    // Registration moved to AdminUserManagement
+                    setShowRestoreModal(false);
+                    setRestorableUsers([]);
+                }}
                 onCancel={() => {
                     setShowRestoreModal(false);
                     setPendingCsvData([]);
                     setRestorableUsers([]);
                 }}
-                isLoading={isRegistering}
+                isLoading={false}
             />
             <div className="space-y-4 pb-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
@@ -906,143 +751,7 @@ export default function DeveloperDashboard() {
 
                         {/* Main Content Area */}
                         <div className="grid grid-cols-1 gap-4">
-                            {/* User Registration Section */}
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                                <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-emerald-50/30">
-                                    <div>
-                                        <h3 className="text-xl font-black text-gray-800 tracking-tight flex items-center gap-2">
-                                            <Plus className="text-emerald-500" size={24} />
-                                            User Registration
-                                        </h3>
-                                        <p className="text-sm text-gray-500 font-medium">Add individual users or upload batch data</p>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <label className="flex items-center gap-2 px-6 py-3 bg-slate-800 text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-slate-700 transition-all shadow-lg shadow-slate-200 cursor-pointer active:scale-95">
-                                            <Upload size={16} />
-                                            Upload CSV
-                                            <input type="file" accept=".csv" onChange={handleCsvUpload} className="hidden" />
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div className="p-5">
-                                    {csvError && (
-                                        <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-                                            <AlertCircle className="text-red-500 mt-0.5 flex-shrink-0" size={20} />
-                                            <div className="flex-grow">
-                                                <p className="text-sm font-black text-red-800">処理エラーが発生しました</p>
-                                                <p className="text-xs text-red-600 mt-1 whitespace-pre-line font-medium leading-relaxed">
-                                                    {csvError}
-                                                </p>
-                                            </div>
-                                            <button onClick={() => setCsvError(null)} className="ml-0.5 text-red-400 hover:text-red-600 p-1 hover:bg-red-100 rounded-lg transition-colors">
-                                                <XIcon size={18} />
-                                            </button>
-                                        </div>
-                                    )}
-
-                                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                                        <div className="md:col-span-1">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">ID</label>
-                                            <input
-                                                type="text"
-                                                placeholder="dev-001"
-                                                value={registerForm.employeeId}
-                                                onChange={e => setRegisterForm({ ...registerForm, employeeId: e.target.value })}
-                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-mono focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                                            />
-                                        </div>
-                                        <div className="md:col-span-1">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Identity Name</label>
-                                            <input
-                                                type="text"
-                                                placeholder="Name"
-                                                value={registerForm.name}
-                                                onChange={e => setRegisterForm({ ...registerForm, name: e.target.value })}
-                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                                            />
-                                        </div>
-                                        <div className="md:col-span-1">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Email</label>
-                                            <input
-                                                type="email"
-                                                placeholder="user@example.com"
-                                                value={registerForm.email}
-                                                onChange={e => setRegisterForm({ ...registerForm, email: e.target.value })}
-                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                                            />
-                                        </div>
-                                        <div className="md:col-span-1">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Facility</label>
-                                            <select
-                                                value={registerForm.facility}
-                                                onChange={e => setRegisterForm({ ...registerForm, facility: e.target.value, department: getDepartments(e.target.value)[0] || '' })}
-                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-black focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                                            >
-                                                {orgFacilities.length === 0 && (
-                                                    <option value="">施設を登録してください</option>
-                                                )}
-                                                {orgFacilities.map(f => (
-                                                    <option key={f.id} value={f.name}>{f.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div className="md:col-span-1">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Department</label>
-                                            <select
-                                                value={registerForm.department}
-                                                onChange={e => setRegisterForm({ ...registerForm, department: e.target.value })}
-                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-black focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                                            >
-                                                {getDepartments(registerForm.facility).map(dept => (
-                                                    <option key={dept} value={dept}>{dept}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div className="md:col-span-1">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Joined Date</label>
-                                            <input
-                                                type="date"
-                                                value={registerForm.joinedDate}
-                                                onChange={e => setRegisterForm({ ...registerForm, joinedDate: e.target.value })}
-                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                                            />
-                                        </div>
-                                        <div className="md:col-span-1">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Paid Leave Days</label>
-                                            <input
-                                                type="number"
-                                                step="0.5"
-                                                min="0"
-                                                value={registerForm.paidLeaveDays}
-                                                onChange={e => setRegisterForm({ ...registerForm, paidLeaveDays: parseFloat(e.target.value) || 0 })}
-                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                                            />
-                                        </div>
-                                        <div className="md:col-span-1">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Role</label>
-                                            <select
-                                                value={registerForm.role}
-                                                onChange={e => setRegisterForm({ ...registerForm, role: e.target.value as any })}
-                                                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-black focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                                            >
-                                                <option value="USER">USER</option>
-                                                <option value="ADMIN">ADMIN</option>
-                                                <option value="DEVELOPER">DEVELOPER</option>
-                                            </select>
-                                        </div>
-                                        <div className="md:col-span-1 flex items-end">
-                                            <button
-                                                onClick={handleSingleRegister}
-                                                className="w-full py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 transition-all font-black text-xs tracking-widest active:scale-95 flex items-center justify-center gap-2"
-                                            >
-                                                <Check size={16} />
-                                                REGISTER
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            {/* Removed: User Registration Section - now managed in AdminUserManagement */}
                         </div>
                     </div>
                 ) : activeTab === 'nodes' ? (
@@ -1051,29 +760,29 @@ export default function DeveloperDashboard() {
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                                 <div>
-                                    <h3 className="text-lg font-black text-gray-800 tracking-tight">Active Nodes Control</h3>
-                                    <p className="text-xs text-gray-500 font-medium">Control access and user privileges</p>
+                                    <h3 className="text-lg font-black text-gray-800 tracking-tight">稼働ノード管理</h3>
+                                    <p className="text-xs text-gray-500 font-medium">アクセス制御とユーザー権限の管理</p>
                                 </div>
 
                                 {/* Bulk Action Menu */}
                                 {selectedUsers.length > 0 && (
                                     <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-300">
                                         <span className="text-xs font-bold text-orange-600 px-3 py-1 bg-orange-50 rounded-full border border-orange-100">
-                                            {selectedUsers.length} Selected
+                                            {selectedUsers.length} 件選択中
                                         </span>
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={handleBulkReset}
                                                 className="px-4 py-2 bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-700 transition-all shadow-lg shadow-slate-200"
                                             >
-                                                Reset Progress
+                                                進捗リセット
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={openDeleteModal}
                                                 className="px-4 py-2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-100"
                                             >
-                                                Delete Users
+                                                削除
                                             </button>
                                         </div>
                                     </div>
@@ -1081,7 +790,7 @@ export default function DeveloperDashboard() {
 
                                 {selectedUsers.length === 0 && (
                                     <div className="px-5 py-2 bg-white border border-gray-100 rounded-2xl text-[10px] font-black text-gray-400 shadow-sm uppercase tracking-widest">
-                                        {userList.length} Nodes Registered
+                                        {userList.length} 件登録済み
                                     </div>
                                 )}
                             </div>
