@@ -269,75 +269,78 @@ export default function MyDashboard({ user }: MyDashboardProps) {
 
                 {/* Paid Leaves Tab Content */}
                 {activeTab === 'leaves' && (
-                    <div className="grid lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-2">
+                    <div className="grid lg:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-2">
                         {/* Application Form */}
-                        <div className="lg:col-span-5">
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sticky top-6">
-                                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <Plus size={18} className="text-emerald-500" />
+                        <div className="lg:col-span-12 xl:col-span-5">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sticky top-6">
+                                <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm">
+                                    <Plus size={16} className="text-emerald-500" />
                                     新規申請
                                 </h3>
-                                <form onSubmit={handleSubmitLeave} className="space-y-4">
+                                <form onSubmit={handleSubmitLeave} className="space-y-3">
                                     {/* Request Type Selection */}
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1">申請種別</label>
-                                        <select
-                                            value={requestType}
-                                            onChange={(e) => setRequestType(e.target.value)}
-                                            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700"
-                                        >
-                                            <option value="PAID_LEAVE">有給休暇</option>
-                                            <option value="ABSENCE">欠勤</option>
-                                            <option value="LATE">遅刻</option>
-                                            <option value="EARLY_DEPARTURE">早退</option>
-                                        </select>
-                                    </div>
-
-                                    {requestType === 'PAID_LEAVE' && (
+                                    <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-xs font-bold text-gray-500 mb-1">取得単位</label>
+                                            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">申請種別</label>
                                             <select
-                                                value={durationType}
-                                                onChange={(e) => setDurationType(e.target.value)}
-                                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700"
+                                                value={requestType}
+                                                onChange={(e) => setRequestType(e.target.value)}
+                                                className="w-full px-2 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50"
                                             >
-                                                <option value="FULL_DAY">全日</option>
-                                                <option value="HALF_DAY_AM">半日 (午前)</option>
-                                                <option value="HALF_DAY_PM">半日 (午後)</option>
+                                                <option value="PAID_LEAVE">有給休暇</option>
+                                                <option value="ABSENCE">欠勤</option>
+                                                <option value="LATE">遅刻</option>
+                                                <option value="EARLY_DEPARTURE">早退</option>
                                             </select>
                                         </div>
-                                    )}
 
-                                    <div className="grid grid-cols-2 gap-2">
+                                        {requestType === 'PAID_LEAVE' ? (
+                                            <div>
+                                                <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">取得単位</label>
+                                                <select
+                                                    value={durationType}
+                                                    onChange={(e) => setDurationType(e.target.value)}
+                                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50"
+                                                >
+                                                    <option value="FULL_DAY">全日</option>
+                                                    <option value="HALF_DAY_AM">半日 (午前)</option>
+                                                    <option value="HALF_DAY_PM">半日 (午後)</option>
+                                                </select>
+                                            </div>
+                                        ) : (
+                                            <div className="hidden md:block"></div>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-xs font-bold text-gray-500 mb-1">開始日</label>
+                                            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">開始日</label>
                                             <input
                                                 type="date"
                                                 required
                                                 value={startDate}
                                                 onChange={(e) => setStartDate(e.target.value)}
-                                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700"
+                                                className="w-full px-2 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-gray-500 mb-1">終了日</label>
+                                            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">終了日</label>
                                             <input
                                                 type="date"
                                                 required
                                                 value={endDate}
                                                 onChange={(e) => setEndDate(e.target.value)}
-                                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700"
+                                                className="w-full px-2 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50"
                                             />
                                         </div>
                                     </div>
 
                                     {(requestType === 'LATE' || requestType === 'EARLY_DEPARTURE') && (
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="block text-xs font-bold text-gray-500 mb-1">開始時間</label>
-                                                <div className="flex gap-1 items-center flex-nowrap">
-                                                    <div className="relative w-20">
-                                                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
+                                                <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">開始時間</label>
+                                                <div className="flex gap-1 items-center">
+                                                    <div className="relative w-full">
                                                         <select
                                                             value={startTime ? startTime.split(':')[0] : ''}
                                                             onChange={(e) => {
@@ -345,19 +348,18 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                                                 const m = startTime ? startTime.split(':')[1] : '00';
                                                                 setStartTime(`${h}:${m}`);
                                                             }}
-                                                            className="w-full pl-6 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white text-center"
+                                                            className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
                                                         >
-                                                            <option value="" disabled>時</option>
+                                                            <option value="" disabled>--</option>
                                                             {Array.from({ length: 24 }).map((_, i) => (
                                                                 <option key={i} value={i.toString().padStart(2, '0')}>
                                                                     {i.toString().padStart(2, '0')}
                                                                 </option>
                                                             ))}
                                                         </select>
-                                                        <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[8px]">▼</div>
                                                     </div>
-                                                    <span className="text-gray-400 font-bold">:</span>
-                                                    <div className="relative w-14">
+                                                    <span className="text-gray-300 text-xs font-bold">:</span>
+                                                    <div className="relative w-full">
                                                         <select
                                                             value={startTime ? startTime.split(':')[1] : ''}
                                                             onChange={(e) => {
@@ -365,21 +367,19 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                                                 const m = e.target.value;
                                                                 setStartTime(`${h}:${m}`);
                                                             }}
-                                                            className="w-full pl-1 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white text-center"
+                                                            className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
                                                         >
                                                             {['00', '15', '30', '45'].map((m) => (
                                                                 <option key={m} value={m}>{m}</option>
                                                             ))}
                                                         </select>
-                                                        <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[8px]">▼</div>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-bold text-gray-500 mb-1">終了時間</label>
-                                                <div className="flex gap-1 items-center flex-nowrap">
-                                                    <div className="relative w-20">
-                                                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
+                                                <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">終了時間</label>
+                                                <div className="flex gap-1 items-center">
+                                                    <div className="relative w-full">
                                                         <select
                                                             value={endTime ? endTime.split(':')[0] : ''}
                                                             onChange={(e) => {
@@ -387,19 +387,18 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                                                 const m = endTime ? endTime.split(':')[1] : '00';
                                                                 setEndTime(`${h}:${m}`);
                                                             }}
-                                                            className="w-full pl-6 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white text-center"
+                                                            className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
                                                         >
-                                                            <option value="" disabled>時</option>
+                                                            <option value="" disabled>--</option>
                                                             {Array.from({ length: 24 }).map((_, i) => (
                                                                 <option key={i} value={i.toString().padStart(2, '0')}>
                                                                     {i.toString().padStart(2, '0')}
                                                                 </option>
                                                             ))}
                                                         </select>
-                                                        <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[8px]">▼</div>
                                                     </div>
-                                                    <span className="text-gray-400 font-bold">:</span>
-                                                    <div className="relative w-14">
+                                                    <span className="text-gray-300 text-xs font-bold">:</span>
+                                                    <div className="relative w-full">
                                                         <select
                                                             value={endTime ? endTime.split(':')[1] : ''}
                                                             onChange={(e) => {
@@ -407,13 +406,12 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                                                 const m = e.target.value;
                                                                 setEndTime(`${h}:${m}`);
                                                             }}
-                                                            className="w-full pl-1 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm font-bold text-gray-700 appearance-none bg-white text-center"
+                                                            className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
                                                         >
                                                             {['00', '15', '30', '45'].map((m) => (
                                                                 <option key={m} value={m}>{m}</option>
                                                             ))}
                                                         </select>
-                                                        <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[8px]">▼</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -421,70 +419,86 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                     )}
 
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1">事由</label>
+                                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">事由</label>
                                         <textarea
                                             required
                                             value={reason}
                                             onChange={(e) => setReason(e.target.value)}
-                                            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm h-24 resize-none"
-                                            placeholder="私用のため、通院のため..."
+                                            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs h-20 resize-none bg-gray-50/50"
+                                            placeholder="私用のため..."
                                         />
                                     </div>
                                     {submitError && (
-                                        <div className="p-3 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2 text-red-600 text-xs font-bold animate-in fade-in slide-in-from-top-1">
-                                            <AlertCircle size={14} className="shrink-0" />
+                                        <div className="p-2 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2 text-red-600 text-[10px] font-bold animate-in fade-in slide-in-from-top-1">
+                                            <AlertCircle size={12} className="shrink-0 mt-0.5" />
                                             <span>{submitError}</span>
                                         </div>
                                     )}
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+                                        className="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 text-xs flex items-center justify-center gap-2"
                                     >
-                                        {isSubmitting ? '送信中...' : '申請する'}
+                                        {isSubmitting ? (
+                                            <span className="animate-pulse">送信中...</span>
+                                        ) : (
+                                            <>
+                                                <span>申請を送信</span>
+                                                <ArrowRight size={14} />
+                                            </>
+                                        )}
                                     </button>
                                 </form>
                             </div>
                         </div>
 
                         {/* History Table */}
-                        <div className="lg:col-span-7">
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                                <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                        <div className="lg:col-span-12 xl:col-span-7">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col max-h-[600px]">
+                                <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50 shrink-0">
                                     <h3 className="font-bold text-gray-800 text-sm">申請履歴</h3>
                                 </div>
-                                <div className="overflow-x-auto">
+                                <div className="overflow-y-auto flex-1 p-0">
                                     <table className="w-full">
-                                        <thead className="bg-gray-50 border-b border-gray-100">
+                                        <thead className="bg-white sticky top-0 z-10 shadow-sm">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-400">期間</th>
-                                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-400">事由</th>
-                                                <th className="px-6 py-3 text-right text-xs font-bold text-gray-400">ステータス</th>
+                                                <th className="px-5 py-2 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/80 backdrop-blur-sm">日付 / 申請タイプ</th>
+                                                <th className="px-5 py-2 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/80 backdrop-blur-sm">ステータス</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-50">
                                             {leaveRequests.length > 0 ? leaveRequests.map((req) => (
-                                                <tr key={`${req.isAttendance ? 'att' : 'leave'}-${req.id}`} className="hover:bg-gray-50/50">
-                                                    <td className="px-6 py-4 text-sm font-bold text-gray-700 whitespace-nowrap">
-                                                        {req.startDate} <span className="text-gray-300 mx-1">~</span> {req.endDate}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                                <tr key={`${req.isAttendance ? 'att' : 'leave'}-${req.id}`} className="hover:bg-gray-50/80 transition-colors group">
+                                                    <td className="px-5 py-2.5">
+                                                        <div className="flex items-center gap-2 mb-0.5">
+                                                            <span className="text-xs font-bold text-gray-800 font-mono">
+                                                                {req.startDate}
+                                                                {req.startDate !== req.endDate && <span className="text-gray-400 mx-1">~</span>}
+                                                                {req.startDate !== req.endDate && req.endDate.slice(5)}
+                                                            </span>
+                                                        </div>
                                                         <div className="flex items-center gap-2">
-                                                            {req.isAttendance && <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-mono">{req.type}</span>}
-                                                            <span>{req.reason}</span>
+                                                            {req.isAttendance ? (
+                                                                <span className="text-[9px] px-1 py-px rounded border border-gray-200 text-gray-500 font-mono uppercase">{req.type}</span>
+                                                            ) : (
+                                                                <span className="text-[9px] px-1 py-px rounded border border-emerald-100 bg-emerald-50 text-emerald-600 font-mono uppercase">有給</span>
+                                                            )}
+                                                            <span className="text-[10px] text-gray-400 truncate max-w-[150px]">{req.reason}</span>
                                                         </div>
                                                         {req.status === 'REJECTED' && req.rejectionReason && (
-                                                            <div className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                                                            <div className="mt-1 text-[10px] text-red-500 flex items-center gap-1 bg-red-50 px-2 py-1 rounded w-fit">
                                                                 <AlertCircle size={10} />
-                                                                却下理由: {req.rejectionReason}
+                                                                {req.rejectionReason}
                                                             </div>
                                                         )}
                                                     </td>
-                                                    <td className="px-6 py-4 text-right">{getLeaveStatusBadge(req.status)}</td>
+                                                    <td className="px-5 py-2.5 text-right align-top">
+                                                        {getLeaveStatusBadge(req.status)}
+                                                    </td>
                                                 </tr>
                                             )) : (
                                                 <tr>
-                                                    <td colSpan={3} className="px-6 py-12 text-center text-gray-400">
+                                                    <td colSpan={2} className="px-6 py-12 text-center text-gray-400 text-xs">
                                                         申請履歴はありません
                                                     </td>
                                                 </tr>
