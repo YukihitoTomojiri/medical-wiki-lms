@@ -8,6 +8,7 @@ import MyDashboard from './pages/MyDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import DeveloperDashboard from './pages/DeveloperDashboard';
 import AllUsersAdmin from './pages/AllUsersAdmin';
+import AdminUserManagement from './pages/AdminUserManagement';
 import ManualEdit from './pages/ManualEdit';
 import Layout from './components/Layout';
 import ChangePassword from './pages/ChangePassword';
@@ -80,8 +81,8 @@ function App() {
                     {(user.role === 'ADMIN' || user.role === 'DEVELOPER') && (
                         <>
                             <Route path="/admin" element={<AdminDashboard />} />
+                            <Route path="/admin/users" element={<AdminUserManagement user={user} />} />
                             <Route path="/dev/console" element={<DevConsole />} />
-                            <Route path="/admin/manuals/new" element={<ManualEdit user={user} />} />
                             <Route path="/admin/manuals/new" element={<ManualEdit user={user} />} />
                             <Route path="/admin/manuals/edit/:id" element={<ManualEdit user={user} />} />
                             <Route path="/admin/all-users" element={<AllUsersAdmin />} />

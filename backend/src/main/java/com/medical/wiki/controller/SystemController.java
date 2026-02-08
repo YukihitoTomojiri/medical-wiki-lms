@@ -124,7 +124,7 @@ public class SystemController {
         if (executorId != null) {
             executorName = userService.getUserById(executorId).map(UserDto::getName).orElse("ADMIN");
         }
-        ids.forEach(userService::deleteUser);
+        ids.forEach(id -> userService.deleteUser(id, executorId));
         loggingService.log("BULK_DELETE", ids.size() + " users", "Bulk deletion of users", executorName);
         return ResponseEntity.ok(Map.of("success", true));
     }

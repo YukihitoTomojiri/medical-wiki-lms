@@ -16,8 +16,9 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<UserDto>> getAllUsers(@RequestParam(required = false) String facility) {
-        return ResponseEntity.ok(userService.getAllUsers(facility));
+    public ResponseEntity<List<UserDto>> getAllUsers(@RequestParam(required = false) String facility,
+            @RequestHeader(value = "X-User-Id", required = false) Long requesterId) {
+        return ResponseEntity.ok(userService.getAllUsers(facility, requesterId));
     }
 
     @GetMapping("/facilities")
