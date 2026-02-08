@@ -4,11 +4,52 @@
 
 ---
 
+
+## 📖 目次 (Table of Contents)
+
+- [🚀 プロジェクト概要](#-プロジェクト概要)
+- [✨ 実装済みの主要機能](#-実装済みの主要機能)
+- [🗓️ 有給休暇・勤怠管理システム](#-有給休暇勤怠管理システム-phase-1)
+- [📖 ユーザー向け操作マニュアル](#-ユーザー向け操作マニュアル-user-manual)
+- [📦 開発者への約束事](#-開発者への約束事)
+- [🔧 開発者向けセットアップ](#-開発者向けセットアップ)
+- [🗺️ 今後のロードマップ](#-今後のロードマップ-roadmap)
+
+---
+
 ## 🚀 プロジェクト概要
 
 - **目的**: 施設横断的な感染対策マニュアルの共有と学習進捗の可視化。
 - **ターゲット**: 看護師、介護士、事務職など、施設に所属する全職員。
 - **特徴**: 厳格な監査ログと、職種・拠点に応じた権限管理。
+
+### 🏗️ システム全体像 (Architecture)
+
+```mermaid
+graph TD
+    DB[(Central Database<br>MySQL 8.0)]
+    
+    subgraph Facilities [あさひ医療グループ]
+        style Facilities fill:#f0f9ff,stroke:#bae6fd
+        H[本館<br>Honkan]
+        S[南棟<br>South Wing]
+        HI[ひまわりの里<br>Himawari]
+        A[あおぞら中央<br>Aozora]
+    end
+    
+    H & S & HI & A --- DB
+    
+    subgraph Roles [アクセス権限 (RBAC)]
+        style Roles fill:#f0fdf4,stroke:#86efac
+        DEV[DEVELOPER<br>全施設・全機能]
+        ADM[ADMIN<br>管理施設内の承認・登録]
+        USR[USER<br>自身の学習・申請]
+    end
+    
+    DEV -.-> DB
+    ADM -.-> H & S & HI & A
+    USR -.-> H
+```
 
 ---
 
@@ -54,7 +95,8 @@
 
 ## ✨ 実装済みの主要機能
 
-### 🆕 最近のアップデート (2026-02-08)
+<details>
+<summary><strong>🆕 最近のアップデート / 更新履歴 (2026-02-08)</strong></summary>
 
 #### 【セキュリティ】管理者パスワードの強制リセットおよびパスワード変更強制機能の実装
 - **課題**: 管理者アカウントのパスワード紛失によるログイン不能問題の解消。および、セキュリティ向上のための初回ログインパスワード変更の強制。
@@ -69,6 +111,7 @@
   - 有給休暇の期間重複、および勤怠変更の同一日・同一種別の重複をブロックするバリデーション。
   - 申請完了専用画面（`SubmissionSuccessPage.tsx`）への自動遷移。
   - バリデーションエラーをフォーム上に日本語で具体的に表示。
+</details>
 
 ### 🛡️ 権限管理・組織管理
 - **4拠点対応**: 本館、南棟、ひまわりの里病院、あおぞら中央クリニックの組織構造を管理。
@@ -189,6 +232,34 @@
   - `ROLE_ADMIN`: 自身が管理する施設（`user_facility_mapping`で紐付け）内のユーザーの申請を閲覧・承認。
   - `ROLE_DEVELOPER`: 全施設の全申請を閲覧・承認。
 - **論理削除**: 全テーブルに `deleted_at` カラムを実装し、データの完全性を維持。
+
+#### 🔄 申請・承認フロー (Application Flow)
+
+```mermaid
+sequenceDiagram
+    participant Staff as 職員 (User)
+    participant System as 自動チェック
+    participant DB as データベース
+    participant Admin as 管理者 (Admin)
+    
+    Note over Staff, System: 申請フェーズ
+    Staff->>System: 申請フォーム送信
+    System->>System: 重複チェック / 残日数確認
+    
+    alt チェックNG
+        System-->>Staff: エラー表示 (即時)
+    else チェックOK
+        System->>DB: 保存 (Status: PENDING)
+        System-->>Staff: 完了画面へ遷移
+    end
+    
+    Note over DB, Admin: 承認フェーズ
+    Admin->>System: 申請一覧を確認
+    Admin->>DB: 承認 (APPROVED) / 却下 (REJECTED)
+    
+    Note over DB, Staff: 反映フェーズ
+    DB-->>Staff: Myダッシュボード履歴に反映
+```
 
 ### 📊 現状の実装ステータス (2026-02-08 時点)
 
