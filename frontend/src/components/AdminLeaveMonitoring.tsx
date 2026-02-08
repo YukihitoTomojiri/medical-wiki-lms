@@ -125,7 +125,7 @@ export default function AdminLeaveMonitoring() {
                                     <tr
                                         key={employee.userId}
                                         className={`hover:bg-gray-50 transition-colors ${isViolation ? 'bg-red-50/50' :
-                                                isWarning ? 'bg-amber-50/30' : ''
+                                            isWarning ? 'bg-amber-50/30' : ''
                                             }`}
                                     >
                                         <td className="p-4">
@@ -171,15 +171,15 @@ export default function AdminLeaveMonitoring() {
                                             </div>
                                         </td>
                                         <td className="p-4 text-center">
-                                            {isViolation ? (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                    <AlertTriangle size={14} />
-                                                    義務違反
-                                                </span>
-                                            ) : employee.isObligationMet ? (
+                                            {employee.isObligationMet ? (
                                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                                                     <CheckCircle2 size={14} />
                                                     達成
+                                                </span>
+                                            ) : isViolation ? (
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    <AlertTriangle size={14} />
+                                                    義務違反
                                                 </span>
                                             ) : isWarning ? (
                                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">

@@ -516,6 +516,12 @@ public class PaidLeaveService {
                 }
             }
 
+            // Fix: If Current Obligation is Met (>= 5.0), DO NOT show Violation.
+            // Priority: Current Achievement > Past Failure.
+            if (currentCount >= 5.0) {
+                isViolation = false;
+            }
+
             // Warning: If current period active AND close to end (< 3 months) AND count <
             // 5.0
             boolean needsAttention = false;
