@@ -36,10 +36,9 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
     const navItems = [
         { path: '/manuals', label: 'マニュアル', icon: BookOpen },
         { path: '/my-dashboard', label: 'Myダッシュボード', icon: LayoutDashboard },
-        ...(user.role === 'ADMIN' || user.role === 'DEVELOPER' ? [
-            { path: '/admin', label: '管理者ダッシュボード', icon: LayoutDashboard },
-            { path: '/admin/users', label: 'ユーザー管理', icon: Users }
-        ] : []),
+        ...(user.role === 'ADMIN' || user.role === 'DEVELOPER' ? [{ path: '/admin', label: '管理者ダッシュボード', icon: LayoutDashboard }] : []),
+        ...(user.role === 'ADMIN' || user.role === 'DEVELOPER' ? [{ path: '/admin/users', label: 'ユーザー管理', icon: Users }] : []),
+        ...(user.role === 'DEVELOPER' ? [{ path: '/admin/organization', label: '組織管理', icon: Building2 }] : []),
         ...(user.role === 'DEVELOPER' ? [{ path: '/developer', label: '開発者メニュー', icon: Database }] : []),
     ];
 
