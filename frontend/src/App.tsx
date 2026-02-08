@@ -8,6 +8,8 @@ import MyDashboard from './pages/MyDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import DeveloperDashboard from './pages/DeveloperDashboard';
 import AllUsersAdmin from './pages/AllUsersAdmin';
+import AdminUserManagement from './pages/AdminUserManagement';
+import OrganizationManagement from './pages/OrganizationManagement';
 import ManualEdit from './pages/ManualEdit';
 import Layout from './components/Layout';
 import ChangePassword from './pages/ChangePassword';
@@ -82,10 +84,13 @@ function App() {
                             <Route path="/admin" element={<AdminDashboard />} />
                             <Route path="/dev/console" element={<DevConsole />} />
                             <Route path="/admin/manuals/new" element={<ManualEdit user={user} />} />
-                            <Route path="/admin/manuals/new" element={<ManualEdit user={user} />} />
                             <Route path="/admin/manuals/edit/:id" element={<ManualEdit user={user} />} />
                             <Route path="/admin/all-users" element={<AllUsersAdmin />} />
+                            <Route path="/admin/users" element={<AdminUserManagement user={user} />} />
                         </>
+                    )}
+                    {user.role === 'DEVELOPER' && (
+                        <Route path="/admin/organization" element={<OrganizationManagement />} />
                     )}
                     <Route path="/submission-success" element={<SubmissionSuccessPage />} />
                     <Route path="*" element={<Navigate to="/manuals" replace />} />

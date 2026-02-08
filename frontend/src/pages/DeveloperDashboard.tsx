@@ -1,13 +1,10 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { api } from '../api';
 import { User, UserCreateRequest } from '../types';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { RestoreConfirmModal } from '../components/RestoreConfirmModal';
-import AllUsersAdmin from './AllUsersAdmin';
 import { PostRegisterModal } from '../components/PostRegisterModal';
-import OrganizationManagement from '../components/OrganizationManagement';
 import {
     Activity,
     Database,
@@ -51,7 +48,7 @@ export default function DeveloperDashboard() {
         version: '1.0.0',
     });
 
-    const [activeTab, setActiveTab] = useState<'stats' | 'nodes' | 'organization' | 'users' | 'export' | 'audit'>('stats');
+    const [activeTab, setActiveTab] = useState<'stats' | 'nodes' | 'export' | 'audit'>('stats');
 
     // Compliance Export States
     const [complianceFacilities, setComplianceFacilities] = useState<string[]>([]);
@@ -637,7 +634,7 @@ export default function DeveloperDashboard() {
 
                 {/* Tab Navigation */}
                 <div className="flex p-1 bg-gray-100/50 rounded-xl w-fit mb-2 border border-gray-200/50 backdrop-blur-sm">
-                    {['stats', 'nodes', 'organization', 'users', 'export', 'audit'].map((tab) => (
+                    {['stats', 'nodes', 'export', 'audit'].map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
@@ -647,10 +644,8 @@ export default function DeveloperDashboard() {
                         >
                             {tab === 'stats' ? 'システム統計' :
                                 tab === 'nodes' ? '稼働状況' :
-                                    tab === 'organization' ? '組織管理' :
-                                        tab === 'users' ? '全ユーザー管理' :
-                                            tab === 'export' ? 'レポート出力' :
-                                                '操作履歴'}
+                                    tab === 'export' ? 'レポート出力' :
+                                        '操作履歴'}
                         </button>
                     ))}
                 </div>
@@ -1515,12 +1510,6 @@ export default function DeveloperDashboard() {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                ) : activeTab === 'organization' ? (
-                    <OrganizationManagement />
-                ) : activeTab === 'users' ? (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-                        <AllUsersAdmin />
                     </div>
                 ) : null
                 }
