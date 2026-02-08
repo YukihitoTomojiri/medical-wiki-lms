@@ -11,7 +11,8 @@ import {
     XCircle,
     Plus,
     ArrowRight,
-    AlertCircle
+    AlertCircle,
+    Filter
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -27,6 +28,14 @@ export default function MyDashboard({ user }: MyDashboardProps) {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'learning' | 'leaves' | 'notifications'>('learning');
 
+    // History Filter State
+    const [filterType, setFilterType] = useState('ALL');
+    const [historyStartDate, setHistoryStartDate] = useState(() => {
+        const d = new Date();
+        d.setFullYear(d.getFullYear() - 1);
+        return d.toISOString().split('T')[0];
+    });
+
     // Leave Form State
     const [requestType, setRequestType] = useState('PAID_LEAVE');
     const [durationType, setDurationType] = useState('FULL_DAY');
@@ -40,45 +49,31 @@ export default function MyDashboard({ user }: MyDashboardProps) {
 
     useEffect(() => {
         loadData();
-    }, [user.id]);
+    }, [user.id, historyStartDate]);
 
     const loadData = async () => {
         try {
-            const [dashData, progressData, attData, leaveData] = await Promise.all([
+            const [dashData, progressData, historyData] = await Promise.all([
                 api.getMyDashboard(user.id),
                 api.getMyProgress(user.id),
-                api.getMyAttendanceRequests(user.id),
-                api.getMyPaidLeaves(user.id)
+                api.getMyHistory(user.id, historyStartDate)
             ]);
             setDashboardData(dashData);
             setProgress(progressData);
-
-            // Unify history
-            const unified = [
-                ...attData.map(a => ({ ...a, isAttendance: true })),
-                ...leaveData.map(l => ({ ...l, type: 'PAID_LEAVE', isAttendance: false }))
-            ].sort((a, b) => {
-                const dateA = new Date(a.createdAt || a.startDate || 0).getTime();
-                const dateB = new Date(b.createdAt || b.startDate || 0).getTime();
-                return dateB - dateA;
-            });
-
-            // Filter out duplicates (Just in case)
-            // Keep the first item found for each date+type combo
-            const seen = new Set();
-            const uniqueRequests = unified.filter(item => {
-                const key = `${item.startDate}-${item.type || 'PAID_LEAVE'}`;
-                if (seen.has(key)) return false;
-                seen.add(key);
-                return true;
-            });
-
-            setLeaveRequests(uniqueRequests);
+            setLeaveRequests(historyData);
         } catch (error) {
             console.error(error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleLoadMore = () => {
+        setHistoryStartDate(prev => {
+            const d = new Date(prev);
+            d.setFullYear(d.getFullYear() - 1);
+            return d.toISOString().split('T')[0];
+        });
     };
 
     const handleSubmitLeave = async (e: React.FormEvent) => {
@@ -199,10 +194,9 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                         const diffTime = Math.abs(end.getTime() - start.getTime());
                                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-                                        // Check durationType from r.leaveType (it might be in r)
-                                        // r object structure from API might need inspection, but assuming it has leaveType
+                                        // Check durationType from r.durationType (HistoryDto)
                                         // If missing, default to FULL (1.0 * days)
-                                        const isHalf = r.leaveType === 'HALF_AM' || r.leaveType === 'HALF_PM';
+                                        const isHalf = r.durationType === 'HALF_AM' || r.durationType === 'HALF_PM';
                                         return acc + (isHalf ? diffDays * 0.5 : diffDays * 1.0);
                                     }, 0);
 
@@ -495,8 +489,22 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                         {/* History Table */}
                         <div className="lg:col-span-12 xl:col-span-7">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col max-h-[600px]">
-                                <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50 shrink-0">
+                                <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50 shrink-0 flex items-center justify-between">
                                     <h3 className="font-bold text-gray-800 text-sm">申請履歴</h3>
+                                    <div className="flex items-center gap-2">
+                                        <Filter size={14} className="text-gray-400" />
+                                        <select
+                                            value={filterType}
+                                            onChange={(e) => setFilterType(e.target.value)}
+                                            className="text-xs border-none bg-transparent font-bold text-gray-500 focus:ring-0 cursor-pointer"
+                                        >
+                                            <option value="ALL">すべて表示</option>
+                                            <option value="PAID_LEAVE">有給休暇</option>
+                                            <option value="ABSENCE">欠勤</option>
+                                            <option value="LATE">遅刻</option>
+                                            <option value="EARLY_DEPARTURE">早退</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div className="overflow-y-auto flex-1 p-0">
                                     <table className="w-full">
@@ -507,60 +515,64 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-50">
-                                            {leaveRequests.length > 0 ? leaveRequests.map((req) => (
-                                                <tr key={`${req.isAttendance ? 'att' : 'leave'}-${req.id}`} className="hover:bg-gray-50/80 transition-colors group">
-                                                    <td className="px-5 py-2.5">
-                                                        <div className="flex items-center gap-2 mb-1">
-                                                            <span className="text-sm font-black text-gray-800 font-mono tracking-tight">
-                                                                {req.startDate}
-                                                                {req.startDate !== req.endDate && <span className="text-gray-300 mx-1">~</span>}
-                                                                {req.startDate !== req.endDate && req.endDate.slice(5)}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2 mb-1">
-                                                            {(() => {
-                                                                const typeMap: Record<string, string> = {
-                                                                    'PAID_LEAVE': '有給休暇',
-                                                                    'ABSENCE': '欠勤',
-                                                                    'LATE': '遅刻',
-                                                                    'EARLY_DEPARTURE': '早退'
-                                                                };
-                                                                const label = typeMap[req.type] || req.type || '有給休暇';
-                                                                const isPaid = req.type === 'PAID_LEAVE' || !req.type;
-
-                                                                return (
-                                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded border font-bold ${isPaid
-                                                                        ? 'border-emerald-100 bg-emerald-50 text-emerald-600'
-                                                                        : 'border-blue-100 bg-blue-50 text-blue-600'
-                                                                        }`}>
-                                                                        {label}
+                                            {leaveRequests.filter(req => filterType === 'ALL' || req.type === filterType).length > 0 ? (
+                                                leaveRequests
+                                                    .filter(req => filterType === 'ALL' || req.type === filterType)
+                                                    .map((req) => (
+                                                        <tr key={`${req.type}-${req.id}`} className="hover:bg-gray-50/80 transition-colors group">
+                                                            <td className="px-5 py-2.5">
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <span className="text-sm font-black text-gray-800 font-mono tracking-tight">
+                                                                        {req.startDate}
+                                                                        {req.startDate !== req.endDate && <span className="text-gray-300 mx-1">~</span>}
+                                                                        {req.startDate !== req.endDate && req.endDate.slice(5)}
                                                                     </span>
-                                                                );
-                                                            })()}
-                                                            <span className="text-[10px] text-gray-500 truncate max-w-[150px]">{req.reason}</span>
-                                                        </div>
-                                                        {req.createdAt && (
-                                                            <div className="text-[9px] text-gray-400 font-mono">
-                                                                申請日: {new Date(req.createdAt).toLocaleDateString('ja-JP')}
-                                                            </div>
-                                                        )}
-                                                        {req.status === 'REJECTED' && req.rejectionReason && (
-                                                            <div className="mt-1 text-[10px] text-red-500 flex items-center gap-1 bg-red-50 px-2 py-1 rounded w-fit">
-                                                                <AlertCircle size={10} />
-                                                                {req.rejectionReason}
-                                                            </div>
-                                                        )}
-                                                    </td>
-                                                    <td className="px-5 py-2.5 text-right align-top">
-                                                        {getLeaveStatusBadge(req.status)}
-                                                        {req.status === 'APPROVED' && req.updatedAt && (
-                                                            <div className="mt-1 text-[9px] text-emerald-600/70 font-mono">
-                                                                {new Date(req.updatedAt).toLocaleDateString('ja-JP')} 承認
-                                                            </div>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            )) : (
+                                                                </div>
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    {(() => {
+                                                                        const typeMap: Record<string, string> = {
+                                                                            'PAID_LEAVE': '有給休暇',
+                                                                            'ABSENCE': '欠勤',
+                                                                            'LATE': '遅刻',
+                                                                            'EARLY_DEPARTURE': '早退'
+                                                                        };
+                                                                        const label = typeMap[req.type] || req.type;
+                                                                        const isPaid = req.type === 'PAID_LEAVE';
+
+                                                                        return (
+                                                                            <span className={`text-[10px] px-1.5 py-0.5 rounded border font-bold ${isPaid
+                                                                                ? 'border-emerald-100 bg-emerald-50 text-emerald-600'
+                                                                                : 'border-blue-100 bg-blue-50 text-blue-600'
+                                                                                }`}>
+                                                                                {label}
+                                                                            </span>
+                                                                        );
+                                                                    })()}
+                                                                    <span className="text-[10px] text-gray-500 truncate max-w-[150px]">{req.reason}</span>
+                                                                </div>
+                                                                {req.createdAt && (
+                                                                    <div className="text-[9px] text-gray-400 font-mono">
+                                                                        申請日: {new Date(req.createdAt).toLocaleDateString('ja-JP')}
+                                                                    </div>
+                                                                )}
+                                                                {req.status === 'REJECTED' && req.rejectionReason && (
+                                                                    <div className="mt-1 text-[10px] text-red-500 flex items-center gap-1 bg-red-50 px-2 py-1 rounded w-fit">
+                                                                        <AlertCircle size={10} />
+                                                                        {req.rejectionReason}
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-5 py-2.5 text-right align-top">
+                                                                {getLeaveStatusBadge(req.status)}
+                                                                {req.status === 'APPROVED' && req.updatedAt && (
+                                                                    <div className="mt-1 text-[9px] text-emerald-600/70 font-mono">
+                                                                        {new Date(req.updatedAt).toLocaleDateString('ja-JP')} 承認
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                            ) : (
                                                 <tr>
                                                     <td colSpan={2} className="px-6 py-12 text-center text-gray-400 text-xs">
                                                         申請履歴はありません
@@ -570,6 +582,12 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                         </tbody>
                                     </table>
                                 </div>
+                                <button
+                                    onClick={handleLoadMore}
+                                    className="w-full py-3 text-xs font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-100 bg-gray-50/30"
+                                >
+                                    過去の履歴をさらに読み込む (1年分追加)
+                                </button>
                             </div>
                         </div>
                     </div>

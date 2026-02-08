@@ -25,4 +25,6 @@ public interface PaidLeaveRepository extends JpaRepository<PaidLeave, Long> {
                         @Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate,
                         @Param("statuses") List<PaidLeave.Status> statuses);
+
+        List<PaidLeave> findByUserIdAndStartDateGreaterThanEqualOrderByStartDateDesc(Long userId, LocalDate startDate);
 }

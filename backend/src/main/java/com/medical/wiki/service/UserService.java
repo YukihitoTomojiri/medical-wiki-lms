@@ -20,6 +20,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final LoggingService loggingService;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final com.medical.wiki.repository.PaidLeaveRepository paidLeaveRepository;
+    private final com.medical.wiki.repository.AttendanceRequestRepository attendanceRequestRepository;
 
     public List<UserDto> getAllUsers(String facility) {
         List<User> users;
@@ -365,5 +367,54 @@ public class UserService {
                 executorName);
 
         return UserDto.fromEntity(updatedUser);
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.medical.wiki.dto.HistoryDto> getHistory(Long userId, java.time.LocalDate startDate) {
+        // 1. Fetch Paid Leaves
+        java.util.List<com.medical.wiki.entity.PaidLeave> paidLeaves = paidLeaveRepository
+                .findByUserIdAndStartDateGreaterThanEqualOrderByStartDateDesc(userId, startDate);
+
+        // 2. Fetch Attendance Requests
+        java.util.List<com.medical.wiki.entity.AttendanceRequest> attendanceRequests = attendanceRequestRepository
+                .findByUserIdAndStartDateGreaterThanEqualOrderByStartDateDesc(userId, startDate);
+
+        // 3. Map to DTO
+        java.util.List<com.medical.wiki.dto.HistoryDto> history = new java.util.ArrayList<>();
+
+        for (com.medical.wiki.entity.PaidLeave pl : paidLeaves) {
+            history.add(com.medical.wiki.dto.HistoryDto.builder()
+                    .id(pl.getId())
+                    .type("PAID_LEAVE")
+                    .status(pl.getStatus().name())
+                    .startDate(pl.getStartDate())
+                    .endDate(pl.getEndDate())
+                    .reason(pl.getReason())
+                    .rejectionReason(pl.getRejectionReason())
+                    .durationType(pl.getLeaveType() != null ? pl.getLeaveType().name() : "FULL")
+                    .createdAt(pl.getCreatedAt())
+                    .updatedAt(pl.getUpdatedAt())
+                    .build());
+        }
+
+        for (com.medical.wiki.entity.AttendanceRequest ar : attendanceRequests) {
+            history.add(com.medical.wiki.dto.HistoryDto.builder()
+                    .id(ar.getId())
+                    .type(ar.getType().name())
+                    .status(ar.getStatus().name())
+                    .startDate(ar.getStartDate())
+                    .endDate(ar.getEndDate())
+                    .reason(ar.getReason())
+                    .rejectionReason(ar.getRejectionReason())
+                    .durationType(ar.getDurationType() != null ? ar.getDurationType().name() : null)
+                    .createdAt(ar.getCreatedAt())
+                    .updatedAt(ar.getUpdatedAt())
+                    .build());
+        }
+
+        // 4. Sort by Start Date Descending
+        history.sort((a, b) -> b.getStartDate().compareTo(a.getStartDate()));
+
+        return history;
     }
 }

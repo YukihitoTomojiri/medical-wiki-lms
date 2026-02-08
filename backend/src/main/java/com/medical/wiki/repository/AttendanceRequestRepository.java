@@ -29,4 +29,7 @@ public interface AttendanceRequestRepository extends JpaRepository<AttendanceReq
                         @Param("date") LocalDate date,
                         @Param("type") AttendanceRequest.RequestType type,
                         @Param("statuses") List<AttendanceRequest.Status> statuses);
+
+        List<AttendanceRequest> findByUserIdAndStartDateGreaterThanEqualOrderByStartDateDesc(Long userId,
+                        LocalDate startDate);
 }

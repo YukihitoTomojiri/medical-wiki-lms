@@ -481,6 +481,15 @@ export const api = {
         return response.json();
     },
 
+    getMyHistory: async (userId: number, startDate?: string): Promise<any[]> => {
+        const query = startDate ? `?startDate=${startDate}` : '';
+        const response = await fetch(`${API_BASE}/users/me/history${query}`, {
+            headers: getHeaders(userId)
+        });
+        if (!response.ok) throw new Error('Failed to fetch history');
+        return response.json();
+    },
+
     getMyPaidLeaves: async (userId: number): Promise<any[]> => {
         const response = await fetch(`${API_BASE}/leaves/history`, {
             headers: {

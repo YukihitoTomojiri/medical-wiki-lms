@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default function ChangePassword({ user, onComplete }: Props) {
-    const [currentPassword, setCurrentPassword] = useState('');
+    const [currentPassword] = useState('');
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
     const [loading, setLoading] = useState(false);
