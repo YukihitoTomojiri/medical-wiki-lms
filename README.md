@@ -27,27 +27,28 @@
 
 ```mermaid
 graph TD
-    DB[(Central Database<br>MySQL 8.0)]
+    DB[(中央DB<br>MySQL 8.0)]
     
     subgraph Facilities [あさひ医療グループ]
-        style Facilities fill:#f0f9ff,stroke:#bae6fd
-        H[本館<br>Honkan]
-        S[南棟<br>South Wing]
-        HI[ひまわりの里<br>Himawari]
-        A[あおぞら中央<br>Aozora]
+        H[本館]
+        S[南棟]
+        HI[ひまわりの里]
+        A[あおぞら中央]
     end
     
-    H & S & HI & A --- DB
+    H --- DB
+    S --- DB
+    HI --- DB
+    A --- DB
     
-    subgraph Roles [アクセス権限 (RBAC)]
-        style Roles fill:#f0fdf4,stroke:#86efac
-        DEV[DEVELOPER<br>全施設・全機能]
-        ADM[ADMIN<br>管理施設内の承認・登録]
-        USR[USER<br>自身の学習・申請]
+    subgraph Roles [アクセス権限]
+        DEV[DEVELOPER<br>全権限]
+        ADM[ADMIN<br>管理施設のみ]
+        USR[USER<br>本人分のみ]
     end
     
     DEV -.-> DB
-    ADM -.-> H & S & HI & A
+    ADM -.-> Facilities
     USR -.-> H
 ```
 
