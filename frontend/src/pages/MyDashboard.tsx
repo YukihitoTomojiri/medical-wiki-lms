@@ -12,7 +12,10 @@ import {
     Plus,
     ArrowRight,
     AlertCircle,
-    Filter
+    Filter,
+    Sun,
+    Sunrise,
+    Sunset
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -30,6 +33,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
 
     // History Filter State
     const [filterType, setFilterType] = useState('ALL');
+    const [durationFilter, setDurationFilter] = useState<'ALL' | 'FULL' | 'HALF'>('ALL');
     const [historyStartDate, setHistoryStartDate] = useState(() => {
         const d = new Date();
         d.setFullYear(d.getFullYear() - 1);
@@ -490,7 +494,27 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                         <div className="lg:col-span-12 xl:col-span-7">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col max-h-[600px]">
                                 <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50 shrink-0 flex items-center justify-between">
-                                    <h3 className="font-bold text-gray-800 text-sm">申請履歴</h3>
+                                    <div className="flex items-center gap-4">
+                                        <h3 className="font-bold text-gray-800 text-sm">申請履歴</h3>
+                                        <div className="flex bg-gray-200/50 p-0.5 rounded-lg">
+                                            {[
+                                                { id: 'ALL', label: 'すべて' },
+                                                { id: 'FULL', label: '全日' },
+                                                { id: 'HALF', label: '半日' }
+                                            ].map((tab) => (
+                                                <button
+                                                    key={tab.id}
+                                                    onClick={() => setDurationFilter(tab.id as any)}
+                                                    className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${durationFilter === tab.id
+                                                        ? 'bg-white text-gray-700 shadow-sm'
+                                                        : 'text-gray-400 hover:text-gray-600'
+                                                        }`}
+                                                >
+                                                    {tab.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                     <div className="flex items-center gap-2">
                                         <Filter size={14} className="text-gray-400" />
                                         <select
@@ -515,9 +539,27 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-50">
-                                            {leaveRequests.filter(req => filterType === 'ALL' || req.type === filterType).length > 0 ? (
+                                            {leaveRequests
+                                                .filter(req => filterType === 'ALL' || req.type === filterType)
+                                                .filter(req => {
+                                                    if (durationFilter === 'ALL') return true;
+                                                    if (req.type !== 'PAID_LEAVE') return false; // Duration filter only applies to Paid Leave? Or should we hide non-paid leaves?
+                                                    // Let's say if Duration Filter is active, we only show Paid Leaves of that type.
+                                                    // But wait, if I select 'HALF', should I see Absence? Probably not.
+                                                    if (durationFilter === 'FULL') return req.durationType === 'FULL';
+                                                    if (durationFilter === 'HALF') return req.durationType === 'HALF_AM' || req.durationType === 'HALF_PM';
+                                                    return true;
+                                                })
+                                                .length > 0 ? (
                                                 leaveRequests
                                                     .filter(req => filterType === 'ALL' || req.type === filterType)
+                                                    .filter(req => {
+                                                        if (durationFilter === 'ALL') return true;
+                                                        if (req.type !== 'PAID_LEAVE') return false;
+                                                        if (durationFilter === 'FULL') return req.durationType === 'FULL';
+                                                        if (durationFilter === 'HALF') return req.durationType === 'HALF_AM' || req.durationType === 'HALF_PM';
+                                                        return true;
+                                                    })
                                                     .map((req) => (
                                                         <tr key={`${req.type}-${req.id}`} className="hover:bg-gray-50/80 transition-colors group">
                                                             <td className="px-5 py-2.5">
@@ -536,14 +578,32 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                                                             'LATE': '遅刻',
                                                                             'EARLY_DEPARTURE': '早退'
                                                                         };
-                                                                        const label = typeMap[req.type] || req.type;
-                                                                        const isPaid = req.type === 'PAID_LEAVE';
+
+                                                                        let label = typeMap[req.type] || req.type;
+                                                                        let icon = null;
+                                                                        let subStyle = "";
+
+                                                                        if (req.type === 'PAID_LEAVE') {
+                                                                            if (req.durationType === 'HALF_AM') {
+                                                                                label = '有給 (午前)';
+                                                                                icon = <Sunrise size={10} className="mr-1 inline-block text-amber-500" />;
+                                                                                subStyle = "bg-amber-50 text-amber-700 border-amber-100";
+                                                                            } else if (req.durationType === 'HALF_PM') {
+                                                                                label = '有給 (午後)';
+                                                                                icon = <Sunset size={10} className="mr-1 inline-block text-orange-500" />;
+                                                                                subStyle = "bg-orange-50 text-orange-700 border-orange-100";
+                                                                            } else {
+                                                                                label = '有給 (全日)';
+                                                                                icon = <Sun size={10} className="mr-1 inline-block text-emerald-500" />;
+                                                                                subStyle = "bg-emerald-50 text-emerald-700 border-emerald-100";
+                                                                            }
+                                                                        } else {
+                                                                            subStyle = "bg-blue-50 text-blue-700 border-blue-100";
+                                                                        }
 
                                                                         return (
-                                                                            <span className={`text-[10px] px-1.5 py-0.5 rounded border font-bold ${isPaid
-                                                                                ? 'border-emerald-100 bg-emerald-50 text-emerald-600'
-                                                                                : 'border-blue-100 bg-blue-50 text-blue-600'
-                                                                                }`}>
+                                                                            <span className={`text-[10px] px-1.5 py-0.5 rounded border font-bold flex items-center ${subStyle}`}>
+                                                                                {icon}
                                                                                 {label}
                                                                             </span>
                                                                         );
