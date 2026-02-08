@@ -19,9 +19,14 @@ public class AuthService {
     private final EmailService emailService;
 
     @org.springframework.transaction.annotation.Transactional
-    public void changePassword(Long userId, String newPassword) {
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new RuntimeException("現在のパスワードが正しくありません");
+        }
+
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setMustChangePassword(false);
         user.setUpdatedAt(java.time.LocalDateTime.now());
