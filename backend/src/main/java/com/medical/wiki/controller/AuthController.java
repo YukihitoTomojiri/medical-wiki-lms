@@ -38,8 +38,9 @@ public class AuthController {
         public ResponseEntity<?> changePassword(@RequestBody Map<String, Object> request) {
                 try {
                         Long userId = Long.valueOf(request.get("userId").toString());
+                        String currentPassword = request.get("currentPassword").toString();
                         String newPassword = request.get("newPassword").toString();
-                        authService.changePassword(userId, newPassword);
+                        authService.changePassword(userId, currentPassword, newPassword);
                         return ResponseEntity.ok(Map.of("success", true));
                 } catch (Exception e) {
                         return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));

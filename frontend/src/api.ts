@@ -23,11 +23,11 @@ export const api = {
         return res.json();
     },
 
-    changePassword: async (userId: number, newPassword: string): Promise<any> => {
+    changePassword: async (userId: number, currentPassword: string, newPassword: string): Promise<any> => {
         const res = await fetch(`${API_BASE}/auth/change-password`, {
             method: 'POST',
             headers: getHeaders(userId),
-            body: JSON.stringify({ userId, newPassword }),
+            body: JSON.stringify({ userId, currentPassword, newPassword }),
         });
         return res.json();
     },

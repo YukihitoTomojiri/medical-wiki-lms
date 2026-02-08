@@ -9,6 +9,7 @@ interface Props {
 }
 
 export default function ChangePassword({ user, onComplete }: Props) {
+    const [currentPassword, setCurrentPassword] = useState('');
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
     const [loading, setLoading] = useState(false);
@@ -19,6 +20,7 @@ export default function ChangePassword({ user, onComplete }: Props) {
         setError(null);
         if (password !== confirm) {
             setError('パスワードが一致しません');
+            setError('新しいパスワードが一致しません');
             return;
         }
         if (password.length < 8) {
@@ -28,7 +30,7 @@ export default function ChangePassword({ user, onComplete }: Props) {
 
         setLoading(true);
         try {
-            await api.changePassword(user.id, password);
+            await api.changePassword(user.id, currentPassword, password);
             onComplete({ ...user, mustChangePassword: false });
         } catch (err: any) {
             setError(err.message || 'パスワードの更新に失敗しました');
