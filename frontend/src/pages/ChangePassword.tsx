@@ -9,6 +9,7 @@ interface Props {
 }
 
 export default function ChangePassword({ user, onComplete }: Props) {
+    const [currentPassword, setCurrentPassword] = useState('');
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
     const [loading, setLoading] = useState(false);
@@ -18,20 +19,20 @@ export default function ChangePassword({ user, onComplete }: Props) {
         e.preventDefault();
         setError(null);
         if (password !== confirm) {
-            setError('Passwords do not match');
+            setError('新しいパスワードが一致しません');
             return;
         }
         if (password.length < 8) {
-            setError('Password must be at least 8 characters');
+            setError('パスワードは8文字以上で入力してください');
             return;
         }
 
         setLoading(true);
         try {
-            await api.changePassword(user.id, password);
+            await api.changePassword(user.id, currentPassword, password);
             onComplete({ ...user, mustChangePassword: false });
         } catch (err: any) {
-            setError(err.message || 'Failed to update password');
+            setError(err.message || 'パスワードの更新に失敗しました');
         } finally {
             setLoading(false);
         }
@@ -53,9 +54,9 @@ export default function ChangePassword({ user, onComplete }: Props) {
                     <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-700 shadow-xl shadow-slate-900/50">
                         <Lock className="text-emerald-400" size={32} />
                     </div>
-                    <h1 className="text-2xl font-black tracking-tight mb-2">Change Password</h1>
+                    <h1 className="text-2xl font-black tracking-tight mb-2">パスワード変更</h1>
                     <p className="text-slate-400 text-sm font-medium">
-                        For your security, please update your password to continue using the system.
+                        セキュリティ保護のため、システムを利用する前にパスワードを更新してください。
                     </p>
                 </div>
 
@@ -69,24 +70,35 @@ export default function ChangePassword({ user, onComplete }: Props) {
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">New Password</label>
+                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1 text-emerald-400/80">現在のパスワード</label>
+                            <input
+                                type="password"
+                                value={currentPassword}
+                                onChange={e => setCurrentPassword(e.target.value)}
+                                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal"
+                                placeholder="現在のパスワード"
+                                required
+                            />
+                        </div>
+                        <div className="pt-2 border-t border-gray-50">
+                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">新しいパスワード</label>
                             <input
                                 type="password"
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
                                 className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal"
-                                placeholder="Minimum 8 characters"
+                                placeholder="8文字以上"
                                 required
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Confirm Password</label>
+                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">新しいパスワード（確認）</label>
                             <input
                                 type="password"
                                 value={confirm}
                                 onChange={e => setConfirm(e.target.value)}
                                 className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal"
-                                placeholder="Re-enter password"
+                                placeholder="もう一度入力してください"
                                 required
                             />
                         </div>
@@ -101,13 +113,13 @@ export default function ChangePassword({ user, onComplete }: Props) {
                         ) : (
                             <>
                                 <ShieldCheck size={18} />
-                                UPDATE PASSWORD
+                                パスワードを更新する
                             </>
                         )}
                     </button>
 
                     <p className="text-center text-[10px] text-gray-400 font-medium">
-                        Secure connection via HTTPS
+                        HTTPSによる安全な通信
                     </p>
                 </form>
             </div>
