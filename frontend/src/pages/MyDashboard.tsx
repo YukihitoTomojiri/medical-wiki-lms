@@ -15,7 +15,8 @@ import {
     Filter,
     Sun,
     Sunrise,
-    Sunset
+    Sunset,
+    AlertTriangle
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -321,7 +322,65 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                 {activeTab === 'leaves' && (
                     <div className="grid lg:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-2">
                         {/* Application Form */}
-                        <div className="lg:col-span-12 xl:col-span-5">
+                        <div className="lg:col-span-12 xl:col-span-5 space-y-4">
+                            {/* Compliance Alert Widget */}
+                            {leaveStatus?.obligatoryTarget > 0 && (
+                                <div className={`border rounded-2xl p-5 shadow-sm ${leaveStatus.isObligationMet
+                                        ? 'bg-emerald-50/50 border-emerald-100'
+                                        : leaveStatus.isWarning
+                                            ? 'bg-amber-50/50 border-amber-200'
+                                            : 'bg-white border-gray-100'
+                                    }`}>
+                                    <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2 mb-3">
+                                        <CheckCircle2 size={16} className={leaveStatus.isObligationMet ? "text-emerald-500" : "text-gray-400"} />
+                                        {leaveStatus.isObligationMet ? "年5日の有給取得達成" : "年5日の有給取得義務"}
+                                    </h3>
+
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-xs font-bold text-gray-500">
+                                            <span>
+                                                取得実績:
+                                                <span className={leaveStatus.isObligationMet ? "text-emerald-600 ml-1 text-lg" : "text-gray-800 ml-1 text-lg"}>
+                                                    {leaveStatus.obligatoryDaysTaken}
+                                                </span>
+                                                <span className="text-xs mx-0.5">/</span>
+                                                {leaveStatus.obligatoryTarget}日
+                                            </span>
+                                            {!leaveStatus.isObligationMet && (
+                                                <span className="text-amber-600">あと{leaveStatus.daysRemainingToObligation}日</span>
+                                            )}
+                                        </div>
+
+                                        {/* Progress Bar */}
+                                        <div className="h-2.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full rounded-full transition-all duration-500 ${leaveStatus.isObligationMet
+                                                        ? 'bg-emerald-500'
+                                                        : leaveStatus.isWarning
+                                                            ? 'bg-amber-500'
+                                                            : 'bg-blue-400'
+                                                    }`}
+                                                style={{ width: `${Math.min(100, (leaveStatus.obligatoryDaysTaken / leaveStatus.obligatoryTarget) * 100)}%` }}
+                                            />
+                                        </div>
+
+                                        {/* Status Text */}
+                                        {leaveStatus.isWarning && !leaveStatus.isObligationMet && (
+                                            <div className="flex items-start gap-2 text-[10px] text-amber-700 font-bold bg-amber-100/50 p-2 rounded-lg mt-2">
+                                                <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                                                <span>年5日の取得義務まで残り{leaveStatus.daysRemainingToObligation}日です。期限が迫っています。計画的な取得をお願いします。</span>
+                                            </div>
+                                        )}
+                                        {leaveStatus.isObligationMet && (
+                                            <div className="flex items-center gap-2 text-[10px] text-emerald-700 font-bold bg-emerald-100/50 p-2 rounded-lg mt-2">
+                                                <CheckCircle2 size={14} className="shrink-0" />
+                                                <span>今年度の有給取得義務基準を達成しました。</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sticky top-6">
                                 <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm">
                                     <Plus size={16} className="text-emerald-500" />
