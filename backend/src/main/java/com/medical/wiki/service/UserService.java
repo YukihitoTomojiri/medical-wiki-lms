@@ -23,7 +23,15 @@ public class UserService {
     private final com.medical.wiki.repository.PaidLeaveRepository paidLeaveRepository;
     private final com.medical.wiki.repository.AttendanceRequestRepository attendanceRequestRepository;
 
-    public List<UserDto> getAllUsers(String facility) {
+    public List<UserDto> getAllUsers(String facility, Long requesterId) {
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        if (requester.getRole() == User.Role.ADMIN) {
+            // Admin can only see their own facility
+            facility = requester.getFacility();
+        }
+
         List<User> users;
         if (facility != null && !facility.isEmpty()) {
             users = userRepository.findByFacilityAndDeletedAtIsNull(facility);
@@ -63,6 +71,23 @@ public class UserService {
         if (dto.joinedDate() != null)
             user.setJoinedDate(dto.joinedDate());
 
+        // Check Permission
+        User executor = userRepository.findById(executorId)
+                .orElseThrow(() -> new RuntimeException("Executor not found"));
+
+        if (executor.getRole() == User.Role.ADMIN) {
+            if (!user.getFacility().equals(executor.getFacility())) {
+                throw new org.springframework.security.access.AccessDeniedException("管理者は自建設以外のユーザーを編集できません。");
+            }
+            if (user.getRole() == User.Role.DEVELOPER) {
+                throw new org.springframework.security.access.AccessDeniedException("管理者は開発者を編集できません。");
+            }
+            // Admin cannot change facility
+            if (dto.facility() != null && !dto.facility().equals(executor.getFacility())) {
+                throw new org.springframework.security.access.AccessDeniedException("管理者はユーザーの施設を変更できません。");
+            }
+        }
+
         User updatedUser = userRepository.save(user);
 
         String executorName = "ADMIN";
@@ -83,12 +108,25 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(Long id) {
+    public void deleteUser(Long id, Long executorId) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        User executor = userRepository.findById(executorId)
+                .orElseThrow(() -> new RuntimeException("Executor not found"));
+
+        if (executor.getRole() == User.Role.ADMIN) {
+            if (!user.getFacility().equals(executor.getFacility())) {
+                throw new org.springframework.security.access.AccessDeniedException("管理者は自建設以外のユーザーを削除できません。");
+            }
+            if (user.getRole() == User.Role.DEVELOPER) {
+                throw new org.springframework.security.access.AccessDeniedException("管理者は開発者を削除できません。");
+            }
+        }
+
         user.setDeletedAt(java.time.LocalDateTime.now());
         userRepository.save(user);
-        loggingService.log("USER_DELETE", user.getName(), "User soft-deleted", "ADMIN");
+        loggingService.log("USER_DELETE", user.getName(), "User soft-deleted", executor.getName());
     }
 
     public java.util.Optional<UserDto> getUserById(Long id) {
@@ -97,7 +135,20 @@ public class UserService {
 
     @Transactional
     public UserDto registerUser(com.medical.wiki.dto.UserCreateDto dto, Long executorId) {
-        String executorName = resolveExecutorName(executorId);
+        User executor = userRepository.findById(executorId)
+                .orElseThrow(() -> new RuntimeException("Executor not found"));
+        String executorName = executor.getName();
+
+        // Admin Restriction
+        if (executor.getRole() == User.Role.ADMIN) {
+            if (!dto.facility().equals(executor.getFacility())) {
+                throw new org.springframework.security.access.AccessDeniedException("管理者は自建設以外のユーザーを作成できません。");
+            }
+            if (dto.role() == User.Role.DEVELOPER) {
+                throw new org.springframework.security.access.AccessDeniedException("管理者は開発者を作成できません。");
+            }
+        }
+
         String normalizedName = validateAndNormalizeName(dto.name(), "登録者名");
 
         if (userRepository.findByEmployeeIdAndDeletedAtIsNull(dto.employeeId()).isPresent()) {
@@ -114,6 +165,7 @@ public class UserService {
         User user = User.builder()
                 .employeeId(dto.employeeId())
                 .name(normalizedName)
+                .password(passwordEncoder.encode(rawPassword))
                 .password(passwordEncoder.encode(rawPassword))
                 .facility(dto.facility())
                 .department(dto.department())
@@ -204,6 +256,22 @@ public class UserService {
                 : new java.util.HashSet<>(restoreIds);
 
         List<String> validFacilities = java.util.Arrays.asList("本館", "南棟", "ひまわりの里病院", "あおぞら中央クリニック");
+
+        // Admin Restriction
+        User executor = userRepository.findById(executorId)
+                .orElseThrow(() -> new RuntimeException("Executor not found"));
+
+        if (executor.getRole() == User.Role.ADMIN) {
+            for (com.medical.wiki.dto.UserCreateDto dto : dtos) {
+                if (!dto.facility().equals(executor.getFacility())) {
+                    throw new org.springframework.security.access.AccessDeniedException(
+                            "管理者は自建設以外のユーザーを一括登録できません: " + dto.facility());
+                }
+                if (dto.role() == User.Role.DEVELOPER) {
+                    throw new org.springframework.security.access.AccessDeniedException("管理者は開発者を一括登録できません。");
+                }
+            }
+        }
 
         // 1. Validation Logic
         for (int i = 0; i < dtos.size(); i++) {
