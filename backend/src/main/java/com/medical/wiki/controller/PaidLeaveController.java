@@ -80,6 +80,12 @@ public class PaidLeaveController {
         return service.getAccrualHistory(userId);
     }
 
+    @PostMapping("/admin/system/fix-balance-consistency")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
+    public void fixBalanceConsistency() {
+        service.fixBalanceConsistency();
+    }
+
     @Data
     public static class RejectionRequest {
         private String reason;
