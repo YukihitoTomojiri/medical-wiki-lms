@@ -59,6 +59,11 @@ public class AttendanceRequestService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Duplicate check (same day, same type, excluding REJECTED/DELETED)
+        if (type != AttendanceRequest.RequestType.PAID_LEAVE && repository.existsDuplicate(userId, startDate, type)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "この日は既に同じ種別の申請がされています");
+        }
+
         // Balance Check Logic for PAID_LEAVE - MOVED TO PaidLeaveService
         if (type == AttendanceRequest.RequestType.PAID_LEAVE) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

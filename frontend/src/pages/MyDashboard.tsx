@@ -36,6 +36,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
     const [endTime, setEndTime] = useState('');
     const [reason, setReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     useEffect(() => {
         loadData();
@@ -73,6 +74,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
     const handleSubmitLeave = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setSubmitError(null);
         try {
             if (requestType === 'PAID_LEAVE') {
                 let mappedType = 'FULL';
@@ -108,7 +110,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
             navigate('/submission-success');
         } catch (error: any) {
             console.error('Submission failed:', error);
-            alert(`申請に失敗しました: ${error.message}`);
+            setSubmitError(error.message || '申請に失敗しました');
         } finally {
             setIsSubmitting(false);
         }
@@ -418,6 +420,12 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                             placeholder="私用のため、通院のため..."
                                         />
                                     </div>
+                                    {submitError && (
+                                        <div className="p-3 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2 text-red-600 text-xs font-bold animate-in fade-in slide-in-from-top-1">
+                                            <AlertCircle size={14} className="shrink-0" />
+                                            <span>{submitError}</span>
+                                        </div>
+                                    )}
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}

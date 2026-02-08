@@ -36,6 +36,10 @@ public class PaidLeaveService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (repository.existsOverlapping(userId, startDate, endDate)) {
+            throw new IllegalArgumentException(startDate + "から" + endDate + "の期間は既に申請済みです");
+        }
+
         // Calculate requested days based on leave type
         double baseDays = (double) java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
         double daysRequested = (leaveType == PaidLeave.LeaveType.FULL) ? baseDays : baseDays * 0.5;
