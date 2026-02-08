@@ -25,7 +25,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
     const [progress, setProgress] = useState<Progress[]>([]);
     const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'learning' | 'leaves'>('learning');
+    const [activeTab, setActiveTab] = useState<'learning' | 'leaves' | 'notifications'>('learning');
 
     // Leave Form State
     const [requestType, setRequestType] = useState('PAID_LEAVE');
@@ -146,15 +146,19 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                 </div>
             </div>
 
-            {/* Summary Cards */}
+            {/* Summary Cards as Navigation Buttons */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Learning Stats */}
-                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+                <button
+                    onClick={() => setActiveTab('learning')}
+                    className={`text-left bg-white p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition-all ${activeTab === 'learning' ? 'border-orange-500 ring-2 ring-orange-100' : 'border-gray-100'
+                        }`}
+                >
                     <div className="absolute right-0 top-0 w-24 h-24 bg-orange-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
                     <div className="relative">
                         <div className="flex items-center gap-2 text-gray-500 mb-2">
                             <BookOpen size={18} className="text-orange-500" />
-                            <span className="text-xs font-bold uppercase tracking-wider">学習完了</span>
+                            <span className={`text-xs font-bold uppercase tracking-wider ${activeTab === 'learning' ? 'text-orange-600' : ''}`}>学習完了</span>
                         </div>
                         <div className="flex items-baseline gap-2">
                             <span className="text-3xl font-black text-gray-800">{dashboardData?.completedManualsCount}</span>
@@ -165,15 +169,19 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                             今月: {dashboardData?.monthlyReadCount}件完了
                         </div>
                     </div>
-                </div>
+                </button>
 
                 {/* Leave Stats */}
-                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+                <button
+                    onClick={() => setActiveTab('leaves')}
+                    className={`text-left bg-white p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition-all ${activeTab === 'leaves' ? 'border-emerald-500 ring-2 ring-emerald-100' : 'border-gray-100'
+                        }`}
+                >
                     <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
                     <div className="relative">
                         <div className="flex items-center gap-2 text-gray-500 mb-2">
                             <Calendar size={18} className="text-emerald-500" />
-                            <span className="text-xs font-bold uppercase tracking-wider">有給残日数</span>
+                            <span className={`text-xs font-bold uppercase tracking-wider ${activeTab === 'leaves' ? 'text-emerald-600' : ''}`}>有給残日数</span>
                         </div>
                         <div className="flex items-baseline gap-2">
                             <span className="text-3xl font-black text-gray-800">{dashboardData?.paidLeaveDays}</span>
@@ -184,15 +192,19 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                             申請中: {dashboardData?.pendingLeaveRequestsCount}件
                         </div>
                     </div>
-                </div>
+                </button>
 
                 {/* Notifications */}
-                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+                <button
+                    onClick={() => setActiveTab('notifications')}
+                    className={`text-left bg-white p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition-all ${activeTab === 'notifications' ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-100'
+                        }`}
+                >
                     <div className="absolute right-0 top-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
                     <div className="relative">
                         <div className="flex items-center gap-2 text-gray-500 mb-2">
                             <Bell size={18} className="text-blue-500" />
-                            <span className="text-xs font-bold uppercase tracking-wider">お知らせ</span>
+                            <span className={`text-xs font-bold uppercase tracking-wider ${activeTab === 'notifications' ? 'text-blue-600' : ''}`}>お知らせ</span>
                         </div>
                         <div className="flex items-baseline gap-2">
                             <span className="text-3xl font-black text-gray-800">{dashboardData?.unreadNotificationsCount}</span>
@@ -202,30 +214,11 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                             最終読了日: {dashboardData?.lastReadDate}
                         </div>
                     </div>
-                </div>
+                </button>
             </div>
 
-            {/* Main Tabs and Content */}
+            {/* Main Tabs and Content - Tab Bar Removed */}
             <div>
-                <div className="flex gap-6 border-b border-gray-200 mb-6">
-                    <button
-                        onClick={() => setActiveTab('learning')}
-                        className={`pb-3 text-sm font-bold transition-colors relative ${activeTab === 'learning' ? 'text-orange-600' : 'text-gray-400 hover:text-gray-600'
-                            }`}
-                    >
-                        学習履歴
-                        {activeTab === 'learning' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 rounded-full" />}
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('leaves')}
-                        className={`pb-3 text-sm font-bold transition-colors relative ${activeTab === 'leaves' ? 'text-emerald-600' : 'text-gray-400 hover:text-gray-600'
-                            }`}
-                    >
-                        有給休暇管理
-                        {activeTab === 'leaves' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-500 rounded-full" />}
-                    </button>
-                </div>
-
                 {/* Learning Tab Content */}
                 {activeTab === 'learning' && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
@@ -490,8 +483,8 @@ export default function MyDashboard({ user }: MyDashboardProps) {
 
                                                                 return (
                                                                     <span className={`text-[10px] px-1.5 py-0.5 rounded border font-bold ${isPaid
-                                                                            ? 'border-emerald-100 bg-emerald-50 text-emerald-600'
-                                                                            : 'border-blue-100 bg-blue-50 text-blue-600'
+                                                                        ? 'border-emerald-100 bg-emerald-50 text-emerald-600'
+                                                                        : 'border-blue-100 bg-blue-50 text-blue-600'
                                                                         }`}>
                                                                         {label}
                                                                     </span>
@@ -534,7 +527,26 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                         </div>
                     </div>
                 )}
+
+                {/* Notifications Tab Content (Placeholder) */}
+                {activeTab === 'notifications' && (
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center animate-in fade-in slide-in-from-bottom-2">
+                        <Bell className="mx-auto text-blue-200 mb-4" size={48} />
+                        <h3 className="text-lg font-bold text-gray-800 mb-2">お知らせ</h3>
+                        <p className="text-gray-500 text-sm">現在、新しいお知らせはありません。</p>
+                        <div className="mt-6 p-4 bg-gray-50 rounded-lg max-w-sm mx-auto">
+                            <p className="text-xs text-gray-400">最終確認日時: {dashboardData?.lastReadDate || new Date().toLocaleString('ja-JP')}</p>
+                        </div>
+                    </div>
+                )}
             </div>
+
+            <style>{`
+                /* Hide scrollbar for select elements in some browsers */
+                select::-ms-expand {
+                    display: none;
+                }
+            `}</style>
         </div>
     );
 }
