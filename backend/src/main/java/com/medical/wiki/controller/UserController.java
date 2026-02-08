@@ -38,4 +38,15 @@ public class UserController {
         return ResponseEntity.ok(java.util.Map.of("tempPassword", tempPassword));
     }
 
+    @GetMapping("/me/history")
+    public ResponseEntity<List<com.medical.wiki.dto.HistoryDto>> getMyHistory(
+            @RequestHeader(value = "X-User-Id") Long userId,
+            @RequestParam(required = false) java.time.LocalDate startDate) {
+        if (startDate == null) {
+            // Default to 1 year ago
+            startDate = java.time.LocalDate.now().minusYears(1);
+        }
+        return ResponseEntity.ok(userService.getHistory(userId, startDate));
+    }
+
 }
