@@ -36,7 +36,8 @@ public class PaidLeaveService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (repository.existsOverlapping(userId, startDate, endDate)) {
+        if (repository.existsOverlapping(userId, startDate, endDate,
+                java.util.Arrays.asList(PaidLeave.Status.PENDING, PaidLeave.Status.APPROVED))) {
             throw new IllegalArgumentException(startDate + "から" + endDate + "の期間は既に申請済みです");
         }
 

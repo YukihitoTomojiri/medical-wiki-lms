@@ -60,7 +60,8 @@ public class AttendanceRequestService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Duplicate check (same day, same type, excluding REJECTED/DELETED)
-        if (type != AttendanceRequest.RequestType.PAID_LEAVE && repository.existsDuplicate(userId, startDate, type)) {
+        if (type != AttendanceRequest.RequestType.PAID_LEAVE && repository.existsDuplicate(userId, startDate, type,
+                java.util.Arrays.asList(AttendanceRequest.Status.PENDING, AttendanceRequest.Status.APPROVED))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "この日は既に同じ種別の申請がされています");
         }
 

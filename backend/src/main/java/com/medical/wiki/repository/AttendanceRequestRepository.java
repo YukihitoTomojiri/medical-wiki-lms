@@ -11,22 +11,22 @@ import java.util.List;
 
 @Repository
 public interface AttendanceRequestRepository extends JpaRepository<AttendanceRequest, Long> {
-    List<AttendanceRequest> findByUserIdOrderByStartDateDesc(Long userId);
+        List<AttendanceRequest> findByUserIdOrderByStartDateDesc(Long userId);
 
-    List<AttendanceRequest> findAllByOrderByStartDateDesc();
+        List<AttendanceRequest> findAllByOrderByStartDateDesc();
 
-    long countByUserIdAndStatus(Long userId, AttendanceRequest.Status status);
+        long countByUserIdAndStatus(Long userId, AttendanceRequest.Status status);
 
-    List<AttendanceRequest> findByUser_FacilityInAndDeletedAtIsNullOrderByStartDateDesc(List<String> facilities);
+        List<AttendanceRequest> findByUser_FacilityInAndDeletedAtIsNullOrderByStartDateDesc(List<String> facilities);
 
-    List<AttendanceRequest> findByDeletedAtIsNullOrderByStartDateDesc();
+        List<AttendanceRequest> findByDeletedAtIsNullOrderByStartDateDesc();
 
-    @Query("SELECT COUNT(a) > 0 FROM AttendanceRequest a WHERE a.user.id = :userId " +
-            "AND a.startDate = :date AND a.type = :type " +
-            "AND a.status IN (com.medical.wiki.entity.AttendanceRequest.Status.PENDING, com.medical.wiki.entity.AttendanceRequest.Status.APPROVED) "
-            +
-            "AND a.deletedAt IS NULL")
-    boolean existsDuplicate(@Param("userId") Long userId,
-            @Param("date") LocalDate date,
-            @Param("type") AttendanceRequest.RequestType type);
+        @Query("SELECT COUNT(a) > 0 FROM AttendanceRequest a WHERE a.user.id = :userId " +
+                        "AND a.startDate = :date AND a.type = :type " +
+                        "AND a.status IN :statuses " +
+                        "AND a.deletedAt IS NULL")
+        boolean existsDuplicate(@Param("userId") Long userId,
+                        @Param("date") LocalDate date,
+                        @Param("type") AttendanceRequest.RequestType type,
+                        @Param("statuses") List<AttendanceRequest.Status> statuses);
 }
