@@ -28,6 +28,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
     const [dashboardData, setDashboardData] = useState<any>(null);
     const [progress, setProgress] = useState<Progress[]>([]);
     const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
+    const [leaveStatus, setLeaveStatus] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'learning' | 'leaves' | 'notifications'>('learning');
 
@@ -57,14 +58,16 @@ export default function MyDashboard({ user }: MyDashboardProps) {
 
     const loadData = async () => {
         try {
-            const [dashData, progressData, historyData] = await Promise.all([
+            const [dashData, progressData, historyData, statusData] = await Promise.all([
                 api.getMyDashboard(user.id),
                 api.getMyProgress(user.id),
-                api.getMyHistory(user.id, historyStartDate)
+                api.getMyHistory(user.id, historyStartDate),
+                api.getLeaveStatus(user.id)
             ]);
             setDashboardData(dashData);
             setProgress(progressData);
             setLeaveRequests(historyData);
+            setLeaveStatus(statusData);
         } catch (error) {
             console.error(error);
         } finally {
@@ -181,25 +184,19 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                         <div className="flex items-center gap-2 text-gray-500 mb-2">
                             <Calendar size={18} className="text-emerald-500" />
                             <span className={`text-xs font-bold uppercase tracking-wider ${activeTab === 'leaves' ? 'text-emerald-600' : ''}`}>
-                                有給残日数
+                                有給休暇
                             </span>
                         </div>
                         <div className="flex items-baseline gap-2">
                             {(() => {
-                                const total = dashboardData?.paidLeaveDays || 0;
+                                const total = leaveStatus?.remainingDays ?? dashboardData?.paidLeaveDays ?? 0;
                                 const pending = leaveRequests
                                     .filter(r => r.status === 'PENDING' && (r.type === 'PAID_LEAVE' || !r.type))
                                     .reduce((acc, r) => {
-                                        // Simple calculation: if start!=end => days+1, then check type
-                                        // Ideally we should use same logic as backend but here we approximate or use backend data if available
-                                        // We will use a safe client-side calculation matching backend
                                         const start = new Date(r.startDate);
                                         const end = new Date(r.endDate);
                                         const diffTime = Math.abs(end.getTime() - start.getTime());
                                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-                                        // Check durationType from r.durationType (HistoryDto)
-                                        // If missing, default to FULL (1.0 * days)
                                         const isHalf = r.durationType === 'HALF_AM' || r.durationType === 'HALF_PM';
                                         return acc + (isHalf ? diffDays * 0.5 : diffDays * 1.0);
                                     }, 0);
@@ -207,7 +204,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                 const effective = Math.max(0, total - pending);
 
                                 return (
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col w-full">
                                         <div className="flex items-baseline gap-2">
                                             <span className="text-3xl font-black text-gray-800">{String(total).includes('.') ? total : `${total}.0`}</span>
                                             <span className="text-sm text-gray-400">日</span>
@@ -228,14 +225,29 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                                 </div>
                                             )}
                                         </div>
+                                        {leaveStatus?.nextGrantDate && (
+                                            <div className="mt-3 pt-2 border-t border-emerald-100/50 text-[10px] text-gray-500 font-medium flex items-center gap-1">
+                                                <div className="w-1 h-1 rounded-full bg-emerald-300"></div>
+                                                次回付与: <span className="font-mono font-bold text-emerald-600">{new Date(leaveStatus.nextGrantDate).toLocaleDateString('ja-JP')}</span>
+                                                <span className="text-emerald-500/80">(+{leaveStatus.nextGrantDays}日)</span>
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })()}
                         </div>
-                        <div className="mt-2 flex items-center text-xs text-emerald-600 font-medium">
-                            <Clock size={14} className="mr-1" />
-                            申請中: {dashboardData?.pendingLeaveRequestsCount}件
-                        </div>
+                        {((dashboardData?.pendingLeaveRequestsCount || 0) <= 0) && (
+                            <div className="mt-2 flex items-center text-xs text-gray-300 font-medium">
+                                <Clock size={14} className="mr-1" />
+                                申請なし
+                            </div>
+                        )}
+                        {((dashboardData?.pendingLeaveRequestsCount || 0) > 0) && (
+                            <div className="mt-2 flex items-center text-xs text-emerald-600 font-medium">
+                                <Clock size={14} className="mr-1" />
+                                申請中: {dashboardData?.pendingLeaveRequestsCount}件
+                            </div>
+                        )}
                     </div>
                 </button>
 
