@@ -2,136 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  font-family: 'Noto Sans JP', sans-serif;
+@layer base {
+  body {
+    @apply bg-m3-background text-m3-on-background;
+  }
 }
 
-body {
-  @apply bg-slate-50 text-gray-900 antialiased;
-}
-
-/* ============================================ */
-/*  WikiLMS デザインシステム — 共通コンポーネント  */
-/* ============================================ */
-
-/* ページヘッダー */
-.page-header {
-  @apply mb-6;
-}
-.page-header h2,
-.page-header h1 {
-  @apply text-2xl font-bold text-gray-800;
-}
-.page-header p {
-  @apply text-gray-500 mt-1 text-sm;
-}
-
-/* 共通カード */
-.card {
-  @apply bg-white rounded-xl border border-gray-100 shadow-sm;
-}
-.card-hover {
-  @apply hover:shadow-md hover:border-primary-200 transition-all duration-200;
-}
-
-/* プライマリボタン（登録・確定） */
-.btn-primary {
-  @apply inline-flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white font-bold text-sm rounded-xl
-         hover:bg-primary-700 transition-all shadow-sm shadow-primary-600/20 active:scale-[0.98];
-}
-
-/* セカンダリボタン（キャンセル等） */
-.btn-secondary {
-  @apply inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 font-bold text-sm rounded-xl
-         hover:bg-gray-200 transition-all active:scale-[0.98];
-}
-
-/* デンジャーボタン（削除等） */
-.btn-danger {
-  @apply inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white font-bold text-sm rounded-xl
-         hover:bg-red-700 transition-all shadow-sm shadow-red-600/20 active:scale-[0.98];
-}
-
-/* フォーム入力 */
-.form-input {
-  @apply w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium
-         focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all;
-}
-
-/* フォームラベル */
-.form-label {
-  @apply block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5;
-}
-
-/* タブナビゲーション */
-.tab-nav {
-  @apply flex overflow-x-auto gap-1 border-b border-gray-200 pb-1 mb-6;
-}
-.tab-item {
-  @apply flex items-center gap-2 px-4 py-2.5 rounded-t-xl font-bold text-sm transition-all whitespace-nowrap;
-}
-.tab-active {
-  @apply bg-white border-b-2 border-primary-600 text-primary-600 shadow-sm;
-}
-.tab-inactive {
-  @apply text-gray-500 hover:text-gray-700 hover:bg-gray-50;
-}
-
-/* ステータスバッジ */
-.badge {
-  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
-}
-.badge-success { @apply bg-emerald-100 text-emerald-800; }
-.badge-warning { @apply bg-amber-100 text-amber-800; }
-.badge-danger  { @apply bg-red-100 text-red-800; }
-.badge-info    { @apply bg-blue-100 text-blue-800; }
-
-/* Custom scrollbar */
+/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100;
+  @apply bg-transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded-full;
+  @apply bg-m3-outline-variant rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400;
-}
-
-/* Markdown content styling */
-.markdown-content h1 {
-  @apply text-2xl font-bold mt-6 mb-4 text-gray-800;
-}
-
-.markdown-content h2 {
-  @apply text-xl font-semibold mt-5 mb-3 text-gray-700;
-}
-
-.markdown-content h3 {
-  @apply text-lg font-medium mt-4 mb-2 text-gray-600;
-}
-
-.markdown-content p {
-  @apply my-3 leading-relaxed;
-}
-
-.markdown-content ul {
-  @apply list-disc list-inside my-3 space-y-1;
-}
-
-.markdown-content ol {
-  @apply list-decimal list-inside my-3 space-y-1;
-}
-
-.markdown-content li {
-  @apply text-gray-700;
-}
-
-.markdown-content code {
-  @apply bg-gray-100 px-1 py-0.5 rounded text-sm font-mono;
+  @apply bg-m3-outline;
 }
