@@ -66,15 +66,15 @@ export default function Sidebar({ user, onLogout, onClose }: SidebarProps) {
                                         to={item.path}
                                         onClick={onClose}
                                         className={`
-                                            flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 group
+                                            flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg transition-all duration-200 group
                                             ${isActive
-                                                ? 'bg-gradient-to-r from-medical-DEFAULT to-medical-dark text-white shadow-lg shadow-medical-DEFAULT/25'
-                                                : 'text-slate-600 hover:bg-white hover:shadow-sm hover:text-medical-DEFAULT'
+                                                ? 'bg-orange-500 text-white shadow-lg shadow-orange-200'
+                                                : 'text-slate-600 hover:bg-orange-50 hover:text-orange-600'
                                             }
                                         `}
                                     >
-                                        <Icon size={18} className={`${isActive ? 'text-white' : 'text-slate-400 group-hover:text-medical-DEFAULT'} transition-colors`} />
-                                        <span className="font-bold text-sm tracking-tight">{item.label}</span>
+                                        <Icon size={18} className={`${isActive ? 'text-white' : 'text-slate-400 group-hover:text-orange-500'} transition-colors`} />
+                                        <span className={`font-semibold text-sm tracking-tight ${isActive ? 'text-white' : ''}`}>{item.label}</span>
                                     </Link>
                                 );
                             })}
