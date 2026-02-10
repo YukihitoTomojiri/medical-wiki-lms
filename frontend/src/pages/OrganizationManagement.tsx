@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api';
-import { Building2, Plus, Edit2, Trash2, ChevronDown, ChevronRight, Save, X } from 'lucide-react';
+import { Building2, Plus, Edit2, Trash2, ChevronDown, ChevronRight, Check, X, Save } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 
 interface Facility {
     id: number;
@@ -33,7 +36,6 @@ export default function OrganizationManagement() {
     const [editDeptName, setEditDeptName] = useState('');
 
     const [error, setError] = useState<string | null>(null);
-
     const [userId, setUserId] = useState<number | null>(null);
 
     useEffect(() => {
@@ -119,214 +121,214 @@ export default function OrganizationManagement() {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <div className="w-8 h-8 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
+                <div className="w-10 h-10 border-4 border-m3-primary/30 border-t-m3-primary rounded-full animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-6 animate-in fade-in duration-500">
             {/* Header */}
             <PageHeader
                 title="組織管理"
                 description="施設と部署の登録・編集"
                 icon={Building2}
-                iconColor="text-primary-600"
-                iconBgColor="bg-primary-50"
+                iconColor="text-m3-primary"
+                iconBgColor="bg-m3-primary-container"
                 actions={
-                    <button
+                    <Button
+                        variant="filled"
                         onClick={() => setShowAddFacility(true)}
-                        className="btn-primary"
+                        icon={<Plus size={18} />}
                     >
-                        <Plus size={18} />
                         施設を追加
-                    </button>
+                    </Button>
                 }
             />
 
             {error && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm font-medium">
+                <div className="p-4 bg-m3-error-container text-m3-on-error-container rounded-xl text-sm font-medium">
                     {error}
                 </div>
             )}
 
             {/* Add Facility Form */}
             {showAddFacility && (
-                <div className="p-4 bg-primary-50 border border-primary-200 rounded-xl flex items-center gap-3">
-                    <input
-                        type="text"
+                <Card variant="filled" className="p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                    <Input
+                        variant="filled"
                         value={newFacilityName}
                         onChange={(e) => setNewFacilityName(e.target.value)}
                         placeholder="施設名を入力"
-                        className="flex-1 px-4 py-2 border border-primary-300 rounded-lg focus:ring-primary-500/20 focus:border-primary-500 outline-none"
                         autoFocus
+                        className="flex-1"
                     />
-                    <button
-                        onClick={handleAddFacility}
-                        className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-                    >
-                        <Save size={18} />
-                    </button>
-                    <button
-                        onClick={() => { setShowAddFacility(false); setNewFacilityName(''); }}
-                        className="p-2 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300"
-                    >
-                        <X size={18} />
-                    </button>
-                </div>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="filled"
+                            size="sm"
+                            onClick={handleAddFacility}
+                            icon={<Save size={18} />}
+                        >
+                            保存
+                        </Button>
+                        <Button
+                            variant="tonal"
+                            size="sm"
+                            onClick={() => { setShowAddFacility(false); setNewFacilityName(''); }}
+                            icon={<X size={18} />}
+                        />
+                    </div>
+                </Card>
             )}
 
-            {/* Facilities List */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            {/* Facilities List (Grouped List Style) */}
+            <Card variant="outlined" className="overflow-hidden bg-m3-surface border-m3-outline-variant">
                 {facilities.length === 0 ? (
-                    <div className="p-8 text-center text-gray-400">
-                        <Building2 size={48} className="mx-auto mb-4 opacity-30" />
+                    <div className="p-12 text-center text-m3-outline-variant">
+                        <Building2 size={48} className="mx-auto mb-4 opacity-50" />
                         <p>登録されている施設はありません</p>
                     </div>
                 ) : (
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-m3-outline-variant/20">
                         {facilities.map((facility) => {
                             const depts = getDepartmentsForFacility(facility.id);
                             const isExpanded = expandedFacility === facility.id;
 
                             return (
-                                <div key={facility.id}>
-                                    {/* Facility Row - Entire row clickable */}
+                                <div key={facility.id} className="transition-colors hover:bg-m3-surface-container-low group">
+                                    {/* Facility Row */}
                                     <div
-                                        className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                                        className="flex items-center gap-4 p-4 cursor-pointer"
                                         onClick={() => setExpandedFacility(isExpanded ? null : facility.id)}
                                     >
-                                        <div className="p-1 text-gray-500">
-                                            {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                                        <div className="p-1 text-m3-outline transition-transform duration-200">
+                                            {isExpanded ? <ChevronDown size={24} /> : <ChevronRight size={24} />}
+                                        </div>
+
+                                        <div className="w-10 h-10 rounded-full bg-m3-tertiary-container text-m3-on-tertiary-container flex items-center justify-center shrink-0">
+                                            <Building2 size={20} />
                                         </div>
 
                                         {editingFacilityId === facility.id ? (
-                                            <div className="flex-1 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                                <input
-                                                    type="text"
+                                            <div className="flex-1 flex items-center gap-2 animate-in fade-in" onClick={(e) => e.stopPropagation()}>
+                                                <Input
+                                                    variant="outlined"
                                                     value={editFacilityName}
                                                     onChange={(e) => setEditFacilityName(e.target.value)}
-                                                    className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg"
                                                     autoFocus
+                                                    className="flex-1"
                                                 />
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); handleUpdateFacility(facility.id); }}
-                                                    className="p-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                                                >
-                                                    <Save size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); setEditingFacilityId(null); }}
-                                                    className="p-1.5 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300"
-                                                >
+                                                <Button variant="filled" size="sm" onClick={(e) => { e.stopPropagation(); handleUpdateFacility(facility.id); }}>
+                                                    <Check size={16} />
+                                                </Button>
+                                                <Button variant="tonal" size="sm" onClick={(e) => { e.stopPropagation(); setEditingFacilityId(null); }}>
                                                     <X size={16} />
-                                                </button>
+                                                </Button>
                                             </div>
                                         ) : (
                                             <>
-                                                <div className="flex-1">
-                                                    <span className="font-bold text-gray-800">{facility.name}</span>
-                                                    <span className="ml-2 text-sm text-gray-400">
-                                                        ({depts.length} 部署)
-                                                    </span>
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="text-base font-bold text-m3-on-surface truncate">{facility.name}</h3>
+                                                    <p className="text-xs text-m3-on-surface-variant font-medium mt-0.5">{depts.length} 部署</p>
                                                 </div>
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); setEditingFacilityId(facility.id); setEditFacilityName(facility.name); }}
-                                                    className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                                                >
-                                                    <Edit2 size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); handleDeleteFacility(facility.id); }}
-                                                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
+                                                <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button
+                                                        variant="text"
+                                                        size="sm"
+                                                        onClick={(e) => { e.stopPropagation(); setEditingFacilityId(facility.id); setEditFacilityName(facility.name); }}
+                                                        className="text-m3-outline hover:text-m3-primary"
+                                                    >
+                                                        <Edit2 size={18} />
+                                                    </Button>
+                                                    <Button
+                                                        variant="text"
+                                                        size="sm"
+                                                        onClick={(e) => { e.stopPropagation(); handleDeleteFacility(facility.id); }}
+                                                        className="text-m3-outline hover:text-m3-error"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </Button>
+                                                </div>
                                             </>
                                         )}
                                     </div>
 
-                                    {/* Departments */}
+                                    {/* Departments (Nested) */}
                                     {isExpanded && (
-                                        <div className="bg-gray-50 border-t border-gray-100">
-                                            <div className="pl-12 pr-4 py-2">
+                                        <div className="bg-m3-surface-container-lowest border-t border-m3-outline-variant/20 animate-in slide-in-from-top-1 duration-200">
+                                            <div className="pl-16 sm:pl-20 pr-4 py-3 space-y-1">
                                                 {depts.map((dept) => (
-                                                    <div key={dept.id} className="flex items-center gap-3 py-2">
+                                                    <div key={dept.id} className="group/dept flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-m3-surface-variant/50 transition-colors">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-m3-outline-variant"></div>
+
                                                         {editingDeptId === dept.id ? (
-                                                            <div className="flex-1 flex items-center gap-2">
-                                                                <input
-                                                                    type="text"
+                                                            <div className="flex-1 flex items-center gap-2 animate-in fade-in">
+                                                                <Input
+                                                                    variant="outlined"
                                                                     value={editDeptName}
                                                                     onChange={(e) => setEditDeptName(e.target.value)}
-                                                                    className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
                                                                     autoFocus
+                                                                    className="py-1 text-sm"
                                                                 />
-                                                                <button
-                                                                    onClick={() => handleUpdateDepartment(dept.id)}
-                                                                    className="p-1 bg-green-500 text-white rounded-lg"
-                                                                >
-                                                                    <Save size={14} />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => setEditingDeptId(null)}
-                                                                    className="p-1 bg-gray-200 text-gray-600 rounded-lg"
-                                                                >
+                                                                <Button variant="filled" size="sm" className="h-8 w-8 px-0" onClick={() => handleUpdateDepartment(dept.id)}>
+                                                                    <Check size={14} />
+                                                                </Button>
+                                                                <Button variant="tonal" size="sm" className="h-8 w-8 px-0" onClick={() => setEditingDeptId(null)}>
                                                                     <X size={14} />
-                                                                </button>
+                                                                </Button>
                                                             </div>
                                                         ) : (
                                                             <>
-                                                                <span className="flex-1 text-gray-700 text-sm">{dept.name}</span>
-                                                                <button
-                                                                    onClick={() => { setEditingDeptId(dept.id); setEditDeptName(dept.name); }}
-                                                                    className="p-1 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
-                                                                >
-                                                                    <Edit2 size={14} />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleDeleteDepartment(dept.id)}
-                                                                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                                                                >
-                                                                    <Trash2 size={14} />
-                                                                </button>
+                                                                <span className="flex-1 text-sm font-medium text-m3-on-surface-variant">{dept.name}</span>
+                                                                <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover/dept:opacity-100 transition-opacity">
+                                                                    <button
+                                                                        onClick={() => { setEditingDeptId(dept.id); setEditDeptName(dept.name); }}
+                                                                        className="p-1 text-m3-outline hover:text-m3-primary rounded transition-colors"
+                                                                    >
+                                                                        <Edit2 size={14} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleDeleteDepartment(dept.id)}
+                                                                        className="p-1 text-m3-outline hover:text-m3-error rounded transition-colors"
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                    </button>
+                                                                </div>
                                                             </>
                                                         )}
                                                     </div>
                                                 ))}
 
-                                                {/* Add Department */}
-                                                {showAddDepartment === facility.id ? (
-                                                    <div className="flex items-center gap-2 py-2">
-                                                        <input
-                                                            type="text"
-                                                            value={newDeptName}
-                                                            onChange={(e) => setNewDeptName(e.target.value)}
-                                                            placeholder="部署名を入力"
-                                                            className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
-                                                            autoFocus
-                                                        />
+                                                {/* Add Department Input */}
+                                                <div className="pl-3 mt-2">
+                                                    {showAddDepartment === facility.id ? (
+                                                        <div className="flex items-center gap-2 py-1 animate-in fade-in">
+                                                            <Input
+                                                                variant="outlined"
+                                                                value={newDeptName}
+                                                                onChange={(e) => setNewDeptName(e.target.value)}
+                                                                placeholder="部署名を追加..."
+                                                                autoFocus
+                                                                className="py-1 text-sm"
+                                                            />
+                                                            <Button variant="filled" size="sm" onClick={() => handleAddDepartment(facility.id)}>
+                                                                <Check size={16} />
+                                                            </Button>
+                                                            <Button variant="tonal" size="sm" onClick={() => { setShowAddDepartment(null); setNewDeptName(''); }}>
+                                                                <X size={16} />
+                                                            </Button>
+                                                        </div>
+                                                    ) : (
                                                         <button
-                                                            onClick={() => handleAddDepartment(facility.id)}
-                                                            className="p-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+                                                            onClick={() => setShowAddDepartment(facility.id)}
+                                                            className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-m3-primary hover:bg-m3-primary-container/30 rounded-lg transition-colors w-full text-left"
                                                         >
-                                                            <Save size={14} />
+                                                            <Plus size={16} />
+                                                            <span>部署を追加</span>
                                                         </button>
-                                                        <button
-                                                            onClick={() => { setShowAddDepartment(null); setNewDeptName(''); }}
-                                                            className="p-1.5 bg-gray-200 text-gray-600 rounded-lg"
-                                                        >
-                                                            <X size={14} />
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <button
-                                                        onClick={() => setShowAddDepartment(facility.id)}
-                                                        className="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 py-2"
-                                                    >
-                                                        <Plus size={14} />
-                                                        部署を追加
-                                                    </button>
-                                                )}
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     )}
@@ -335,7 +337,7 @@ export default function OrganizationManagement() {
                         })}
                     </div>
                 )}
-            </div>
+            </Card>
         </div>
     );
 }
