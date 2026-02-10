@@ -4,6 +4,7 @@ import PaidLeaveManagement from '../components/PaidLeaveManagement';
 import ComplianceDashboard from '../components/ComplianceDashboard';
 import AdminLeaveMonitoring from '../components/AdminLeaveMonitoring';
 import { LayoutDashboard, Calendar, AlertCircle } from 'lucide-react';
+import PageHeader from '../components/layout/PageHeader';
 
 export default function AdminDashboard() {
     const [user] = useState<User>(() => JSON.parse(localStorage.getItem('user') || '{}'));
@@ -21,14 +22,15 @@ export default function AdminDashboard() {
 
     const [activeTab, setActiveTab] = useState('dashboard');
 
+    // ... imports
+
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-end mb-6">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-800">管理者ダッシュボード</h2>
-                    <p className="text-gray-500 mt-1">施設全体の管理および労務承認を行います</p>
-                </div>
-            </div>
+            <PageHeader
+                title="管理者ダッシュボード"
+                subtitle="施設全体の管理および労務承認を行います"
+                icon={LayoutDashboard}
+            />
 
             {/* Tabs Navigation */}
             <div className="flex overflow-x-auto gap-2 border-b border-gray-200 pb-1 mb-6">

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { User } from '../types';
-import { ArrowLeft, Save, Eye, FileUp, X } from 'lucide-react';
+import { ArrowLeft, Save, Eye, FileUp, X, Edit2 } from 'lucide-react';
+import PageHeader from '../components/layout/PageHeader';
 import ReactMarkdown from 'react-markdown';
 
 interface ManualEditProps {
@@ -89,31 +90,38 @@ export default function ManualEdit({ user }: ManualEditProps) {
 
     return (
         <div className="max-w-4xl mx-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="flex items-center gap-2 text-gray-600 hover:text-primary-600 transition-colors"
-                >
-                    <ArrowLeft size={20} />
-                    <span>戻る</span>
-                </button>
-                <button
-                    onClick={() => setShowPreview(!showPreview)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${showPreview
-                        ? 'bg-primary-100 text-primary-600'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                >
-                    <Eye size={18} />
-                    プレビュー
-                </button>
-            </div>
+            {/* Page Header */}
+            <PageHeader
+
+                title={isNew ? '新規マニュアル作成' : 'マニュアル編集'}
+                subtitle="マニュアルの内容を編集・保存します"
+                icon={isNew ? FileUp : Edit2}
+            >
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="flex items-center gap-2 px-4 py-2 bg-white/50 hover:bg-white/80 text-orange-900 rounded-lg transition-all text-sm font-medium"
+                    >
+                        <ArrowLeft size={18} />
+                        戻る
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setShowPreview(!showPreview)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium ${showPreview
+                            ? 'bg-orange-200 text-orange-900'
+                            : 'bg-white/50 hover:bg-white/80 text-orange-900'
+                            }`}
+                    >
+                        <Eye size={18} />
+                        プレビュー
+                    </button>
+                </div>
+            </PageHeader>
 
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <h2 className="text-xl font-bold text-gray-800 mb-6">
-                    {isNew ? '新規マニュアル作成' : 'マニュアル編集'}
-                </h2>
+
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div>

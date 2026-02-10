@@ -30,6 +30,19 @@ export default {
                 'm3-inverse-surface': '#2E3131', // Needed based on previous files
                 'm3-inverse-on-surface': '#F0F1F0', // Needed based on previous files
                 'm3-inverse-primary': '#82D5C8', // Needed based on previous files
+
+                // === M3 Warm Orange Theme ===
+                'm3-orange-primary': '#FF9800',
+                'm3-orange-on-primary': '#FFFFFF',
+                'm3-orange-primary-container': '#FFDDB3',
+                'm3-orange-on-primary-container': '#291800',
+                'm3-orange-secondary': '#765A2D',
+                'm3-orange-on-secondary': '#FFFFFF',
+                'm3-orange-secondary-container': '#FFDDB3',
+                'm3-orange-tertiary': '#4D6544',
+                'm3-orange-background': '#FFFBFF',
+                'm3-orange-surface': '#FFFBFF',
+                'm3-orange-outline': '#827568',
             },
             borderRadius: {
                 'md': '0.75rem',    // 12px

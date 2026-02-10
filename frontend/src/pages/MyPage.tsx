@@ -10,6 +10,7 @@ import {
     TrendingUp,
     Building2
 } from 'lucide-react';
+import PageHeader from '../components/layout/PageHeader';
 
 interface MyPageProps {
     user: User;
@@ -42,23 +43,26 @@ export default function MyPage({ user }: MyPageProps) {
         );
     }
 
+    // ...
+
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div>
-                <h2 className="text-2xl font-bold text-gray-800">Myページ</h2>
-                <p className="text-gray-500 mt-1">あなたの学習履歴を確認できます</p>
-            </div>
+            {/* Page Header */}
+            <PageHeader
+                title="Myページ"
+                subtitle="あなたの学習履歴とプロフィールを確認できます"
+                icon={UserIcon}
+            />
 
             {/* User Profile Card */}
-            <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-6 text-white shadow-xl shadow-primary-500/20">
+            <div className="bg-gradient-to-r from-orange-400 to-orange-500 rounded-[28px] p-6 text-white shadow-xl shadow-orange-500/20">
                 <div className="flex items-center gap-4">
                     <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur text-2xl font-bold">
                         {user.name.charAt(0)}
                     </div>
                     <div>
                         <h3 className="text-xl font-bold">{user.name}</h3>
-                        <div className="flex items-center gap-3 mt-1 text-primary-100">
+                        <div className="flex items-center gap-3 mt-1 text-orange-50">
                             <div className="flex items-center gap-1">
                                 <Building2 size={14} />
                                 <span>{user.facility}</span>
