@@ -30,6 +30,8 @@ import {
     Cpu,
     HardDrive
 } from 'lucide-react';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 
 
 
@@ -57,6 +59,15 @@ export default function DeveloperDashboard() {
 
     // Data States
     const [userList, setUserList] = useState<User[]>([]);
+
+    // Get current user
+    const user = useMemo(() => {
+        try {
+            return JSON.parse(localStorage.getItem('medical_wiki_user') || '{}');
+        } catch (e) {
+            return {};
+        }
+    }, []);
 
     // Organization Master Data (from API)
     const [orgFacilities, setOrgFacilities] = useState<{ id: number, name: string }[]>([]);
@@ -452,43 +463,46 @@ export default function DeveloperDashboard() {
                 }}
                 isLoading={false}
             />
-            <div className="space-y-4 pb-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="space-y-6 pb-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
-                <div className="flex items-center justify-between pt-2">
+                <div className="flex items-center justify-between pt-4">
                     <div>
-                        <h2 className="text-xl font-black text-gray-800 tracking-tight bg-gradient-to-r from-primary-600 to-amber-600 bg-clip-text text-transparent">
+                        <h2 className="text-2xl font-bold text-m3-on-surface tracking-tight flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-m3-tertiary-container flex items-center justify-center text-m3-on-tertiary-container">
+                                <Activity size={20} />
+                            </div>
                             開発者ダッシュボード
                         </h2>
-                        <div className="flex items-center gap-4 mt-1">
-                            <p className="text-gray-500 font-medium text-xs flex items-center gap-2">
-                                <Activity size={14} className="text-green-500" />
+                        <div className="flex items-center gap-4 mt-2 ml-14">
+                            <p className="text-m3-on-surface-variant font-medium text-xs flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-m3-primary"></span>
                                 システム v{stats.version} 稼働中
                             </p>
-                            <p className="text-gray-400 text-sm flex items-center gap-2 border-l pl-4 border-gray-200">
-                                <RefreshCw size={14} />
+                            <p className="text-m3-outline text-xs flex items-center gap-2 border-l pl-4 border-m3-outline-variant/30">
+                                <RefreshCw size={12} />
                                 最終同期: {lastSync}
                             </p>
                         </div>
                     </div>
 
-                    <button
+                    <Button
+                        variant="outlined"
                         onClick={fetchData}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 font-medium shadow-sm transition-all active:scale-95"
+                        icon={<RefreshCw size={18} className={loading ? 'animate-spin' : ''} />}
                     >
-                        <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                         更新
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="flex p-1 bg-gray-100/50 rounded-xl w-fit mb-2 border border-gray-200/50 backdrop-blur-sm">
+                <div className="flex p-1 bg-m3-surface-container-high rounded-full w-fit mb-4">
                     {['stats', 'nodes', 'export', 'audit'].map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
-                            className={`px-6 py-2 rounded-lg text-[11px] font-black tracking-widest transition-all ${activeTab === tab
-                                ? 'bg-white text-primary-600 shadow-sm ring-1 ring-black/5'
-                                : 'text-gray-500 hover:text-gray-800 hover:bg-white/50'}`}
+                            className={`px-6 py-2 rounded-full text-xs font-bold transition-all ${activeTab === tab
+                                ? 'bg-m3-secondary-container text-m3-on-secondary-container shadow-sm'
+                                : 'text-m3-on-surface-variant hover:text-m3-on-surface hover:bg-m3-on-surface/5'}`}
                         >
                             {tab === 'stats' ? 'システム統計' :
                                 tab === 'nodes' ? '稼働状況' :
@@ -501,166 +515,160 @@ export default function DeveloperDashboard() {
                 {activeTab === 'stats' ? (
                     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {/* Status Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                             {/* DB Status */}
-                            <div className={`p-4 rounded-xl border flex items-center gap-3 shadow-sm transition-all ${stats.dbStatus === 'Connected'
-                                ? 'bg-emerald-50 border-emerald-100'
-                                : 'bg-red-50 border-red-100'
-                                } `}>
-                                <div className={`p-3 rounded-xl ${stats.dbStatus === 'Connected' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'
-                                    } `}>
+                            <Card variant="filled" className={`p-4 flex items-center gap-4 ${stats.dbStatus === 'Connected' ? 'bg-emerald-50' : 'bg-m3-error-container'}`}>
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stats.dbStatus === 'Connected' ? 'bg-emerald-100 text-emerald-600' : 'bg-m3-error text-m3-on-error'}`}>
                                     <Database size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium opacity-70">データベース</p>
+                                    <p className="text-xs font-bold opacity-70 mb-1">データベース</p>
                                     <div className="flex items-center gap-2">
-                                        <span className={`w-2.5 h-2.5 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500' : 'bg-red-500'
-                                            } `} />
-                                        <p className="font-bold text-lg">{stats.dbStatus === 'Connected' ? '接続中' : '切断'}</p>
+                                        <span className={`w-2 h-2 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500' : 'bg-m3-on-error-container'}`} />
+                                        <p className="font-bold text-lg leading-none">{stats.dbStatus === 'Connected' ? '接続中' : '切断'}</p>
                                     </div>
                                 </div>
-                            </div>
+                            </Card>
 
                             {/* Users Count */}
-                            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className="p-2.5 bg-orange-100 text-orange-600 rounded-xl">
-                                    <Users size={20} />
+                            <Card variant="elevated" className="p-4 flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                                    <Users size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-500 font-medium leading-tight">総ユーザー数</p>
-                                    <p className="font-bold text-xl text-gray-800 leading-tight">{userList.length}</p>
+                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1">総ユーザー数</p>
+                                    <p className="font-bold text-2xl text-m3-on-surface leading-none">{userList.length}</p>
                                 </div>
-                            </div>
+                            </Card>
 
                             {/* Role Breakdown */}
-                            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className="p-2.5 bg-purple-100 text-purple-600 rounded-xl">
-                                    <Shield size={20} />
+                            <Card variant="elevated" className="p-4 flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                                    <Shield size={24} />
                                 </div>
-                                <div>
-                                    <p className="text-xs text-gray-500 font-medium leading-tight">権限内訳</p>
-                                    <div className="flex flex-wrap gap-1 text-[10px] font-bold mt-0.5">
-                                        <span className="text-purple-600 bg-purple-50 px-1.5 py-0.25 rounded">Dev:{computedStats.developers}</span>
-                                        <span className="text-red-600 bg-red-50 px-1.5 py-0.25 rounded">Adm:{computedStats.admins}</span>
-                                        <span className="text-green-600 bg-green-50 px-1.5 py-0.25 rounded">Usr:{computedStats.users}</span>
+                                <div className="min-w-0">
+                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1">権限内訳</p>
+                                    <div className="flex gap-1 text-[10px] font-black">
+                                        <span className="text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded">Dev:{computedStats.developers}</span>
+                                        <span className="text-m3-error bg-red-50 px-1.5 py-0.5 rounded">Adm:{computedStats.admins}</span>
+                                        <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">Usr:{computedStats.users}</span>
                                     </div>
                                 </div>
-                            </div>
+                            </Card>
 
                             {/* Facilities */}
-                            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl">
-                                    <FileText size={20} />
+                            <Card variant="elevated" className="p-4 flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                                    <FileText size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-500 font-medium leading-tight">施設数</p>
-                                    <p className="font-bold text-xl text-gray-800 leading-tight">{computedStats.facilities}</p>
+                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1">施設数</p>
+                                    <p className="font-bold text-2xl text-m3-on-surface leading-none">{computedStats.facilities}</p>
                                 </div>
-                            </div>
+                            </Card>
 
                             {/* 24h Alerts Widget */}
-                            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <div className={`p-2.5 rounded-xl ${alertStats.alerts24h === 0 ? 'bg-emerald-100 text-emerald-600' :
+                            <Card variant="elevated" className="p-4 flex items-center gap-4">
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${alertStats.alerts24h === 0 ? 'bg-emerald-100 text-emerald-600' :
                                     alertStats.alerts24h < 5 ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'}`}>
-                                    <Activity size={20} />
+                                    <Activity size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-500 font-medium leading-tight">アラート (24時間)</p>
-                                    <p className={`font-bold text-xl leading-tight ${alertStats.alerts24h === 0 ? 'text-emerald-600' :
+                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1">アラート (24h)</p>
+                                    <p className={`font-bold text-2xl leading-none ${alertStats.alerts24h === 0 ? 'text-emerald-600' :
                                         alertStats.alerts24h < 5 ? 'text-yellow-600' : 'text-red-600'}`}>
                                         {alertStats.alerts24h}
                                     </p>
                                 </div>
-                            </div>
+                            </Card>
                         </div>
 
                         {/* Resource Monitoring Cards */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             {/* Memory Usage */}
-                            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                            <Card variant="outlined" className="p-5 flex flex-col justify-between h-full bg-m3-surface">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
                                         <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
                                             <Cpu size={18} />
                                         </div>
-                                        <h4 className="font-black text-gray-700 text-sm">メモリ使用率</h4>
+                                        <h4 className="font-bold text-m3-on-surface text-sm">メモリ使用率</h4>
                                     </div>
-                                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${resources.memoryPercent > 90 ? 'bg-red-100 text-red-600' : resources.memoryPercent > 80 ? 'bg-yellow-100 text-yellow-600' : 'bg-blue-100 text-blue-600'}`}>
+                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${resources.memoryPercent > 90 ? 'bg-m3-error-container text-m3-on-error-container' : resources.memoryPercent > 80 ? 'bg-yellow-100 text-yellow-600' : 'bg-blue-100 text-blue-600'}`}>
                                         {resources.memoryPercent.toFixed(1)}%
                                     </span>
                                 </div>
-                                <div className="w-full bg-gray-100 rounded-full h-2.5 mb-2">
+                                <div className="w-full bg-m3-surface-container-highest rounded-full h-2 mb-2">
                                     <div
-                                        className={`h-2.5 rounded-full transition-all duration-1000 ${resources.memoryPercent > 90 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]' : resources.memoryPercent > 80 ? 'bg-yellow-500' : 'bg-blue-500'}`}
+                                        className={`h-2 rounded-full transition-all duration-1000 ${resources.memoryPercent > 90 ? 'bg-m3-error' : resources.memoryPercent > 80 ? 'bg-yellow-500' : 'bg-blue-500'}`}
                                         style={{ width: `${resources.memoryPercent}%` }}
                                     />
                                 </div>
-                                <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                <div className="flex justify-between text-[10px] font-bold text-m3-outline uppercase tracking-widest">
                                     <span>{(resources.memoryUsed / 1024 / 1024).toFixed(0)} MB / {(resources.memoryMax / 1024 / 1024).toFixed(0)} MB</span>
                                     <span>Allocated JVM Heap</span>
                                 </div>
-                            </div>
+                            </Card>
 
                             {/* Disk Usage */}
-                            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                            <Card variant="outlined" className="p-5 flex flex-col justify-between h-full bg-m3-surface">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
-                                        <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                                        <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
                                             <HardDrive size={18} />
                                         </div>
-                                        <h4 className="font-black text-gray-700 text-sm">ディスク空き容量</h4>
+                                        <h4 className="font-bold text-m3-on-surface text-sm">ディスク使用量</h4>
                                     </div>
-                                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${resources.diskPercent > 90 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
-                                        {(resources.diskFree / 1024 / 1024 / 1024).toFixed(1)} GB Free
+                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${resources.diskPercent > 90 ? 'bg-m3-error-container text-m3-on-error-container' : resources.diskPercent > 80 ? 'bg-yellow-100 text-yellow-600' : 'bg-purple-100 text-purple-600'}`}>
+                                        {resources.diskPercent.toFixed(1)}%
                                     </span>
                                 </div>
-                                <div className="w-full bg-gray-100 rounded-full h-2.5 mb-2">
+                                <div className="w-full bg-m3-surface-container-highest rounded-full h-2 mb-2">
                                     <div
-                                        className={`h-2.5 rounded-full transition-all duration-1000 ${resources.diskPercent > 90 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]' : 'bg-amber-500'}`}
+                                        className={`h-2 rounded-full transition-all duration-1000 ${resources.diskPercent > 90 ? 'bg-m3-error' : resources.diskPercent > 80 ? 'bg-yellow-500' : 'bg-purple-500'}`}
                                         style={{ width: `${resources.diskPercent}%` }}
                                     />
                                 </div>
-                                <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                    <span>Used: {(resources.diskUsed / 1024 / 1024 / 1024).toFixed(1)} GB / Total: {(resources.diskTotal / 1024 / 1024 / 1024).toFixed(1)} GB</span>
-                                    <span>Root Volume (/)</span>
+                                <div className="flex justify-between text-[10px] font-bold text-m3-outline uppercase tracking-widest">
+                                    <span>{(resources.diskUsed / 1024 / 1024 / 1024).toFixed(1)} GB / {(resources.diskTotal / 1024 / 1024 / 1024).toFixed(1)} GB</span>
+                                    <span>System Storage</span>
                                 </div>
-                            </div>
+                            </Card>
                         </div>
 
                         {/* Security Alerts Section */}
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-red-50/30">
+                        <Card variant="outlined" className="bg-m3-surface rounded-2xl border-m3-outline-variant shadow-sm overflow-hidden">
+                            <div className="p-4 border-b border-m3-outline-variant flex items-center justify-between bg-m3-error-container/30">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-red-100 text-red-600 rounded-xl">
+                                    <div className="p-3 bg-m3-error-container text-m3-on-error-container rounded-xl">
                                         <ShieldAlert size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-black text-gray-800 tracking-tight">セキュリティアラート</h3>
-                                        <p className="text-xs text-gray-500 font-medium">システムの異常行動をリアルタイムで監視・報告します</p>
+                                        <h3 className="text-lg font-bold text-m3-on-surface tracking-tight">セキュリティアラート</h3>
+                                        <p className="text-xs text-m3-on-surface-variant font-medium">システムの異常行動をリアルタイムで監視・報告します</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     {alertStats.criticalOpen > 0 && (
-                                        <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-black animate-pulse">
+                                        <span className="px-3 py-1 bg-m3-error text-m3-on-error rounded-full text-xs font-bold animate-pulse">
                                             {alertStats.criticalOpen} Critical
                                         </span>
                                     )}
-                                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-red-200">
+                                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-m3-error-container text-m3-on-error-container text-[10px] font-bold uppercase tracking-widest rounded-lg border border-m3-error/20">
                                         <AlertTriangle size={12} />
                                         {alertStats.totalOpen} 件の未解決
                                     </span>
-                                    <button
+                                    <Button
+                                        variant="text"
                                         onClick={fetchSecurityAlerts}
-                                        className="p-2 hover:bg-gray-100 rounded-xl transition-all"
-                                    >
-                                        <RefreshCw size={18} className="text-gray-400" />
-                                    </button>
+                                        icon={<RefreshCw size={18} />}
+                                    />
                                 </div>
                             </div>
 
                             <div className="p-4">
                                 {securityAlerts.length === 0 ? (
-                                    <div className="text-center py-12 text-gray-400">
+                                    <div className="text-center py-12 text-m3-on-surface-variant/50">
                                         <ShieldAlert size={48} className="mx-auto mb-4 opacity-30" />
                                         <p className="font-medium">セキュリティアラートはありません</p>
                                         <p className="text-sm">システムは正常に稼働しています</p>
@@ -671,9 +679,9 @@ export default function DeveloperDashboard() {
                                             <div
                                                 key={alert.id}
                                                 className={`p-4 rounded-2xl border flex items-center gap-4 transition-all ${alert.status === 'RESOLVED'
-                                                    ? 'bg-gray-50 border-gray-100 opacity-60'
+                                                    ? 'bg-m3-surface-container-low border-m3-outline-variant opacity-60'
                                                     : alert.severity === 'CRITICAL'
-                                                        ? 'bg-red-50 border-red-200'
+                                                        ? 'bg-m3-error-container border-m3-error'
                                                         : alert.severity === 'HIGH'
                                                             ? 'bg-orange-50 border-orange-200'
                                                             : alert.severity === 'MEDIUM'
@@ -681,7 +689,7 @@ export default function DeveloperDashboard() {
                                                                 : 'bg-blue-50 border-blue-200'
                                                     }`}
                                             >
-                                                <div className={`p-2 rounded-xl ${alert.severity === 'CRITICAL' ? 'bg-red-100 text-red-600' :
+                                                <div className={`p-2 rounded-xl ${alert.severity === 'CRITICAL' ? 'bg-m3-error text-m3-on-error' :
                                                     alert.severity === 'HIGH' ? 'bg-orange-100 text-orange-600' :
                                                         alert.severity === 'MEDIUM' ? 'bg-yellow-100 text-yellow-600' :
                                                             'bg-blue-100 text-blue-600'
@@ -693,27 +701,27 @@ export default function DeveloperDashboard() {
                                                 </div>
                                                 <div className="flex-grow">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="font-black text-sm text-gray-800">
+                                                        <span className="font-bold text-sm text-m3-on-surface">
                                                             {alert.typeDisplayName}
                                                         </span>
-                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${alert.severity === 'CRITICAL' ? 'bg-red-200 text-red-800' :
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${alert.severity === 'CRITICAL' ? 'bg-m3-error text-m3-on-error' :
                                                             alert.severity === 'HIGH' ? 'bg-orange-200 text-orange-800' :
                                                                 alert.severity === 'MEDIUM' ? 'bg-yellow-200 text-yellow-800' :
                                                                     'bg-blue-200 text-blue-800'
                                                             }`}>
                                                             {alert.severity}
                                                         </span>
-                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${alert.status === 'OPEN' ? 'bg-red-100 text-red-600' :
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${alert.status === 'OPEN' ? 'bg-m3-error-container text-m3-on-error-container' :
                                                             alert.status === 'ACKNOWLEDGED' ? 'bg-yellow-100 text-yellow-600' :
-                                                                'bg-green-100 text-green-600'
+                                                                'bg-emerald-100 text-emerald-600'
                                                             }`}>
                                                             {alert.status}
                                                         </span>
                                                     </div>
-                                                    <p className="text-xs text-gray-500 mt-1">
+                                                    <p className="text-xs text-m3-on-surface-variant mt-1">
                                                         {alert.description}
                                                     </p>
-                                                    <div className="flex items-center gap-3 mt-1 text-[10px] text-gray-400">
+                                                    <div className="flex items-center gap-3 mt-1 text-[10px] text-m3-outline">
                                                         <span>{alert.userName || alert.userEmployeeId || 'Unknown'}</span>
                                                         <span>•</span>
                                                         <span>{new Date(alert.detectedAt).toLocaleString('ja-JP')}</span>
@@ -728,21 +736,23 @@ export default function DeveloperDashboard() {
                                                 {alert.status !== 'RESOLVED' && (
                                                     <div className="flex gap-2">
                                                         {alert.status === 'OPEN' && (
-                                                            <button
+                                                            <Button
+                                                                variant="text"
                                                                 onClick={() => handleAcknowledgeAlert(alert.id)}
-                                                                className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-yellow-600"
+                                                                className="text-m3-outline hover:text-yellow-600"
                                                                 title="Acknowledge"
                                                             >
                                                                 <Eye size={16} />
-                                                            </button>
+                                                            </Button>
                                                         )}
-                                                        <button
+                                                        <Button
+                                                            variant="text"
                                                             onClick={() => handleResolveAlert(alert.id)}
-                                                            className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-green-600"
+                                                            className="text-m3-outline hover:text-emerald-600"
                                                             title="Resolve"
                                                         >
                                                             <CheckCircle2 size={16} />
-                                                        </button>
+                                                        </Button>
                                                     </div>
                                                 )}
                                             </div>
@@ -750,7 +760,7 @@ export default function DeveloperDashboard() {
                                     </div>
                                 )}
                             </div>
-                        </div>
+                        </Card>
 
                         {/* Main Content Area */}
                         <div className="grid grid-cols-1 gap-4">
@@ -760,48 +770,50 @@ export default function DeveloperDashboard() {
                 ) : activeTab === 'nodes' ? (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-4">
                         {/* User Management Section (Active Nodes Control) */}
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                        <Card variant="outlined" className="bg-m3-surface rounded-2xl border-m3-outline-variant shadow-sm overflow-hidden">
+                            <div className="px-5 py-4 border-b border-m3-outline-variant flex items-center justify-between bg-m3-surface-container-high">
                                 <div>
-                                    <h3 className="text-lg font-black text-gray-800 tracking-tight">稼働ノード管理</h3>
-                                    <p className="text-xs text-gray-500 font-medium">アクセス制御とユーザー権限の管理</p>
+                                    <h3 className="text-lg font-bold text-m3-on-surface tracking-tight">稼働ノード管理</h3>
+                                    <p className="text-xs text-m3-on-surface-variant font-medium">アクセス制御とユーザー権限の管理</p>
                                 </div>
 
                                 {/* Bulk Action Menu */}
                                 {selectedUsers.length > 0 && (
                                     <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-300">
-                                        <span className="text-xs font-bold text-orange-600 px-3 py-1 bg-orange-50 rounded-full border border-orange-100">
+                                        <span className="text-xs font-bold text-m3-on-secondary-container px-3 py-1 bg-m3-secondary-container rounded-full border border-m3-secondary-container">
                                             {selectedUsers.length} 件選択中
                                         </span>
                                         <div className="flex gap-2">
-                                            <button
+                                            <Button
+                                                variant="filled"
+                                                size="sm"
                                                 onClick={handleBulkReset}
-                                                className="px-4 py-2 bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-700 transition-all shadow-lg shadow-slate-200"
                                             >
                                                 進捗リセット
-                                            </button>
-                                            <button
-                                                type="button"
+                                            </Button>
+                                            <Button
+                                                variant="filled"
+                                                size="sm"
                                                 onClick={openDeleteModal}
-                                                className="px-4 py-2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-100"
+                                                className="bg-m3-error text-m3-on-error hover:bg-m3-error/80"
                                             >
                                                 削除
-                                            </button>
+                                            </Button>
                                         </div>
                                     </div>
                                 )}
 
                                 {selectedUsers.length === 0 && (
-                                    <div className="px-5 py-2 bg-white border border-gray-100 rounded-2xl text-[10px] font-black text-gray-400 shadow-sm uppercase tracking-widest">
+                                    <div className="px-5 py-2 bg-m3-surface border border-m3-outline-variant rounded-full text-[10px] font-bold text-m3-on-surface-variant shadow-sm uppercase tracking-widest">
                                         {userList.length} 件登録済み
                                     </div>
                                 )}
                             </div>
 
                             <div className="h-[70vh] flex flex-col">
-                                <div className="flex-none px-5 py-3 bg-gray-50/30 border-b border-gray-100 flex items-center gap-4">
+                                <div className="flex-none px-5 py-3 bg-m3-surface-container-high border-b border-m3-outline-variant flex items-center gap-4">
                                     <div className="flex items-center gap-2">
-                                        <div className="p-1 bg-orange-50 text-orange-600 rounded-md">
+                                        <div className="p-1 bg-m3-secondary-container text-m3-on-secondary-container rounded-md">
                                             <Search size={14} />
                                         </div>
                                         <input
@@ -809,31 +821,31 @@ export default function DeveloperDashboard() {
                                             placeholder="施設、名前、部署で検索..."
                                             value={nodeSearchQuery}
                                             onChange={(e) => setNodeSearchQuery(e.target.value)}
-                                            className="bg-transparent border-none outline-none text-xs font-bold text-gray-700 w-48 placeholder:text-gray-400"
+                                            className="bg-transparent border-none outline-none text-xs font-bold text-m3-on-surface w-48 placeholder:text-m3-on-surface-variant/50"
                                         />
                                     </div>
-                                    <div className="h-4 w-px bg-gray-200" />
+                                    <div className="h-4 w-px bg-m3-outline-variant" />
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status:</span>
-                                        <div className="flex p-0.5 bg-gray-200/50 rounded-lg">
+                                        <span className="text-[10px] font-bold text-m3-on-surface-variant uppercase tracking-widest">Status:</span>
+                                        <div className="flex p-0.5 bg-m3-surface-container rounded-lg">
                                             {(['all', 'UP', 'WARNING', 'DOWN'] as const).map((s) => (
                                                 <button
                                                     key={s}
                                                     onClick={() => setNodeStatusFilter(s)}
-                                                    className={`px-3 py-1 rounded-md text-[9px] font-black transition-all ${nodeStatusFilter === s ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                                    className={`px-3 py-1 rounded-md text-[9px] font-bold transition-all ${nodeStatusFilter === s ? 'bg-m3-surface text-m3-primary shadow-sm' : 'text-m3-on-surface-variant hover:text-m3-on-surface'}`}
                                                 >
                                                     {s}
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
-                                    <div className="h-4 w-px bg-gray-200" />
+                                    <div className="h-4 w-px bg-m3-outline-variant" />
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Facility:</span>
+                                        <span className="text-[10px] font-bold text-m3-on-surface-variant uppercase tracking-widest">Facility:</span>
                                         <select
                                             value={activeNodesFacilityFilter}
                                             onChange={(e) => setActiveNodesFacilityFilter(e.target.value)}
-                                            className="bg-transparent border-none outline-none text-[10px] font-black text-gray-600 cursor-pointer hover:text-orange-600 transition-colors"
+                                            className="bg-transparent border-none outline-none text-[10px] font-bold text-m3-on-surface cursor-pointer hover:text-m3-primary transition-colors"
                                         >
                                             <option value="all">ALL FACILITIES</option>
                                             {Array.from(new Set(userList.map(u => u.facility))).filter(Boolean).sort().map(fac => (
@@ -1015,77 +1027,76 @@ export default function DeveloperDashboard() {
                                     </table>
                                 </div>
                             </div>
-                        </div>
+                        </Card>
                     </div>
                 ) : activeTab === 'audit' ? (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                         {/* Audit Logs View */}
-                        <div className="bg-slate-900 rounded-[2.5rem] border border-slate-800 shadow-2xl overflow-hidden mb-12">
-                            <div className="p-8 border-b border-slate-800 flex items-center justify-between">
+                        <Card variant="filled" className="bg-m3-surface-container-high rounded-[28px] overflow-hidden mb-12 border-none">
+                            <div className="p-6 border-b border-m3-outline-variant flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-xl font-black text-white tracking-tight flex items-center gap-3">
-                                        <Activity className="text-emerald-500" />
+                                    <h3 className="text-xl font-bold text-m3-on-surface tracking-tight flex items-center gap-3">
+                                        <Activity className="text-m3-primary" />
                                         操作履歴 (JST)
                                     </h3>
-                                    <p className="text-sm text-slate-500 font-medium">システムの全操作に対する変更不可能な証跡</p>
+                                    <p className="text-sm text-m3-on-surface-variant font-medium">システムの全操作に対する変更不可能な証跡</p>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-2xl border border-slate-700 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                        <Shield size={14} className="text-emerald-500" />
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-m3-secondary-container rounded-full border border-m3-outline-variant text-[10px] font-bold text-m3-on-secondary-container uppercase tracking-widest">
+                                        <Shield size={14} className="text-m3-primary" />
                                         保護されたログ
                                     </div>
-                                    <button
+                                    <Button
+                                        variant="outlined"
                                         onClick={fetchSystemLogs}
-                                        className="p-2 bg-slate-800 text-slate-400 rounded-xl hover:bg-slate-700 transition-all border border-slate-700"
-                                    >
-                                        <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                                    </button>
+                                        icon={<RefreshCw size={18} className={loading ? 'animate-spin' : ''} />}
+                                    />
                                 </div>
                             </div>
-                            <div className="h-[600px] overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
+                            <div className="h-[600px] overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-m3-outline scrollbar-track-m3-surface-container">
                                 <div className="space-y-4 max-w-5xl mx-auto py-4">
                                     {Array.isArray(systemLogs) && systemLogs.map((log) => (
-                                        <div key={log.id} className="group relative flex items-start gap-6 p-5 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all duration-300">
+                                        <div key={log.id} className="group relative flex items-start gap-6 p-5 rounded-2xl hover:bg-m3-on-surface/5 transition-all duration-300">
                                             {/* Timeline indicator */}
-                                            <div className="absolute left-[111px] top-0 bottom-0 w-px bg-slate-800 group-hover:bg-emerald-500/20 transition-colors" />
+                                            <div className="absolute left-[111px] top-0 bottom-0 w-px bg-m3-outline-variant group-hover:bg-m3-primary/50 transition-colors" />
 
-                                            <div className="flex-shrink-0 w-24 pt-1 relative z-10 bg-slate-900 pr-4">
-                                                <p className="text-[11px] font-black text-slate-400 font-mono tracking-tighter">
+                                            <div className="flex-shrink-0 w-24 pt-1 relative z-10 bg-m3-surface-container-high pr-4">
+                                                <p className="text-[11px] font-bold text-m3-on-surface-variant font-mono tracking-tighter">
                                                     {log.timestamp.split(' ')[1]}
                                                 </p>
-                                                <p className="text-[9px] font-bold text-slate-600 mt-1 uppercase tracking-widest">
+                                                <p className="text-[9px] font-bold text-m3-outline mt-1 uppercase tracking-widest">
                                                     {log.timestamp.split(' ')[0]}
                                                 </p>
                                             </div>
 
                                             <div className="relative z-10 flex-shrink-0 mt-1.5">
-                                                <div className="w-3 h-3 rounded-full bg-slate-800 border-2 border-slate-700 group-hover:bg-emerald-500 group-hover:border-emerald-400/30 transition-all" />
+                                                <div className="w-3 h-3 rounded-full bg-m3-surface-container-high border-2 border-m3-outline group-hover:bg-m3-primary group-hover:border-m3-primary transition-all" />
                                             </div>
 
                                             <div className="flex-grow min-w-0">
                                                 <div className="flex items-center gap-3">
-                                                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest ${log.action === 'LOGIN' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
-                                                        log.action === 'USER_UPDATE' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                                                            log.action === 'USER_DELETE' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                                                                log.action.includes('BULK') ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
-                                                                    'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest ${log.action === 'LOGIN' ? 'bg-blue-100 text-blue-700' :
+                                                        log.action === 'USER_UPDATE' ? 'bg-amber-100 text-amber-700' :
+                                                            log.action === 'USER_DELETE' ? 'bg-red-100 text-red-700' :
+                                                                log.action.includes('BULK') ? 'bg-purple-100 text-purple-700' :
+                                                                    'bg-emerald-100 text-emerald-700'
                                                         }`}>
                                                         {log.action}
                                                     </span>
-                                                    <span className="text-sm font-black text-white truncate">{log.target}</span>
+                                                    <span className="text-sm font-bold text-m3-on-surface truncate">{log.target}</span>
                                                 </div>
-                                                <p className="text-xs text-slate-400 mt-2 font-medium leading-relaxed">
+                                                <p className="text-xs text-m3-on-surface-variant mt-2 font-medium leading-relaxed">
                                                     {log.description}
                                                 </p>
                                                 <div className="flex items-center gap-4 mt-3">
-                                                    <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-800/50 rounded-lg border border-white/5">
-                                                        <Users size={12} className="text-slate-500" />
-                                                        <span className="text-[10px] font-bold text-slate-500">{log.performedBy}</span>
+                                                    <div className="flex items-center gap-1.5 px-2 py-1 bg-m3-surface-container rounded-lg border border-m3-outline-variant">
+                                                        <Users size={12} className="text-m3-outline" />
+                                                        <span className="text-[10px] font-bold text-m3-outline">{log.performedBy}</span>
                                                     </div>
                                                     {log.ipAddress && (
-                                                        <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-800/50 rounded-lg border border-white/5">
-                                                            <Terminal size={12} className="text-slate-500" />
-                                                            <span className="text-[10px] font-mono text-slate-500">{log.ipAddress}</span>
+                                                        <div className="flex items-center gap-1.5 px-2 py-1 bg-m3-surface-container rounded-lg border border-m3-outline-variant">
+                                                            <Terminal size={12} className="text-m3-outline" />
+                                                            <span className="text-[10px] font-mono text-m3-outline">{log.ipAddress}</span>
                                                         </div>
                                                     )}
                                                 </div>
@@ -1094,48 +1105,48 @@ export default function DeveloperDashboard() {
                                     ))}
                                     {systemLogs.length === 0 && (
                                         <div className="text-center py-20 px-4">
-                                            <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                                <Shield size={40} className="text-slate-700" />
+                                            <div className="w-20 h-20 bg-m3-surface-container rounded-full flex items-center justify-center mx-auto mb-6">
+                                                <Shield size={40} className="text-m3-outline" />
                                             </div>
-                                            <p className="text-slate-500 font-black uppercase tracking-[.2em] text-xs">監査履歴が見つかりません</p>
-                                            <p className="text-slate-600 text-[10px] mt-2 font-medium">システムの操作ログがここに表示されます</p>
+                                            <p className="text-m3-outline font-bold uppercase tracking-[.2em] text-xs">監査履歴が見つかりません</p>
+                                            <p className="text-m3-outline-variant text-[10px] mt-2 font-medium">システムの操作ログがここに表示されます</p>
                                         </div>
                                     )}
                                 </div>
                             </div>
-                        </div>
+                        </Card>
                     </div>
                 ) : activeTab === 'export' ? (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-4">
                         {/* Header */}
-                        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm relative overflow-hidden">
+                        <Card variant="filled" className="rounded-2xl border-m3-outline-variant p-4 shadow-sm relative overflow-hidden bg-m3-surface-container-high">
                             <div className="flex items-center gap-3 mb-1">
-                                <div className="p-2 bg-blue-100 text-blue-600 rounded-xl">
+                                <div className="p-2 bg-m3-primary-container text-m3-on-primary-container rounded-xl">
                                     <FileDown size={20} />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-black text-gray-800 tracking-tight">レポート出力（コンプライアンス）</h2>
-                                    <p className="text-xs text-gray-500 font-medium">
+                                    <h2 className="text-lg font-bold text-m3-on-surface tracking-tight">レポート出力（コンプライアンス）</h2>
+                                    <p className="text-xs text-m3-on-surface-variant font-medium">
                                         施設・期間を選択して、学習進捗データをCSV形式でエクスポートします。
                                     </p>
                                 </div>
                             </div>
-                        </div>
+                        </Card>
 
                         {/* Filter Section */}
-                        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <Card variant="outlined" className="bg-m3-surface rounded-2xl border-m3-outline-variant p-5 shadow-sm">
+                            <h3 className="text-xs font-bold text-m3-on-surface-variant uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <Building2 size={14} />
                                 フィルター設定
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {/* Facility Dropdown */}
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5">施設</label>
+                                    <label className="block text-[10px] font-bold text-m3-on-surface-variant uppercase tracking-wider mb-1.5">施設</label>
                                     <select
                                         value={selectedFacility}
                                         onChange={(e) => setSelectedFacility(e.target.value)}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-xs font-bold text-gray-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all cursor-pointer"
+                                        className="w-full px-3 py-2 rounded-lg border border-m3-outline bg-m3-surface text-xs font-bold text-m3-on-surface focus:ring-2 focus:ring-m3-primary focus:border-m3-primary outline-none transition-all cursor-pointer"
                                     >
                                         <option value="all">全施設</option>
                                         {complianceFacilities.map(f => (
@@ -1146,7 +1157,7 @@ export default function DeveloperDashboard() {
 
                                 {/* Start Date */}
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                                    <label className="block text-[10px] font-bold text-m3-on-surface-variant uppercase tracking-wider mb-1.5 flex items-center gap-1">
                                         <Calendar size={12} />
                                         開始日
                                     </label>
@@ -1154,13 +1165,13 @@ export default function DeveloperDashboard() {
                                         type="date"
                                         value={startDate}
                                         onChange={(e) => setStartDate(e.target.value)}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-xs font-bold text-gray-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                                        className="w-full px-3 py-2 rounded-lg border border-m3-outline bg-m3-surface text-xs font-bold text-m3-on-surface focus:ring-2 focus:ring-m3-primary focus:border-m3-primary outline-none transition-all"
                                     />
                                 </div>
 
                                 {/* End Date */}
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                                    <label className="block text-[10px] font-bold text-m3-on-surface-variant uppercase tracking-wider mb-1.5 flex items-center gap-1">
                                         <Calendar size={12} />
                                         終了日
                                     </label>
@@ -1168,17 +1179,18 @@ export default function DeveloperDashboard() {
                                         type="date"
                                         value={endDate}
                                         onChange={(e) => setEndDate(e.target.value)}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-xs font-bold text-gray-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                                        className="w-full px-3 py-2 rounded-lg border border-m3-outline bg-m3-surface text-xs font-bold text-m3-on-surface focus:ring-2 focus:ring-m3-primary focus:border-m3-primary outline-none transition-all"
                                     />
                                 </div>
                             </div>
-                        </div>
+                        </Card>
 
                         {/* Export Buttons */}
-                        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">エクスポート</h3>
+                        <Card variant="outlined" className="bg-m3-surface rounded-2xl border-m3-outline-variant p-5 shadow-sm">
+                            <h3 className="text-xs font-bold text-m3-on-surface-variant uppercase tracking-widest mb-4">エクスポート</h3>
                             <div className="flex gap-3">
-                                <button
+                                <Button
+                                    variant="filled"
                                     onClick={async () => {
                                         setExporting(true);
                                         try {
@@ -1202,13 +1214,12 @@ export default function DeveloperDashboard() {
                                         }
                                     }}
                                     disabled={exporting}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all hover:shadow-md hover:shadow-emerald-200 active:scale-95 disabled:opacity-50"
+                                    icon={<FileDown size={16} />}
                                 >
-                                    <FileDown size={16} />
                                     {exporting ? '処理中...' : 'CSV ダウンロード'}
-                                </button>
+                                </Button>
                             </div>
-                        </div>
+                        </Card>
 
                         {/* Info Card */}
                         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
@@ -1228,54 +1239,54 @@ export default function DeveloperDashboard() {
 
 
                 {/* System Log Footer with Integrated Diagnostics */}
-                <div className="fixed bottom-0 left-0 right-0 bg-slate-900 text-slate-300 border-t border-slate-700 shadow-2xl transition-transform duration-300 ease-out transform translate-y-[calc(100%-88px)] hover:translate-y-0 z-50 backdrop-blur-sm">
+                <div className="fixed bottom-0 left-0 right-0 bg-m3-surface-container-high text-m3-on-surface-variant border-t border-m3-outline-variant shadow-2xl transition-transform duration-300 ease-out transform translate-y-[calc(100%-88px)] hover:translate-y-0 z-50 backdrop-blur-sm">
                     {/* Diagnostics Bar - Always visible */}
-                    <div className="bg-slate-900/95 px-4 py-2 flex items-center justify-between border-b border-slate-800">
+                    <div className="bg-m3-surface-container-high/95 px-4 py-2 flex items-center justify-between border-b border-m3-outline-variant">
                         <div className="flex items-center gap-3 flex-wrap">
                             {/* System Status */}
-                            <div className="flex items-center gap-2 pr-3 border-r border-slate-700">
-                                <div className={`w-2 h-2 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${stats.dbStatus === 'Connected' ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <div className="flex items-center gap-2 pr-3 border-r border-m3-outline-variant">
+                                <div className={`w-2 h-2 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500 animate-pulse' : 'bg-m3-error'}`} />
+                                <span className={`text-[10px] font-bold uppercase tracking-widest ${stats.dbStatus === 'Connected' ? 'text-emerald-600' : 'text-m3-error'}`}>
                                     {stats.dbStatus === 'Connected' ? 'Operational' : 'Degraded'}
                                 </span>
                             </div>
 
                             {/* DB Latency */}
-                            <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
-                                <Database size={12} className="text-slate-500" />
-                                <span className={`text-[10px] font-bold ${resources.dbPing < 50 ? 'text-emerald-400' : resources.dbPing < 100 ? 'text-amber-400' : 'text-red-400'}`}>
+                            <div className="flex items-center gap-1.5 pr-3 border-r border-m3-outline-variant">
+                                <Database size={12} className="text-m3-outline" />
+                                <span className={`text-[10px] font-bold ${resources.dbPing < 50 ? 'text-emerald-600' : resources.dbPing < 100 ? 'text-amber-600' : 'text-m3-error'}`}>
                                     {resources.dbPing}ms
                                 </span>
                             </div>
 
                             {/* Uptime */}
-                            <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
-                                <Activity size={12} className="text-slate-500" />
-                                <span className="text-[10px] font-bold text-orange-400">
+                            <div className="flex items-center gap-1.5 pr-3 border-r border-m3-outline-variant">
+                                <Activity size={12} className="text-m3-outline" />
+                                <span className="text-[10px] font-bold text-orange-600">
                                     {Math.floor(resources.uptime / 3600000)}h {Math.floor((resources.uptime % 3600000) / 60000)}m
                                 </span>
                             </div>
 
                             {/* Memory Usage */}
-                            <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
-                                <Cpu size={12} className="text-slate-500" />
-                                <span className="text-[10px] font-bold text-blue-400">
+                            <div className="flex items-center gap-1.5 pr-3 border-r border-m3-outline-variant">
+                                <Cpu size={12} className="text-m3-outline" />
+                                <span className="text-[10px] font-bold text-blue-600">
                                     {Math.round(resources.memoryUsed / 1024 / 1024)}
                                 </span>
-                                <span className="text-[9px] text-slate-500">/ {Math.round(resources.memoryMax / 1024 / 1024)} MB</span>
+                                <span className="text-[9px] text-m3-on-surface-variant">/ {Math.round(resources.memoryMax / 1024 / 1024)} MB</span>
                             </div>
 
                             {/* Node Name */}
-                            <div className="flex items-center gap-1.5 pr-3 border-r border-slate-700">
-                                <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded text-[9px] font-black uppercase tracking-widest border border-orange-500/30">
+                            <div className="flex items-center gap-1.5 pr-3 border-r border-m3-outline-variant">
+                                <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-[9px] font-bold uppercase tracking-widest border border-orange-200">
                                     medical-wiki-backend
                                 </span>
                             </div>
 
                             {/* Soft-deleted Users Count */}
                             <div className="flex items-center gap-1.5">
-                                <span className="text-[10px] text-slate-500">🗑️</span>
-                                <span className="text-[10px] font-bold text-slate-400">
+                                <span className="text-[10px] text-m3-outline">🗑️</span>
+                                <span className="text-[10px] font-bold text-m3-on-surface-variant">
                                     {userList.filter(u => u.deletedAt).length}
                                 </span>
                             </div>
@@ -1283,42 +1294,42 @@ export default function DeveloperDashboard() {
                     </div>
 
                     {/* Console Header */}
-                    <div className="bg-slate-800/95 px-4 py-2 flex items-center justify-between cursor-pointer group">
+                    <div className="bg-m3-surface-container px-4 py-2 flex items-center justify-between cursor-pointer group hover:bg-m3-surface-container-high transition-colors">
                         <div className="flex items-center gap-3">
-                            <div className="p-1 bg-slate-700 rounded group-hover:bg-slate-600 transition-colors">
-                                <Terminal size={14} className="text-orange-500" />
+                            <div className="p-1 bg-m3-secondary-container rounded group-hover:bg-m3-secondary-container/80 transition-colors">
+                                <Terminal size={14} className="text-m3-on-secondary-container" />
                             </div>
-                            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 group-hover:text-slate-200 transition-colors">System Log Console</span>
-                            <span className="px-1.5 py-0.5 bg-slate-700 rounded text-[10px] text-slate-300">{logs.length} events</span>
+                            <span className="text-xs font-bold uppercase tracking-wider text-m3-on-surface-variant group-hover:text-m3-on-surface transition-colors">System Log Console</span>
+                            <span className="px-1.5 py-0.5 bg-m3-surface-container-highest rounded text-[10px] text-m3-on-surface-variant">{logs.length} events</span>
                         </div>
                         <div className="flex gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                            <div className="w-2 h-2 rounded-full bg-red-500" />
+                            <div className="w-2 h-2 rounded-full bg-m3-error" />
                             <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                            <div className="w-2 h-2 rounded-full bg-green-500" />
+                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
                         </div>
                     </div>
 
                     {/* Log Entries */}
-                    <div className="h-48 overflow-y-auto p-4 font-mono text-xs space-y-1 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
+                    <div className="h-48 overflow-y-auto p-4 font-mono text-xs space-y-1 scrollbar-thin scrollbar-thumb-m3-outline scrollbar-track-m3-surface-container">
                         {logs.map(log => (
-                            <div key={log.id} className="flex gap-3 hover:bg-white/5 p-0.5 rounded px-2 border-l-2 border-transparent hover:border-orange-500 transition-all items-center">
+                            <div key={log.id} className="flex gap-3 hover:bg-m3-on-surface/5 p-0.5 rounded px-2 border-l-2 border-transparent hover:border-m3-primary transition-all items-center">
                                 {/* Environment Badge */}
-                                <span className="px-1.5 py-0.5 bg-slate-800 text-slate-500 rounded text-[8px] font-bold uppercase tracking-wider border border-slate-700 flex-shrink-0">
+                                <span className="px-1.5 py-0.5 bg-m3-surface-container-highest text-m3-on-surface-variant rounded text-[8px] font-bold uppercase tracking-wider border border-m3-outline-variant flex-shrink-0">
                                     ENV
                                 </span>
-                                <span className="text-slate-500 select-none w-20 flex-shrink-0">{log.timestamp}</span>
-                                <span className={`font-bold w-16 uppercase flex-shrink-0 ${log.type === 'error' ? 'text-red-400' :
-                                    log.type === 'success' ? 'text-emerald-400' : 'text-blue-400'
+                                <span className="text-m3-on-surface-variant/70 select-none w-20 flex-shrink-0">{log.timestamp}</span>
+                                <span className={`font-bold w-16 uppercase flex-shrink-0 ${log.type === 'error' ? 'text-m3-error' :
+                                    log.type === 'success' ? 'text-emerald-600' : 'text-blue-600'
                                     }`}>
                                     {log.type}
                                 </span>
-                                <span className="text-slate-300 truncate">{log.message}</span>
+                                <span className="text-m3-on-surface truncate">{log.message}</span>
                             </div>
                         ))}
-                        {logs.length === 0 && <span className="text-slate-600 italic px-2">System initialized. Waiting for events...</span>}
+                        {logs.length === 0 && <span className="text-m3-on-surface-variant italic px-2">System initialized. Waiting for events...</span>}
                     </div>
                 </div>
-            </div >
+            </div>
             {showPostRegisterModal && registeredUser && (
                 <PostRegisterModal
                     user={registeredUser}
