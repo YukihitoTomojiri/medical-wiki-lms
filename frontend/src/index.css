@@ -4,7 +4,9 @@
 
 @layer base {
   body {
-    @apply bg-m3-background text-m3-on-background;
+    background-color: #FBFCFD;
+    color: #191C1C;
+    @apply antialiased font-sans leading-relaxed tracking-wide;
   }
 }
 
