@@ -44,12 +44,12 @@ export default function AdminDashboard() {
                             className={`
                                 flex items-center gap-2 px-4 py-3 rounded-t-xl font-bold text-sm transition-all whitespace-nowrap
                                 ${isActive
-                                    ? 'bg-white border-b-2 border-orange-500 text-orange-600 shadow-sm'
+                                    ? 'bg-white border-b-2 border-primary-600 text-primary-600 shadow-sm'
                                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                                 }
                             `}
                         >
-                            <Icon size={18} className={isActive ? 'text-orange-500' : 'text-gray-400'} />
+                            <Icon size={18} className={isActive ? 'text-primary-600' : 'text-gray-400'} />
                             {tab.label}
                         </button>
                     );
