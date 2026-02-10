@@ -12,7 +12,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         // Outlined: Border, rounded-4px (small) or rounded-md (12px). M3 Outlined text field usually has 4px radius. 
         // But let's stick to our system: rounded-lg (12px) for friendliness.
 
-        const baseStyles = 'w-full px-4 py-3 text-m3-on-surface bg-m3-surface placeholder-m3-outline-variant/60 focus:outline-none transition-all duration-200';
+        const baseStyles = `flex h-12 w-full rounded-md border border-m3-outline border-opacity-40 bg-m3-surface-container-lowest px-3 py-2 text-sm ring-offset-m3-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-m3-on-surface-variant/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-m3-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 ease-in-out`;
 
         const variantStyles = {
             outlined: 'border border-m3-outline rounded-lg focus:border-m3-primary focus:ring-1 focus:ring-m3-primary',

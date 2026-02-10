@@ -38,7 +38,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
     ], []);
 
     return (
-        <div className="flex flex-col h-full bg-m3-surface-container-low border-r border-m3-outline-variant/20">
+        <div className="flex flex-col h-full bg-m3-surface-container-low border-r border-m3-outline-variant/20 font-sans">
             {/* Branding Area for Mobile/Drawer */}
             <div className="p-6 md:p-8 flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 bg-m3-primary text-m3-on-primary rounded-xl flex items-center justify-center shadow-md">

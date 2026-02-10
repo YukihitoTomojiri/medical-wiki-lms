@@ -35,12 +35,12 @@ export const NavigationDrawer = ({ items, user }: NavigationDrawerProps) => {
                         key={item.path}
                         to={item.path}
                         className={({ isActive }) => `
-                            flex items - center gap - 3 px - 6 py - 4 mx - 3 rounded - full transition - all duration - 200
+                            flex items-center gap-3 px-6 py-4 mx-3 rounded-full transition-all duration-200
                             ${isActive
                                 ? 'bg-m3-secondary-container text-m3-on-secondary-container font-bold'
                                 : 'text-m3-on-surface-variant hover:bg-m3-surface-variant/50 hover:text-m3-on-surface'
                             }
-`}
+                        `}
                     >
                         <item.icon size={24} strokeWidth={isActive ? 2.5 : 2} />
                         <span className="text-sm tracking-wide">{item.label}</span>
