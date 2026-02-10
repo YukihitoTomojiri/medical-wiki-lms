@@ -1,26 +1,21 @@
 
-import { User as UserType } from '../types';
 import {
-    Building2, Users, LogOut, BookOpen, LayoutDashboard, Database
+    Users, LogOut, BookOpen, LayoutDashboard, Database, Building2
 } from 'lucide-react';
 import { useMemo } from 'react';
 import { NavigationDrawer } from './ui/NavigationDrawer';
+import { useAuth } from '../context/AuthContext';
 
 interface SidebarProps {
-    user: UserType;
     onLogout: () => void;
     onClose?: () => void;
 }
 
-export default function Sidebar({ user, onLogout }: SidebarProps) {
-    // const navigate = useNavigate();
-    // const location = useLocation();
+export default function Sidebar({ onLogout, onClose }: SidebarProps) {
+    const { user, isAdmin, isDeveloper } = useAuth();
 
-    // Get current user role from localStorage
-    const userJson = localStorage.getItem('medical_wiki_user');
-    const currentUser: UserType | null = userJson ? JSON.parse(userJson) : null;
-    const isAdmin = currentUser?.role === 'ADMIN';
-    const isDeveloper = currentUser?.role === 'DEVELOPER';
+    // Fallback if user is null (shouldn't happen in protected routes)
+    if (!user) return null;
 
     const mainItems = useMemo(() => [
         { path: '/manuals', label: 'マニュアル', icon: BookOpen },
@@ -53,20 +48,20 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
             <nav className="flex-1 overflow-y-auto px-2 space-y-6">
                 <div>
                     <div className="px-6 mb-2 text-xs font-bold text-m3-outline uppercase tracking-wider">Main</div>
-                    <NavigationDrawer items={mainItems} user={user} />
+                    <NavigationDrawer items={mainItems} user={user} onItemClick={onClose} />
                 </div>
 
                 {(isAdmin || isDeveloper) && (
                     <div>
                         <div className="px-6 mb-2 text-xs font-bold text-m3-outline uppercase tracking-wider">Admin</div>
-                        <NavigationDrawer items={adminItems} user={user} />
+                        <NavigationDrawer items={adminItems} user={user} onItemClick={onClose} />
                     </div>
                 )}
 
-                {user.role === 'DEVELOPER' && (
+                {isDeveloper && (
                     <div>
                         <div className="px-6 mb-2 text-xs font-bold text-m3-outline uppercase tracking-wider">System</div>
-                        <NavigationDrawer items={devItems} user={user} />
+                        <NavigationDrawer items={devItems} user={user} onItemClick={onClose} />
                     </div>
                 )}
             </nav>

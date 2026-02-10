@@ -1,5 +1,4 @@
 import { ReactNode, useState } from 'react';
-import { User as UserType } from '../types'; // Renamed User to UserType
 import {
     Menu,
     LogOut,
@@ -7,15 +6,15 @@ import {
 } from 'lucide-react';
 import Sidebar from './Sidebar';
 import { Button } from './ui/Button';
+import { useAuth } from '../context/AuthContext';
 
 interface LayoutProps {
-    user: UserType; // Updated type to UserType
-    onLogout: () => void;
     children: ReactNode;
 }
 
-export default function Layout({ user, onLogout, children }: LayoutProps) {
+export default function Layout({ children }: LayoutProps) {
     // const location = useLocation();
+    const { user, logout } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -25,8 +24,10 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
 
     const confirmLogout = () => {
         setShowLogoutModal(false);
-        onLogout();
+        logout();
     };
+
+    if (!user) return null;
 
     return (
         <div className="min-h-screen bg-m3-background text-m3-on-background flex">
@@ -46,7 +47,7 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
                     ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                 `}
             >
-                <Sidebar user={user} onLogout={handleLogoutClick} onClose={() => setSidebarOpen(false)} />
+                <Sidebar onLogout={handleLogoutClick} onClose={() => setSidebarOpen(false)} />
             </aside>
 
             {/* Main Content Area */}

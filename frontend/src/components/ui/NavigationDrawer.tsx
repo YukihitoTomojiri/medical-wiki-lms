@@ -13,9 +13,10 @@ interface NavItem {
 interface NavigationDrawerProps {
     items: NavItem[];
     user: User | null;
+    onItemClick?: () => void;
 }
 
-export const NavigationDrawer = ({ items, user }: NavigationDrawerProps) => {
+export const NavigationDrawer = ({ items, user, onItemClick }: NavigationDrawerProps) => {
     const location = useLocation();
 
     // Filter items based on user role
@@ -34,6 +35,7 @@ export const NavigationDrawer = ({ items, user }: NavigationDrawerProps) => {
                     <NavLink
                         key={item.path}
                         to={item.path}
+                        onClick={onItemClick}
                         className={({ isActive }) => `
                             flex items-center gap-3 px-6 py-4 mx-3 rounded-full transition-all duration-200
                             ${isActive
