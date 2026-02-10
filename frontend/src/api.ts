@@ -21,8 +21,8 @@ export interface AdminLeaveMonitoring {
 
 const API_BASE = '/api';
 
-const getHeaders = (userId?: number): HeadersInit => {
-    const headers: HeadersInit = {
+const getHeaders = (userId?: number): Record<string, string> => {
+    const headers: Record<string, string> = {
         'Content-Type': 'application/json',
     };
     if (userId) {
@@ -379,39 +379,50 @@ export const api = {
     },
 
     // Organization Management
-    getFacilities: async (): Promise<any[]> => {
-        const res = await fetch(`${API_BASE}/facilities`);
+    getFacilities: async (userId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/facilities`, {
+            headers: getHeaders(userId),
+        });
         if (!res.ok) return [];
         return res.json();
     },
 
-    createFacility: async (name: string): Promise<any> => {
+    createFacility: async (name: string, userId: number): Promise<any> => {
         const res = await fetch(`${API_BASE}/facilities`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...getHeaders(userId)
+            },
             body: JSON.stringify({ name }),
         });
         return res.json();
     },
 
-    updateFacility: async (id: number, name: string): Promise<any> => {
+    updateFacility: async (id: number, name: string, userId: number): Promise<any> => {
         const res = await fetch(`${API_BASE}/facilities/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...getHeaders(userId)
+            },
             body: JSON.stringify({ name }),
         });
         return res.json();
     },
 
-    deleteFacility: async (id: number): Promise<any> => {
+    deleteFacility: async (id: number, userId: number): Promise<any> => {
         const res = await fetch(`${API_BASE}/facilities/${id}`, {
             method: 'DELETE',
+            headers: getHeaders(userId),
         });
         return res.json();
     },
 
-    getDepartments: async (): Promise<any[]> => {
-        const res = await fetch(`${API_BASE}/departments`);
+    getDepartments: async (userId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/departments`, {
+            headers: getHeaders(userId),
+        });
         if (!res.ok) return [];
         return res.json();
     },
@@ -422,27 +433,34 @@ export const api = {
         return res.json();
     },
 
-    createDepartment: async (name: string, facilityId: number): Promise<any> => {
+    createDepartment: async (name: string, facilityId: number, userId: number): Promise<any> => {
         const res = await fetch(`${API_BASE}/departments`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...getHeaders(userId)
+            },
             body: JSON.stringify({ name, facilityId }),
         });
         return res.json();
     },
 
-    updateDepartment: async (id: number, name: string): Promise<any> => {
+    updateDepartment: async (id: number, name: string, userId: number): Promise<any> => {
         const res = await fetch(`${API_BASE}/departments/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...getHeaders(userId)
+            },
             body: JSON.stringify({ name }),
         });
         return res.json();
     },
 
-    deleteDepartment: async (id: number): Promise<any> => {
+    deleteDepartment: async (id: number, userId: number): Promise<any> => {
         const res = await fetch(`${API_BASE}/departments/${id}`, {
             method: 'DELETE',
+            headers: getHeaders(userId),
         });
         return res.json();
     },

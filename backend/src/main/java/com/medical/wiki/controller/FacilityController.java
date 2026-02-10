@@ -19,8 +19,24 @@ public class FacilityController {
     private final FacilityRepository facilityRepository;
     private final DepartmentRepository departmentRepository;
 
+    private final com.medical.wiki.repository.UserRepository userRepository;
+
     @GetMapping
     public List<FacilityDto> getAll() {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder
+                .getContext().getAuthentication();
+        String employeeId = (String) auth.getPrincipal();
+
+        com.medical.wiki.entity.User user = userRepository.findByEmployeeId(employeeId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getRole() == com.medical.wiki.entity.User.Role.ADMIN) {
+            return facilityRepository.findByNameAndDeletedAtIsNull(user.getFacility())
+                    .map(FacilityDto::from)
+                    .map(List::of)
+                    .orElse(List.of());
+        }
+
         return facilityRepository.findByDeletedAtIsNullOrderByNameAsc()
                 .stream()
                 .map(FacilityDto::from)

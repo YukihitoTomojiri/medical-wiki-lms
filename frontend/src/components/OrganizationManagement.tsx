@@ -34,16 +34,26 @@ export default function OrganizationManagement() {
 
     const [error, setError] = useState<string | null>(null);
 
+    const [userId, setUserId] = useState<number | null>(null);
+
     useEffect(() => {
-        loadData();
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            setUserId(user.id);
+            loadData(user.id);
+        }
     }, []);
 
-    const loadData = async () => {
+    const loadData = async (uid?: number) => {
+        const targetUserId = uid || userId;
+        if (!targetUserId) return;
+
         setLoading(true);
         try {
             const [facs, depts] = await Promise.all([
-                api.getFacilities(),
-                api.getDepartments()
+                api.getFacilities(targetUserId),
+                api.getDepartments(targetUserId)
             ]);
             setFacilities(facs);
             setDepartments(depts);
@@ -55,64 +65,50 @@ export default function OrganizationManagement() {
     };
 
     const handleAddFacility = async () => {
-        if (!newFacilityName.trim()) return;
+        if (!newFacilityName.trim() || !userId) return;
         setError(null);
-        const result = await api.createFacility(newFacilityName.trim());
-        if (result.error) {
-            setError(result.error);
-            return;
-        }
+        await api.createFacility(newFacilityName.trim(), userId);
         setNewFacilityName('');
         setShowAddFacility(false);
         loadData();
     };
 
     const handleUpdateFacility = async (id: number) => {
-        if (!editFacilityName.trim()) return;
+        if (!editFacilityName.trim() || !userId) return;
         setError(null);
-        const result = await api.updateFacility(id, editFacilityName.trim());
-        if (result.error) {
-            setError(result.error);
-            return;
-        }
+        await api.updateFacility(id, editFacilityName.trim(), userId);
         setEditingFacilityId(null);
         loadData();
     };
 
     const handleDeleteFacility = async (id: number) => {
-        if (!confirm('この施設を削除しますか？関連する部署も同時に削除されます。')) return;
-        await api.deleteFacility(id);
+        if (!window.confirm('施設を削除しますか？\n紐づく部署も削除されます。')) return;
+        if (!userId) return;
+        await api.deleteFacility(id, userId);
         loadData();
     };
 
     const handleAddDepartment = async (facilityId: number) => {
-        if (!newDeptName.trim()) return;
+        if (!newDeptName.trim() || !userId) return;
         setError(null);
-        const result = await api.createDepartment(newDeptName.trim(), facilityId);
-        if (result.error) {
-            setError(result.error);
-            return;
-        }
+        await api.createDepartment(newDeptName.trim(), facilityId, userId);
         setNewDeptName('');
         setShowAddDepartment(null);
         loadData();
     };
 
     const handleUpdateDepartment = async (id: number) => {
-        if (!editDeptName.trim()) return;
+        if (!editDeptName.trim() || !userId) return;
         setError(null);
-        const result = await api.updateDepartment(id, editDeptName.trim());
-        if (result.error) {
-            setError(result.error);
-            return;
-        }
+        await api.updateDepartment(id, editDeptName.trim(), userId);
         setEditingDeptId(null);
         loadData();
     };
 
     const handleDeleteDepartment = async (id: number) => {
-        if (!confirm('この部署を削除しますか？')) return;
-        await api.deleteDepartment(id);
+        if (!window.confirm('部署を削除しますか？')) return;
+        if (!userId) return;
+        await api.deleteDepartment(id, userId);
         loadData();
     };
 
