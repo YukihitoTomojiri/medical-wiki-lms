@@ -6,27 +6,20 @@ import {
     BookOpen,
     Search,
     CheckCircle2,
-    Filter,
     Plus,
-    Circle,
     FileText,
-    Clock
+    Clock,
+    Circle
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+
 
 interface ManualListProps {
     user: User;
 }
-
-const categoryColors: Record<string, { bg: string; text: string; border: string }> = {
-    '電子カルテ': { bg: 'bg-primary-50', text: 'text-primary-600', border: 'border-primary-200' },
-    '社内ルール': { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200' },
-    '研修資料': { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200' },
-};
-
-const getCategoryStyle = (category: string) => {
-    return categoryColors[category] || { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200' };
-};
 
 export default function ManualList({ user }: ManualListProps) {
     const [manuals, setManuals] = useState<Manual[]>([]);
@@ -69,129 +62,156 @@ export default function ManualList({ user }: ManualListProps) {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-10 h-10 border-4 border-m3-primary/30 border-t-m3-primary rounded-full animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8 pb-12">
             {/* Header */}
             <PageHeader
                 title="マニュアル一覧"
                 description="社内マニュアル・研修資料を確認できます"
                 icon={BookOpen}
-                iconColor="text-primary-600"
-                iconBgColor="bg-primary-50"
+                iconColor="text-m3-primary"
+                iconBgColor="bg-m3-primary-container"
                 actions={
                     user.role === 'ADMIN' && (
-                        <Link
-                            to="/admin/manuals/new"
-                            className="btn-primary"
-                        >
-                            <Plus size={20} />
-                            新規作成
+                        <Link to="/admin/manuals/new">
+                            <Button variant="filled" icon={<Plus size={18} />}>
+                                新規作成
+                            </Button>
                         </Link>
                     )
                 }
             />
 
-            {/* Compact Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="card p-4 flex items-center gap-4 border-l-4 border-l-primary-600">
-                    <div className="p-3 bg-primary-50 rounded-full text-primary-600">
+            {/* M3 Cards for Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card variant="filled" className="p-5 flex items-center gap-4 relative overflow-hidden">
+                    <div className="absolute right-0 top-0 p-8 opacity-5">
+                        <CheckCircle2 size={120} />
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-m3-primary-container text-m3-on-primary-container flex items-center justify-center z-10">
                         <CheckCircle2 size={24} />
                     </div>
-                    <div>
-                        <div className="text-sm text-gray-500 font-bold">学習進捗率</div>
-                        <div className="text-2xl font-black text-gray-800">{progressPercentage}%</div>
+                    <div className="z-10">
+                        <div className="text-xs font-bold text-m3-on-surface-variant uppercase tracking-wider mb-1">学習進捗率</div>
+                        <div className="text-3xl font-black text-m3-on-surface">{progressPercentage}%</div>
+                        {/* M3 Progress Bar */}
+                        <div className="w-32 h-2 bg-m3-surface-container-highest rounded-full mt-2 overflow-hidden">
+                            <div
+                                className="h-full bg-m3-primary rounded-full transition-all duration-1000 ease-out"
+                                style={{ width: `${progressPercentage}%` }}
+                            />
+                        </div>
                     </div>
-                </div>
-                <div className="card p-4 flex items-center gap-4">
-                    <div className="p-3 bg-gray-100 rounded-full text-gray-500">
+                </Card>
+
+                <Card variant="outlined" className="p-5 flex items-center gap-4 bg-m3-surface">
+                    <div className="w-12 h-12 rounded-full bg-m3-surface-variant text-m3-on-surface-variant flex items-center justify-center">
                         <BookOpen size={24} />
                     </div>
                     <div>
-                        <div className="text-sm text-gray-500 font-bold">読了数 / 全マニュアル</div>
-                        <div className="text-2xl font-black text-gray-800">{readCount} <span className="text-sm text-gray-400 font-medium">/ {totalCount}</span></div>
+                        <div className="text-xs font-bold text-m3-on-surface-variant uppercase tracking-wider mb-1">読了状況</div>
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-3xl font-black text-m3-on-surface">{readCount}</span>
+                            <span className="text-sm font-medium text-m3-outline">/ {totalCount} マニュアル</span>
+                        </div>
                     </div>
-                </div>
+                </Card>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="マニュアルを検索..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all bg-white"
-                    />
+            {/* M3 Search & Filter */}
+            <div className="space-y-4">
+                <div className="max-w-md">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-m3-on-surface-variant" size={20} />
+                        <input
+                            type="text"
+                            placeholder="キーワードで検索..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 bg-m3-surface-container-highest rounded-full border-none focus:ring-2 focus:ring-m3-primary text-m3-on-surface placeholder-m3-outline transition-shadow"
+                        />
+                    </div>
                 </div>
-                <div className="relative">
-                    <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <select
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="pl-12 pr-10 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all bg-white appearance-none cursor-pointer min-w-[180px]"
+
+                {/* Filter Chips (Horizontal Scroll) */}
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                    <Button
+                        variant={selectedCategory === '' ? 'filled' : 'outlined'}
+                        size="sm"
+                        onClick={() => setSelectedCategory('')}
+                        className="rounded-lg whitespace-nowrap"
                     >
-                        <option value="">すべてのカテゴリ</option>
-                        {categories.map((category) => (
-                            <option key={category} value={category}>{category}</option>
-                        ))}
-                    </select>
+                        すべて
+                    </Button>
+                    {categories.map((category) => (
+                        <Button
+                            key={category}
+                            variant={selectedCategory === category ? 'filled' : 'outlined'}
+                            size="sm"
+                            onClick={() => setSelectedCategory(category)}
+                            className="rounded-lg whitespace-nowrap"
+                        >
+                            {category}
+                        </Button>
+                    ))}
                 </div>
             </div>
 
             {/* Manual Grid */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredManuals.map((manual) => {
-                    const categoryStyle = getCategoryStyle(manual.category);
-                    return (
-                        <Link
-                            key={manual.id}
-                            to={`/manuals/${manual.id}`}
-                            className="group card card-hover p-5"
-                        >
-                            <div className="flex items-start justify-between mb-3">
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${categoryStyle.bg} ${categoryStyle.text} ${categoryStyle.border} border`}>
-                                    {manual.category}
-                                </span>
-                                {manual.isRead ? (
-                                    <CheckCircle2 className="text-emerald-500" size={22} />
-                                ) : (
-                                    <Circle className="text-gray-300 group-hover:text-primary-300 transition-colors" size={22} />
-                                )}
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${categoryStyle.bg} ${categoryStyle.text} shrink-0`}>
-                                    <FileText size={20} />
+                {filteredManuals.map((manual) => (
+                    <Link key={manual.id} to={`/manuals/${manual.id}`}>
+                        <Card variant="elevated" className="h-full group hover:shadow-m3-2 transition-all duration-300">
+                            <div className="p-5 flex flex-col h-full relative">
+                                <div className="flex items-start justify-between mb-4">
+                                    <Badge variant="neutral" className="bg-m3-secondary-container text-m3-on-secondary-container">
+                                        {manual.category}
+                                    </Badge>
+                                    {manual.isRead ? (
+                                        <CheckCircle2 className="text-m3-primary" size={24} />
+                                    ) : (
+                                        <Circle className="text-m3-outline-variant group-hover:text-m3-primary transition-colors" size={24} />
+                                    )}
                                 </div>
-                                <div className="min-w-0">
-                                    <h3 className="font-semibold text-gray-800 group-hover:text-primary-600 transition-colors line-clamp-2">
+
+                                <div className="flex-1 mb-4">
+                                    <h3 className="text-lg font-bold text-m3-on-surface group-hover:text-m3-primary transition-colors line-clamp-2 leading-snug">
                                         {manual.title}
                                     </h3>
-                                    <div className="flex items-center gap-1 mt-2 text-xs text-gray-400">
-                                        <Clock size={12} />
-                                        <span>{new Date(manual.createdAt).toLocaleDateString('ja-JP')}</span>
-                                        <span className="mx-1">•</span>
-                                        <span>{manual.authorName}</span>
+                                </div>
+
+                                <div className="flex items-center gap-3 pt-4 border-t border-m3-outline-variant/20">
+                                    <div className="w-8 h-8 rounded-full bg-m3-surface-variant flex items-center justify-center text-m3-on-surface-variant text-xs font-bold">
+                                        <FileText size={14} />
+                                    </div>
+                                    <div className="flex flex-col text-xs text-m3-outline">
+                                        <span className="font-medium text-m3-on-surface-variant">{manual.authorName}</span>
+                                        <div className="flex items-center gap-1">
+                                            <Clock size={10} />
+                                            <span>{new Date(manual.createdAt).toLocaleDateString('ja-JP')}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </Link>
-                    );
-                })}
+                        </Card>
+                    </Link>
+                ))}
             </div>
 
             {filteredManuals.length === 0 && (
-                <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <BookOpen className="text-gray-400" size={28} />
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="w-20 h-20 bg-m3-surface-variant rounded-full flex items-center justify-center mb-6">
+                        <Search className="text-m3-outline" size={32} />
                     </div>
-                    <p className="text-gray-500">マニュアルが見つかりません</p>
+                    <h3 className="text-lg font-bold text-m3-on-surface">マニュアルが見つかりません</h3>
+                    <p className="text-m3-on-surface-variant mt-2">
+                        検索条件を変更して再度お試しください
+                    </p>
                 </div>
             )}
         </div>

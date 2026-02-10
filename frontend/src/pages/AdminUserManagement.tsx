@@ -12,7 +12,6 @@ import {
     UserPlus,
     Building2,
     Calendar,
-    Save,
     UserCircle
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
