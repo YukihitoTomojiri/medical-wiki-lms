@@ -7,39 +7,42 @@ export default {
     theme: {
         extend: {
             colors: {
-                // === WikiLMS デザインシステム ===
-                // メインアクセント（信頼感のあるオレンジ）
-                primary: {
-                    50: '#fff7ed',
-                    100: '#ffedd5',
-                    200: '#fed7aa',
-                    300: '#fdba74',
-                    400: '#fb923c',
-                    500: '#f97316',
-                    600: '#ea580c',   // ← メインアクセント
-                    700: '#c2410c',
-                    800: '#9a3412',
-                    900: '#7c2d12',
-                },
-                // レガシー互換（primary と同義）
-                medical: {
-                    light: '#ffedd5', // primary-100
-                    DEFAULT: '#ea580c', // primary-600
-                    dark: '#c2410c',  // primary-700
-                },
-                // セマンティック
-                success: '#10b981',   // emerald-500
-                warning: '#f59e0b',   // amber-500
-                danger: '#ef4444',    // red-500
-                info: '#3b82f6',      // blue-500
+                // === M3 Medical Theme ===
+                'm3-primary': '#006A6A',
+                'm3-on-primary': '#FFFFFF',
+                'm3-primary-container': '#9EF2E4',
+                'm3-on-primary-container': '#002020',
+                'm3-secondary': '#4A6363',
+                'm3-on-secondary': '#FFFFFF',
+                'm3-background': '#FBFCFD',
+                'm3-on-background': '#191C1C',
+                'm3-surface': '#F0F4F4',
+                'm3-on-surface': '#191C1C',
+                'm3-surface-container': '#F0F4F4',
+                'm3-surface-container-low': '#F6FBF9', // Needed based on previous files
+                'm3-surface-container-highest': '#E4E9E9', // Needed based on previous files
+                'm3-surface-variant': '#DAE5E4', // Needed based on previous files
+                'm3-on-surface-variant': '#3F4948', // Needed based on previous files
+                'm3-outline': '#6F7979',
+                'm3-outline-variant': '#BFC9C8', // Needed based on previous files
+                'm3-error': '#BA1A1A', // Needed based on previous files
+                'm3-on-error': '#FFFFFF', // Needed based on previous files
+                'm3-inverse-surface': '#2E3131', // Needed based on previous files
+                'm3-inverse-on-surface': '#F0F1F0', // Needed based on previous files
+                'm3-inverse-primary': '#82D5C8', // Needed based on previous files
             },
             borderRadius: {
-                'card': '1rem',       // カード用共通角丸
+                'md': '0.75rem',    // 12px
+                'xl': '1.75rem',    // 28px
+                'full': '9999px',
+            },
+            fontFamily: {
+                sans: ['"Noto Sans JP"', 'sans-serif'],
             },
             boxShadow: {
-                'card': '0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04)',
-                'card-hover': '0 10px 25px -5px rgb(0 0 0 / 0.08)',
-            }
+                'm3-1': '0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30)',
+                'm3-2': '0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30)',
+            },
         },
     },
     plugins: [],
