@@ -2,9 +2,8 @@ import { useState, useMemo } from 'react';
 import { User } from '../types';
 import PaidLeaveManagement from '../components/PaidLeaveManagement';
 import ComplianceDashboard from '../components/ComplianceDashboard';
-import OrganizationManagement from '../components/OrganizationManagement';
 import AdminLeaveMonitoring from '../components/AdminLeaveMonitoring';
-import { LayoutDashboard, Building2, Calendar, AlertCircle } from 'lucide-react';
+import { LayoutDashboard, Calendar, AlertCircle } from 'lucide-react';
 
 export default function AdminDashboard() {
     const [user] = useState<User>(() => JSON.parse(localStorage.getItem('user') || '{}'));
@@ -15,7 +14,6 @@ export default function AdminDashboard() {
             { id: 'dashboard', label: '学習進捗', icon: LayoutDashboard },
             { id: 'paid_leaves', label: '労務管理', icon: Calendar },
             { id: 'leave_monitoring', label: '有給モニタリング', icon: AlertCircle },
-            { id: 'organization', label: '組織管理', icon: Building2 },
         ];
         // Restore system stats for Devs (simplified for now without full component)
         return commonTabs;
@@ -61,7 +59,7 @@ export default function AdminDashboard() {
                 {activeTab === 'dashboard' && <ComplianceDashboard />}
                 {activeTab === 'paid_leaves' && <PaidLeaveManagement />}
                 {activeTab === 'leave_monitoring' && <AdminLeaveMonitoring />}
-                {activeTab === 'organization' && <OrganizationManagement />}
+                {activeTab === 'leave_monitoring' && <AdminLeaveMonitoring />}
             </div>
         </div>
     );

@@ -32,13 +32,13 @@ export default function Sidebar({ user, onLogout, onClose }: SidebarProps) {
             items: [
                 { path: '/admin', label: '管理者ダッシュボード', icon: LayoutDashboard },
                 { path: '/admin/users', label: 'ユーザー管理', icon: Users },
+                { path: '/admin/organization', label: '組織管理', icon: Building2 },
             ]
         }] : []),
         ...(user.role === 'DEVELOPER' ? [{
             title: 'システム開発',
             className: 'bg-amber-50/30 rounded-2xl p-2 -mx-2 border border-amber-100/30',
             items: [
-                { path: '/admin/organization', label: '組織管理', icon: Building2 },
                 { path: '/developer', label: '開発者メニュー', icon: Database },
             ]
         }] : []),

@@ -39,6 +39,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/me/**").authenticated()
                         .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "DEVELOPER")
+                        .requestMatchers("/api/facilities/**").hasAnyRole("ADMIN", "DEVELOPER")
+                        .requestMatchers("/api/departments/**").hasAnyRole("ADMIN", "DEVELOPER")
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "DEVELOPER")
                         .anyRequest().permitAll())
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))

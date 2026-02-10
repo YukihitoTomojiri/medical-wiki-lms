@@ -232,10 +232,13 @@ export default function DeveloperDashboard() {
             setUserList(usersData);
             // Load organization master for dropdowns
             try {
-                const facs = await api.getFacilities();
-                const depts = await api.getDepartments();
-                setOrgFacilities(facs);
-                setOrgDepartments(depts);
+                // Ensure userId is available before calling
+                if (user?.id) {
+                    const facs = await api.getFacilities(user.id);
+                    const depts = await api.getDepartments(user.id);
+                    setOrgFacilities(facs);
+                    setOrgDepartments(depts);
+                }
                 // Organization master loaded for remaining dropdowns
             } catch (e) {
                 console.error('Failed to load organization data', e);
