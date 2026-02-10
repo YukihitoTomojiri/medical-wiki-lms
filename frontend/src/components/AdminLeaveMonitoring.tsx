@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api, AdminLeaveMonitoring as MonitoringData } from '../api';
-import { Search, AlertCircle, CheckCircle2, Filter, AlertTriangle } from 'lucide-react';
+import { Search, AlertCircle, CheckCircle2, Filter, AlertTriangle, Activity } from 'lucide-react';
+import PageHeader from './PageHeader';
 
 export default function AdminLeaveMonitoring() {
     const [data, setData] = useState<MonitoringData[]>([]);
@@ -47,17 +48,29 @@ export default function AdminLeaveMonitoring() {
 
     return (
         <div className="space-y-6">
+            <PageHeader
+                title="有給取得モニタリング"
+                description="全職員の有給取得義務（年5日）の進捗状況を監視します"
+                icon={Activity}
+                iconColor="text-primary-600"
+                iconBgColor="bg-primary-50"
+                actions={
+                    <button onClick={fetchData} className="btn-secondary text-sm">
+                        更新
+                    </button>
+                }
+            />
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                     <div className="text-sm text-gray-500 mb-1">対象職員数</div>
                     <div className="text-2xl font-bold text-gray-800">{data.length}名</div>
                 </div>
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 shadow-sm">
-                    <div className="flex items-center gap-2 text-sm text-blue-600 mb-1">
+                <div className="bg-primary-50 p-4 rounded-xl border border-primary-100 shadow-sm">
+                    <div className="flex items-center gap-2 text-sm text-primary-600 mb-1">
                         <AlertTriangle size={16} /> 現在未達
                     </div>
-                    <div className="text-2xl font-bold text-blue-700">{unmetCount}名</div>
+                    <div className="text-2xl font-bold text-primary-700">{unmetCount}名</div>
                 </div>
                 <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 shadow-sm">
                     <div className="flex items-center gap-2 text-sm text-amber-600 mb-1">
@@ -82,7 +95,7 @@ export default function AdminLeaveMonitoring() {
                         placeholder="名前、社員ID、施設で検索..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-200 transition-all"
+                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-200 transition-all"
                     />
                 </div>
 
@@ -96,9 +109,6 @@ export default function AdminLeaveMonitoring() {
                     >
                         <Filter size={16} />
                         {showAttentionOnly ? '全件表示' : '違反・要注意のみ'}
-                    </button>
-                    <button onClick={fetchData} className="text-gray-400 hover:text-orange-500 px-2">
-                        更新
                     </button>
                 </div>
             </div>
@@ -157,7 +167,7 @@ export default function AdminLeaveMonitoring() {
                                                 <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
                                                     <div
                                                         className={`h-full rounded-full transition-all duration-500 ${employee.isObligationMet ? 'bg-emerald-500' :
-                                                            isWarning ? 'bg-amber-500' : 'bg-blue-500'
+                                                            isWarning ? 'bg-amber-500' : 'bg-primary-500'
                                                             }`}
                                                         style={{ width: `${progressPercent}%` }}
                                                     />
@@ -187,8 +197,8 @@ export default function AdminLeaveMonitoring() {
                                                     警告
                                                 </span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600">
-                                                    <div className="w-2 h-2 rounded-full bg-blue-400" />
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                                                    <div className="w-2 h-2 rounded-full bg-slate-400" />
                                                     進行中
                                                 </span>
                                             )}

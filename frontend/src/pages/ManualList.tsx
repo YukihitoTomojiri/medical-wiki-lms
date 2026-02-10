@@ -6,12 +6,13 @@ import {
     BookOpen,
     Search,
     CheckCircle2,
-    Circle,
     Filter,
     Plus,
+    Circle,
     FileText,
     Clock
 } from 'lucide-react';
+import PageHeader from '../components/PageHeader';
 
 interface ManualListProps {
     user: User;
@@ -76,44 +77,44 @@ export default function ManualList({ user }: ManualListProps) {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-800">マニュアル一覧</h2>
-                    <p className="text-gray-500 mt-1">社内マニュアル・研修資料を確認できます</p>
-                </div>
-                {user.role === 'ADMIN' && (
-                    <Link
-                        to="/admin/manuals/new"
-                        className="btn-primary"
-                    >
-                        <Plus size={20} />
-                        新規作成
-                    </Link>
-                )}
-            </div>
+            <PageHeader
+                title="マニュアル一覧"
+                description="社内マニュアル・研修資料を確認できます"
+                icon={BookOpen}
+                iconColor="text-primary-600"
+                iconBgColor="bg-primary-50"
+                actions={
+                    user.role === 'ADMIN' && (
+                        <Link
+                            to="/admin/manuals/new"
+                            className="btn-primary"
+                        >
+                            <Plus size={20} />
+                            新規作成
+                        </Link>
+                    )
+                }
+            />
 
-            {/* Progress Card */}
-            <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl p-6 text-white shadow-lg shadow-primary-600/20">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur">
-                            <BookOpen size={24} />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-lg">学習進捗</h3>
-                            <p className="text-primary-100 text-sm">あなたの読了状況</p>
-                        </div>
+            {/* Compact Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="card p-4 flex items-center gap-4 border-l-4 border-l-primary-600">
+                    <div className="p-3 bg-primary-50 rounded-full text-primary-600">
+                        <CheckCircle2 size={24} />
                     </div>
-                    <div className="text-right">
-                        <p className="text-3xl font-bold">{progressPercentage}%</p>
-                        <p className="text-primary-100 text-sm">{readCount} / {totalCount} 読了</p>
+                    <div>
+                        <div className="text-sm text-gray-500 font-bold">学習進捗率</div>
+                        <div className="text-2xl font-black text-gray-800">{progressPercentage}%</div>
                     </div>
                 </div>
-                <div className="w-full bg-white/20 rounded-full h-3 backdrop-blur">
-                    <div
-                        className="bg-white rounded-full h-3 transition-all duration-500"
-                        style={{ width: `${progressPercentage}%` }}
-                    />
+                <div className="card p-4 flex items-center gap-4">
+                    <div className="p-3 bg-gray-100 rounded-full text-gray-500">
+                        <BookOpen size={24} />
+                    </div>
+                    <div>
+                        <div className="text-sm text-gray-500 font-bold">読了数 / 全マニュアル</div>
+                        <div className="text-2xl font-black text-gray-800">{readCount} <span className="text-sm text-gray-400 font-medium">/ {totalCount}</span></div>
+                    </div>
                 </div>
             </div>
 
@@ -126,7 +127,7 @@ export default function ManualList({ user }: ManualListProps) {
                         placeholder="マニュアルを検索..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 outline-none transition-all bg-white"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all bg-white"
                     />
                 </div>
                 <div className="relative">
@@ -134,7 +135,7 @@ export default function ManualList({ user }: ManualListProps) {
                     <select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="pl-12 pr-10 py-3 rounded-xl border border-gray-200 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 outline-none transition-all bg-white appearance-none cursor-pointer min-w-[180px]"
+                        className="pl-12 pr-10 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all bg-white appearance-none cursor-pointer min-w-[180px]"
                     >
                         <option value="">すべてのカテゴリ</option>
                         {categories.map((category) => (
