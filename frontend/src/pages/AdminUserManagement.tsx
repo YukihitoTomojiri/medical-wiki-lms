@@ -192,7 +192,7 @@ export default function AdminUserManagement({ user }: Props) {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-black text-gray-800 tracking-tight flex items-center gap-3">
-                        <div className="p-2 bg-indigo-100 rounded-xl text-indigo-600">
+                        <div className="p-2 bg-primary-100 rounded-xl text-primary-600">
                             <Shield size={24} />
                         </div>
                         ユーザー管理
@@ -203,7 +203,7 @@ export default function AdminUserManagement({ user }: Props) {
                 </div>
                 <button
                     onClick={handleAddClick}
-                    className="flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95"
+                    className="btn-primary py-3 rounded-2xl shadow-lg shadow-primary-200 active:scale-95"
                 >
                     <UserPlus size={20} />
                     新規ユーザー登録
@@ -211,13 +211,13 @@ export default function AdminUserManagement({ user }: Props) {
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap gap-4 items-center">
+            <div className="card p-4 flex flex-wrap gap-4 items-center">
                 <div className="flex-1 min-w-[250px] relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input
                         type="text"
                         placeholder="氏名または職員番号で検索..."
-                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500/20 text-sm font-bold"
+                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-primary-500/20 text-sm font-bold"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
@@ -225,7 +225,7 @@ export default function AdminUserManagement({ user }: Props) {
 
                 {user.role === 'DEVELOPER' && (
                     <select
-                        className="px-4 py-2.5 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500/20 text-sm font-bold text-gray-600"
+                        className="px-4 py-2.5 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-primary-500/20 text-sm font-bold text-gray-600"
                         value={selectedFacility}
                         onChange={e => setSelectedFacility(e.target.value)}
                     >
@@ -236,7 +236,7 @@ export default function AdminUserManagement({ user }: Props) {
 
                 <button
                     onClick={() => fetchUsers()}
-                    className="p-2.5 bg-gray-50 text-gray-500 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                    className="p-2.5 bg-gray-50 text-gray-500 rounded-xl hover:bg-primary-50 hover:text-primary-600 transition-colors"
                 >
                     <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
                 </button>
@@ -254,7 +254,7 @@ export default function AdminUserManagement({ user }: Props) {
             )}
 
             {/* Users List */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="card overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-gray-50/50 border-b border-gray-100">
@@ -271,7 +271,7 @@ export default function AdminUserManagement({ user }: Props) {
                                 <tr>
                                     <td colSpan={5} className="p-12 text-center text-gray-400">
                                         <div className="flex flex-col items-center gap-2">
-                                            <RefreshCw className="animate-spin text-indigo-200" size={32} />
+                                            <RefreshCw className="animate-spin text-primary-200" size={32} />
                                             <span className="text-sm font-bold">データを読み込み中...</span>
                                         </div>
                                     </td>
@@ -292,7 +292,7 @@ export default function AdminUserManagement({ user }: Props) {
                                     <tr key={u.id} className="group hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-sm">
+                                                <div className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-primary-600 font-bold text-sm">
                                                     {u.name.charAt(0)}
                                                 </div>
                                                 <div>
@@ -309,7 +309,7 @@ export default function AdminUserManagement({ user }: Props) {
                                             <div className="text-xs text-gray-500 pl-5">{u.department}</div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${u.role === 'ADMIN' ? 'bg-indigo-50 text-indigo-700 border-indigo-100' :
+                                            <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${u.role === 'ADMIN' ? 'bg-primary-50 text-primary-700 border-primary-100' :
                                                 u.role === 'DEVELOPER' ? 'bg-amber-50 text-amber-700 border-amber-100' :
                                                     'bg-emerald-50 text-emerald-700 border-emerald-100'
                                                 }`}>
@@ -325,7 +325,7 @@ export default function AdminUserManagement({ user }: Props) {
                                         <td className="px-6 py-4 text-right">
                                             <button
                                                 onClick={() => handleEditClick(u)}
-                                                className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                                                className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
                                             >
                                                 <Edit2 size={18} />
                                             </button>
@@ -347,7 +347,7 @@ export default function AdminUserManagement({ user }: Props) {
                             <input
                                 type="text"
                                 required
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
                                 value={formData.employeeId}
                                 onChange={e => setFormData({ ...formData, employeeId: e.target.value })}
                                 placeholder="例: 1001"
@@ -359,7 +359,7 @@ export default function AdminUserManagement({ user }: Props) {
                             <input
                                 type="text"
                                 required
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
                                 value={formData.name}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                                 placeholder="例: 山田 太郎"
@@ -371,7 +371,7 @@ export default function AdminUserManagement({ user }: Props) {
                                 <label className="block text-sm font-bold text-gray-700 mb-1">施設</label>
                                 <select
                                     required
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all disabled:bg-gray-100 disabled:text-gray-500"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all disabled:bg-gray-100 disabled:text-gray-500"
                                     value={formData.facility}
                                     onChange={e => setFormData({ ...formData, facility: e.target.value })}
                                     disabled={user.role === 'ADMIN'}
@@ -383,7 +383,7 @@ export default function AdminUserManagement({ user }: Props) {
                                 <label className="block text-sm font-bold text-gray-700 mb-1">部署</label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
                                     value={formData.department}
                                     onChange={e => setFormData({ ...formData, department: e.target.value })}
                                     placeholder="例: 事務部"
@@ -395,7 +395,7 @@ export default function AdminUserManagement({ user }: Props) {
                             <label className="block text-sm font-bold text-gray-700 mb-1">権限</label>
                             <select
                                 required
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
                                 value={formData.role}
                                 onChange={e => setFormData({ ...formData, role: e.target.value as any })}
                             >
@@ -409,7 +409,7 @@ export default function AdminUserManagement({ user }: Props) {
                             <label className="block text-sm font-bold text-gray-700 mb-1">メールアドレス（任意）</label>
                             <input
                                 type="email"
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
                                 value={formData.email}
                                 onChange={e => setFormData({ ...formData, email: e.target.value })}
                                 placeholder="taro@example.com"
@@ -422,7 +422,7 @@ export default function AdminUserManagement({ user }: Props) {
                                 <input
                                     type="date"
                                     required
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
                                     value={formData.joinedDate}
                                     onChange={e => setFormData({ ...formData, joinedDate: e.target.value })}
                                 />
@@ -433,7 +433,7 @@ export default function AdminUserManagement({ user }: Props) {
                                     type="number"
                                     step="0.5"
                                     min="0"
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
                                     value={formData.paidLeaveDays}
                                     onChange={e => setFormData({ ...formData, paidLeaveDays: parseFloat(e.target.value) })}
                                 />
@@ -444,7 +444,7 @@ export default function AdminUserManagement({ user }: Props) {
                             <label className="block text-sm font-bold text-gray-700 mb-1">初期パスワード（任意）</label>
                             <input
                                 type="password"
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
                                 value={formData.password}
                                 onChange={e => setFormData({ ...formData, password: e.target.value })}
                                 placeholder="未入力の場合は自動生成されます"
@@ -462,7 +462,7 @@ export default function AdminUserManagement({ user }: Props) {
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className="flex-1 px-6 py-2.5 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 px-6 py-2.5 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-lg shadow-primary-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {submitting ? (
                                     <span className="flex items-center justify-center gap-2">
@@ -484,7 +484,7 @@ export default function AdminUserManagement({ user }: Props) {
                             <input
                                 type="text"
                                 required
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
                                 value={formData.name}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                                 placeholder="例: 山田 太郎"
@@ -496,7 +496,7 @@ export default function AdminUserManagement({ user }: Props) {
                                 <label className="block text-sm font-bold text-gray-700 mb-1">施設</label>
                                 <select
                                     required
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all disabled:bg-gray-100 disabled:text-gray-500"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all disabled:bg-gray-100 disabled:text-gray-500"
                                     value={formData.facility}
                                     onChange={e => setFormData({ ...formData, facility: e.target.value })}
                                     disabled={user.role === 'ADMIN'}
@@ -508,7 +508,7 @@ export default function AdminUserManagement({ user }: Props) {
                                 <label className="block text-sm font-bold text-gray-700 mb-1">部署</label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
                                     value={formData.department}
                                     onChange={e => setFormData({ ...formData, department: e.target.value })}
                                     placeholder="例: 事務部"
@@ -520,7 +520,7 @@ export default function AdminUserManagement({ user }: Props) {
                             <label className="block text-sm font-bold text-gray-700 mb-1">権限</label>
                             <select
                                 required
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
                                 value={formData.role}
                                 onChange={e => setFormData({ ...formData, role: e.target.value as any })}
                             >
@@ -534,7 +534,7 @@ export default function AdminUserManagement({ user }: Props) {
                             <label className="block text-sm font-bold text-gray-700 mb-1">メールアドレス（任意）</label>
                             <input
                                 type="email"
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
                                 value={formData.email}
                                 onChange={e => setFormData({ ...formData, email: e.target.value })}
                                 placeholder="taro@example.com"
@@ -547,7 +547,7 @@ export default function AdminUserManagement({ user }: Props) {
                                 <input
                                     type="date"
                                     required
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
                                     value={formData.joinedDate}
                                     onChange={e => setFormData({ ...formData, joinedDate: e.target.value })}
                                 />
@@ -585,7 +585,7 @@ export default function AdminUserManagement({ user }: Props) {
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className="flex-1 px-6 py-2.5 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 px-6 py-2.5 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-lg shadow-primary-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {submitting ? (
                                     <span className="flex items-center justify-center gap-2">

@@ -33,7 +33,7 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
 
 
     return (
-        <div className="min-h-screen bg-[#FDFCFB]">
+        <div className="min-h-screen bg-slate-50">
             {/* Header */}
             <header className="bg-white/80 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -46,7 +46,7 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
                                 {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
                             </button>
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-br from-medical-DEFAULT to-medical-dark rounded-xl flex items-center justify-center shadow-lg shadow-medical-DEFAULT/20">
+                                <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl flex items-center justify-center shadow-lg shadow-primary-600/20">
                                     <BookOpen className="text-white" size={20} />
                                 </div>
                                 <div className="hidden sm:block">

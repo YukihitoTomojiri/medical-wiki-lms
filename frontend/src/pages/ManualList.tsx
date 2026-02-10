@@ -84,7 +84,7 @@ export default function ManualList({ user }: ManualListProps) {
                 {user.role === 'ADMIN' && (
                     <Link
                         to="/admin/manuals/new"
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-medium rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg shadow-primary-500/25"
+                        className="btn-primary"
                     >
                         <Plus size={20} />
                         新規作成
@@ -93,7 +93,7 @@ export default function ManualList({ user }: ManualListProps) {
             </div>
 
             {/* Progress Card */}
-            <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-6 text-white shadow-xl shadow-primary-500/20">
+            <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl p-6 text-white shadow-lg shadow-primary-600/20">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur">
@@ -126,7 +126,7 @@ export default function ManualList({ user }: ManualListProps) {
                         placeholder="マニュアルを検索..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all bg-white"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 outline-none transition-all bg-white"
                     />
                 </div>
                 <div className="relative">
@@ -134,7 +134,7 @@ export default function ManualList({ user }: ManualListProps) {
                     <select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="pl-12 pr-10 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all bg-white appearance-none cursor-pointer min-w-[180px]"
+                        className="pl-12 pr-10 py-3 rounded-xl border border-gray-200 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 outline-none transition-all bg-white appearance-none cursor-pointer min-w-[180px]"
                     >
                         <option value="">すべてのカテゴリ</option>
                         {categories.map((category) => (
@@ -152,7 +152,7 @@ export default function ManualList({ user }: ManualListProps) {
                         <Link
                             key={manual.id}
                             to={`/manuals/${manual.id}`}
-                            className="group bg-white rounded-2xl p-5 border border-gray-100 hover:border-primary-200 hover:shadow-xl hover:shadow-primary-500/10 transition-all duration-300"
+                            className="group card card-hover p-5"
                         >
                             <div className="flex items-start justify-between mb-3">
                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${categoryStyle.bg} ${categoryStyle.text} ${categoryStyle.border} border`}>
