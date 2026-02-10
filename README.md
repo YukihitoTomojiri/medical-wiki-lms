@@ -238,6 +238,10 @@ graph TD
 | `.tab-active` / `.tab-inactive` | タブナビゲーション |
 | `.badge-success` / `.badge-warning` / `.badge-danger` | ステータスバッジ |
 
+#### 統一状況 (2026-02-10)
+- **組織管理画面**: 青色要素を完全に排除し、`primary-600` (Orange) に統一しました。
+- **全体**: `PageHeader` コンポーネントの導入とカードデザインの共通化により、システム全体の一貫性を確保しました。
+
 #### 背景色
 - **ベース背景**: `bg-slate-50`（Layout全体）
 - **カード背景**: `bg-white`（`.card` クラス）

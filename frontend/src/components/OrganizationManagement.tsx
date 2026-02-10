@@ -156,7 +156,7 @@ export default function OrganizationManagement() {
 
             {/* Add Facility Form */}
             {showAddFacility && (
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-3">
+                <div className="p-4 bg-primary-50 border border-primary-200 rounded-xl flex items-center gap-3">
                     <input
                         type="text"
                         value={newFacilityName}
@@ -181,7 +181,7 @@ export default function OrganizationManagement() {
             )}
 
             {/* Facilities List */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 {facilities.length === 0 ? (
                     <div className="p-8 text-center text-gray-400">
                         <Building2 size={48} className="mx-auto mb-4 opacity-30" />
@@ -311,7 +311,7 @@ export default function OrganizationManagement() {
                                                         />
                                                         <button
                                                             onClick={() => handleAddDepartment(facility.id)}
-                                                            className="p-1.5 bg-blue-600 text-white rounded-lg"
+                                                            className="p-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
                                                         >
                                                             <Save size={14} />
                                                         </button>
@@ -325,7 +325,7 @@ export default function OrganizationManagement() {
                                                 ) : (
                                                     <button
                                                         onClick={() => setShowAddDepartment(facility.id)}
-                                                        className="flex items-center gap-1 text-sm text-primary-600 hover:text-blue-700 py-2"
+                                                        className="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 py-2"
                                                     >
                                                         <Plus size={14} />
                                                         部署を追加
