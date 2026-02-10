@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api';
 import { Building2, Plus, Edit2, Trash2, ChevronDown, ChevronRight, Save, X } from 'lucide-react';
+import PageHeader from './PageHeader';
 
 interface Facility {
     id: number;
@@ -122,7 +123,7 @@ export default function OrganizationManagement() {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <div className="w-8 h-8 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                <div className="w-8 h-8 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
             </div>
         );
     }
@@ -130,24 +131,22 @@ export default function OrganizationManagement() {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
-                        <Building2 size={24} />
-                    </div>
-                    <div>
-                        <h2 className="text-xl font-black text-gray-800">組織管理</h2>
-                        <p className="text-sm text-gray-500">施設と部署の登録・編集</p>
-                    </div>
-                </div>
-                <button
-                    onClick={() => setShowAddFacility(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors"
-                >
-                    <Plus size={18} />
-                    施設を追加
-                </button>
-            </div>
+            <PageHeader
+                title="組織管理"
+                description="施設と部署の登録・編集"
+                icon={Building2}
+                iconColor="text-primary-600"
+                iconBgColor="bg-primary-50"
+                actions={
+                    <button
+                        onClick={() => setShowAddFacility(true)}
+                        className="btn-primary"
+                    >
+                        <Plus size={18} />
+                        施設を追加
+                    </button>
+                }
+            />
 
             {error && (
                 <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm font-medium">
@@ -163,12 +162,12 @@ export default function OrganizationManagement() {
                         value={newFacilityName}
                         onChange={(e) => setNewFacilityName(e.target.value)}
                         placeholder="施設名を入力"
-                        className="flex-1 px-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="flex-1 px-4 py-2 border border-primary-300 rounded-lg focus:ring-primary-500/20 focus:border-primary-500 outline-none"
                         autoFocus
                     />
                     <button
                         onClick={handleAddFacility}
-                        className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
                     >
                         <Save size={18} />
                     </button>
@@ -237,7 +236,7 @@ export default function OrganizationManagement() {
                                                 </div>
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); setEditingFacilityId(facility.id); setEditFacilityName(facility.name); }}
-                                                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                    className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                                                 >
                                                     <Edit2 size={16} />
                                                 </button>
@@ -284,7 +283,7 @@ export default function OrganizationManagement() {
                                                                 <span className="flex-1 text-gray-700 text-sm">{dept.name}</span>
                                                                 <button
                                                                     onClick={() => { setEditingDeptId(dept.id); setEditDeptName(dept.name); }}
-                                                                    className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                                                    className="p-1 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
                                                                 >
                                                                     <Edit2 size={14} />
                                                                 </button>
@@ -326,7 +325,7 @@ export default function OrganizationManagement() {
                                                 ) : (
                                                     <button
                                                         onClick={() => setShowAddDepartment(facility.id)}
-                                                        className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 py-2"
+                                                        className="flex items-center gap-1 text-sm text-primary-600 hover:text-blue-700 py-2"
                                                     >
                                                         <Plus size={14} />
                                                         部署を追加

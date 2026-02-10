@@ -12,8 +12,10 @@ import {
     FileDown,
     Send,
     AlertTriangle,
-    BookOpen
+    BookOpen,
+    Activity
 } from 'lucide-react';
+import PageHeader from './PageHeader';
 
 export default function ComplianceDashboard() {
     const [usersProgress, setUsersProgress] = useState<UserProgress[]>([]);
@@ -106,6 +108,24 @@ export default function ComplianceDashboard() {
 
     return (
         <div className="space-y-6">
+            <PageHeader
+                title="学習進捗ダッシュボード"
+                description="全ユーザーの学習状況とコンプライアンス遵守率を可視化"
+                icon={Activity}
+                iconColor="text-primary-600"
+                iconBgColor="bg-primary-50"
+                actions={
+                    <button
+                        onClick={handleExport}
+                        disabled={exporting}
+                        className="btn-secondary text-sm"
+                    >
+                        <FileDown size={18} className="text-primary-600" />
+                        <span className="hidden sm:inline">CSV出力</span>
+                    </button>
+                }
+            />
+
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-5 text-white shadow-xl shadow-orange-500/20">
@@ -196,15 +216,9 @@ export default function ComplianceDashboard() {
                         ))}
                     </select>
                 </div>
-                <button
-                    onClick={handleExport}
-                    disabled={exporting}
-                    className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-xl font-bold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm active:scale-95 disabled:opacity-50"
-                >
-                    <FileDown size={20} className="text-orange-500" />
-                    <span className="hidden sm:inline">CSV出力</span>
-                </button>
             </div>
+            {/* Export button moved to PageHeader */}
+
 
             {/* User Progress Table */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -321,6 +335,6 @@ export default function ComplianceDashboard() {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }
