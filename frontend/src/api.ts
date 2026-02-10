@@ -427,8 +427,10 @@ export const api = {
         return res.json();
     },
 
-    getDepartmentsByFacility: async (facilityId: number): Promise<any[]> => {
-        const res = await fetch(`${API_BASE}/departments/by-facility/${facilityId}`);
+    getDepartmentsByFacility: async (facilityId: number, userId: number): Promise<any[]> => {
+        const res = await fetch(`${API_BASE}/departments/by-facility/${facilityId}`, {
+            headers: getHeaders(userId),
+        });
         if (!res.ok) return [];
         return res.json();
     },
