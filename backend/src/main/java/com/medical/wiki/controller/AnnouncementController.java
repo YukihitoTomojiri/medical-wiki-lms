@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.medical.wiki.dto.AnnouncementDto;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -18,41 +21,47 @@ public class AnnouncementController {
 
     // Existing users (Dashboard)
     @GetMapping("/announcements")
-    public List<Announcement> getMyAnnouncements(@RequestHeader(value = "X-User-Id") Long userId) {
-        return announcementService.getAnnouncementsForUser(userId);
+    public List<AnnouncementDto> getMyAnnouncements(@RequestHeader(value = "X-User-Id") Long userId) {
+        return announcementService.getAnnouncementsForUser(userId).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
     // Admin/Developer Management API
     @GetMapping("/admin/announcements")
-    public List<Announcement> getManageableAnnouncements(@RequestHeader(value = "X-User-Id") Long userId) {
-        return announcementService.getManageableAnnouncements(userId);
+    public List<AnnouncementDto> getManageableAnnouncements(@RequestHeader(value = "X-User-Id") Long userId) {
+        return announcementService.getManageableAnnouncements(userId).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/admin/announcements")
-    public Announcement createAnnouncement(
+    public AnnouncementDto createAnnouncement(
             @RequestHeader(value = "X-User-Id") Long userId,
             @RequestBody AnnouncementRequest request) {
-        return announcementService.createAnnouncement(
+        Announcement announcement = announcementService.createAnnouncement(
                 userId,
                 request.getTitle(),
                 request.getContent(),
                 request.getPriority(),
                 request.getDisplayUntil(),
                 request.getFacilityId());
+        return toDto(announcement);
     }
 
     @PutMapping("/admin/announcements/{id}")
-    public Announcement updateAnnouncement(
+    public AnnouncementDto updateAnnouncement(
             @RequestHeader(value = "X-User-Id") Long userId,
             @PathVariable Long id,
             @RequestBody AnnouncementRequest request) {
-        return announcementService.updateAnnouncement(
+        Announcement announcement = announcementService.updateAnnouncement(
                 userId,
                 id,
                 request.getTitle(),
                 request.getContent(),
                 request.getPriority(),
                 request.getDisplayUntil());
+        return toDto(announcement);
     }
 
     @DeleteMapping("/admin/announcements/{id}")
@@ -60,6 +69,21 @@ public class AnnouncementController {
             @RequestHeader(value = "X-User-Id") Long userId,
             @PathVariable Long id) {
         announcementService.deleteAnnouncement(userId, id);
+    }
+
+    private AnnouncementDto toDto(Announcement announcement) {
+        return AnnouncementDto.builder()
+                .id(announcement.getId())
+                .title(announcement.getTitle())
+                .content(announcement.getContent())
+                .priority(announcement.getPriority())
+                .displayUntil(announcement.getDisplayUntil())
+                .facilityId(announcement.getFacilityId())
+                .createdAt(announcement.getCreatedAt())
+                // Safe way to get creator name without exposing User entity
+                // If createdBy is null (should not happen), handle gracefully
+                .createdByName(announcement.getCreatedBy() != null ? announcement.getCreatedBy().getName() : "Unknown")
+                .build();
     }
 
     @Data
