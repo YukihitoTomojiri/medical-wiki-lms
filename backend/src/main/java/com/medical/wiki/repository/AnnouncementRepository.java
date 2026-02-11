@@ -9,6 +9,11 @@ import java.util.List;
 
 public interface AnnouncementRepository extends JpaRepository<Announcement, Long> {
 
+    // active announcements for a user:
+    // 1. Matches user's facility ID
+    // 2. OR is a Global announcement (facilityId IS NULL)
+    // 3. AND is not deleted
+    // 4. AND displayUntil is not expired
     @Query("SELECT a FROM Announcement a WHERE " +
             "(a.facilityId IS NULL OR a.facilityId = :facilityId) AND " +
             "a.deletedAt IS NULL AND " +

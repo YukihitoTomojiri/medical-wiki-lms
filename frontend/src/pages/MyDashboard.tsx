@@ -6,7 +6,6 @@ import {
     BookOpen,
     CheckCircle2,
     Calendar,
-    Bell,
     TrendingUp,
     Clock,
     XCircle,
@@ -35,7 +34,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
     const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
     const [leaveStatus, setLeaveStatus] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'learning' | 'leaves' | 'notifications'>('learning');
+    const [activeTab, setActiveTab] = useState<'learning' | 'leaves'>('learning');
 
     // History Filter State
     const [filterType, setFilterType] = useState('ALL');
@@ -257,27 +256,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                     </div>
                 </button>
 
-                {/* Notifications */}
-                <button
-                    onClick={() => setActiveTab('notifications')}
-                    className={`text-left bg-white p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition-all ${activeTab === 'notifications' ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-100'
-                        }`}
-                >
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
-                    <div className="relative">
-                        <div className="flex items-center gap-2 text-gray-500 mb-2">
-                            <Bell size={18} className="text-blue-500" />
-                            <span className={`text-xs font-bold uppercase tracking-wider ${activeTab === 'notifications' ? 'text-blue-600' : ''}`}>お知らせ</span>
-                        </div>
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-black text-gray-800">{dashboardData?.unreadNotificationsCount}</span>
-                            <span className="text-sm text-gray-400">件の未読</span>
-                        </div>
-                        <div className="mt-3 text-xs text-gray-400">
-                            最終読了日: {dashboardData?.lastReadDate}
-                        </div>
-                    </div>
-                </button>
+                {/* Notification Card Removed (Unified into DashboardAnnouncements) */}
             </div>
 
             {/* Main Tabs and Content - Tab Bar Removed */}
@@ -728,16 +707,6 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                 )}
 
                 {/* Notifications Tab Content (Placeholder) */}
-                {activeTab === 'notifications' && (
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center animate-in fade-in slide-in-from-bottom-2">
-                        <Bell className="mx-auto text-blue-200 mb-4" size={48} />
-                        <h3 className="text-lg font-bold text-gray-800 mb-2">お知らせ</h3>
-                        <p className="text-gray-500 text-sm">現在、新しいお知らせはありません。</p>
-                        <div className="mt-6 p-4 bg-gray-50 rounded-lg max-w-sm mx-auto">
-                            <p className="text-xs text-gray-400">最終確認日時: {dashboardData?.lastReadDate || new Date().toLocaleString('ja-JP')}</p>
-                        </div>
-                    </div>
-                )}
             </div>
 
             <style>{`
