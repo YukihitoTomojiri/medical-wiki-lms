@@ -561,6 +561,25 @@ export const api = {
         return response.json();
     },
 
+    submitBulkPaidLeave: async (
+        userId: number,
+        requests: Array<{ startDate: string; endDate: string; reason: string; leaveType: string }>
+    ): Promise<any[]> => {
+        const response = await fetch(`${API_BASE}/leaves/apply-bulk`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-Id': userId.toString()
+            },
+            body: JSON.stringify(requests)
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || '一括申請の送信に失敗しました');
+        }
+        return response.json();
+    },
+
     getAllAttendanceRequests: async (userId: number): Promise<any[]> => {
         const res = await fetch(`${API_BASE}/admin/attendance/requests`, {
             headers: getHeaders(userId),

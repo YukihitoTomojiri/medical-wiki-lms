@@ -21,6 +21,7 @@ import {
     AlertTriangle
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import PaidLeaveRequestForm from '../components/PaidLeaveRequestForm';
 
 interface MyDashboardProps {
     user: User;
@@ -396,178 +397,167 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                     <Plus size={16} className="text-emerald-500" />
                                     新規申請
                                 </h3>
-                                <form onSubmit={handleSubmitLeave} className="space-y-3">
-                                    {/* Request Type Selection */}
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">申請種別</label>
-                                            <select
-                                                value={requestType}
-                                                onChange={(e) => setRequestType(e.target.value)}
-                                                className="w-full px-2 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50"
-                                            >
-                                                <option value="PAID_LEAVE">有給休暇</option>
-                                                <option value="ABSENCE">欠勤</option>
-                                                <option value="LATE">遅刻</option>
-                                                <option value="EARLY_DEPARTURE">早退</option>
-                                            </select>
-                                        </div>
 
-                                        {requestType === 'PAID_LEAVE' ? (
-                                            <div>
-                                                <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">取得単位</label>
-                                                <select
-                                                    value={durationType}
-                                                    onChange={(e) => setDurationType(e.target.value)}
-                                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50"
-                                                >
-                                                    <option value="FULL_DAY">全日</option>
-                                                    <option value="HALF_DAY_AM">半日 (午前)</option>
-                                                    <option value="HALF_DAY_PM">半日 (午後)</option>
-                                                </select>
-                                            </div>
-                                        ) : (
-                                            <div className="hidden md:block"></div>
-                                        )}
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">開始日</label>
-                                            <input
-                                                type="date"
-                                                required
-                                                value={startDate}
-                                                onChange={(e) => setStartDate(e.target.value)}
-                                                className="w-full px-2 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">終了日</label>
-                                            <input
-                                                type="date"
-                                                required
-                                                value={endDate}
-                                                onChange={(e) => setEndDate(e.target.value)}
-                                                className="w-full px-2 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {(requestType === 'LATE' || requestType === 'EARLY_DEPARTURE') && (
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div>
-                                                <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">開始時間</label>
-                                                <div className="flex gap-1 items-center">
-                                                    <div className="relative w-full">
-                                                        <select
-                                                            value={startTime ? startTime.split(':')[0] : ''}
-                                                            onChange={(e) => {
-                                                                const h = e.target.value;
-                                                                const m = startTime ? startTime.split(':')[1] : '00';
-                                                                setStartTime(`${h}:${m}`);
-                                                            }}
-                                                            className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
-                                                        >
-                                                            <option value="" disabled>--</option>
-                                                            {Array.from({ length: 24 }).map((_, i) => (
-                                                                <option key={i} value={i.toString().padStart(2, '0')}>
-                                                                    {i.toString().padStart(2, '0')}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
-                                                    <span className="text-gray-300 text-xs font-bold">:</span>
-                                                    <div className="relative w-full">
-                                                        <select
-                                                            value={startTime ? startTime.split(':')[1] : ''}
-                                                            onChange={(e) => {
-                                                                const h = startTime ? startTime.split(':')[0] : '09';
-                                                                const m = e.target.value;
-                                                                setStartTime(`${h}:${m}`);
-                                                            }}
-                                                            className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
-                                                        >
-                                                            {['00', '15', '30', '45'].map((m) => (
-                                                                <option key={m} value={m}>{m}</option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">終了時間</label>
-                                                <div className="flex gap-1 items-center">
-                                                    <div className="relative w-full">
-                                                        <select
-                                                            value={endTime ? endTime.split(':')[0] : ''}
-                                                            onChange={(e) => {
-                                                                const h = e.target.value;
-                                                                const m = endTime ? endTime.split(':')[1] : '00';
-                                                                setEndTime(`${h}:${m}`);
-                                                            }}
-                                                            className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
-                                                        >
-                                                            <option value="" disabled>--</option>
-                                                            {Array.from({ length: 24 }).map((_, i) => (
-                                                                <option key={i} value={i.toString().padStart(2, '0')}>
-                                                                    {i.toString().padStart(2, '0')}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
-                                                    <span className="text-gray-300 text-xs font-bold">:</span>
-                                                    <div className="relative w-full">
-                                                        <select
-                                                            value={endTime ? endTime.split(':')[1] : ''}
-                                                            onChange={(e) => {
-                                                                const h = endTime ? endTime.split(':')[0] : '18';
-                                                                const m = e.target.value;
-                                                                setEndTime(`${h}:${m}`);
-                                                            }}
-                                                            className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
-                                                        >
-                                                            {['00', '15', '30', '45'].map((m) => (
-                                                                <option key={m} value={m}>{m}</option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div>
-                                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">事由</label>
-                                        <textarea
-                                            required
-                                            value={reason}
-                                            onChange={(e) => setReason(e.target.value)}
-                                            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs h-20 resize-none bg-gray-50/50"
-                                            placeholder="私用のため..."
-                                        />
-                                    </div>
-                                    {submitError && (
-                                        <div className="p-2 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2 text-red-600 text-[10px] font-bold animate-in fade-in slide-in-from-top-1">
-                                            <AlertCircle size={12} className="shrink-0 mt-0.5" />
-                                            <span>{submitError}</span>
-                                        </div>
-                                    )}
-                                    <button
-                                        type="submit"
-                                        disabled={isSubmitting}
-                                        className="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 text-xs flex items-center justify-center gap-2"
+                                <div className="mb-4">
+                                    <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">申請種別</label>
+                                    <select
+                                        value={requestType}
+                                        onChange={(e) => setRequestType(e.target.value)}
+                                        className="w-full px-2 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50"
                                     >
-                                        {isSubmitting ? (
-                                            <span className="animate-pulse">送信中...</span>
-                                        ) : (
-                                            <>
-                                                <span>申請を送信</span>
-                                                <ArrowRight size={14} />
-                                            </>
+                                        <option value="PAID_LEAVE">有給休暇</option>
+                                        <option value="ABSENCE">欠勤</option>
+                                        <option value="LATE">遅刻</option>
+                                        <option value="EARLY_DEPARTURE">早退</option>
+                                    </select>
+                                </div>
+
+                                {requestType === 'PAID_LEAVE' ? (
+                                    <PaidLeaveRequestForm userId={user.id} onSuccess={() => {
+                                        loadData();
+                                        navigate('/submission-success');
+                                    }} />
+                                ) : (
+                                    <form onSubmit={handleSubmitLeave} className="space-y-3">
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {/* Date Selection for Non-PaidLeave */}
+                                            <div>
+                                                <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">開始日</label>
+                                                <input
+                                                    type="date"
+                                                    required
+                                                    value={startDate}
+                                                    onChange={(e) => setStartDate(e.target.value)}
+                                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">終了日</label>
+                                                <input
+                                                    type="date"
+                                                    required
+                                                    value={endDate}
+                                                    onChange={(e) => setEndDate(e.target.value)}
+                                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {(requestType === 'LATE' || requestType === 'EARLY_DEPARTURE') && (
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">開始時間</label>
+                                                    <div className="flex gap-1 items-center">
+                                                        <div className="relative w-full">
+                                                            <select
+                                                                value={startTime ? startTime.split(':')[0] : ''}
+                                                                onChange={(e) => {
+                                                                    const h = e.target.value;
+                                                                    const m = startTime ? startTime.split(':')[1] : '00';
+                                                                    setStartTime(`${h}:${m}`);
+                                                                }}
+                                                                className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
+                                                            >
+                                                                <option value="" disabled>--</option>
+                                                                {Array.from({ length: 24 }).map((_, i) => (
+                                                                    <option key={i} value={i.toString().padStart(2, '0')}>
+                                                                        {i.toString().padStart(2, '0')}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                        <span className="text-gray-300 text-xs font-bold">:</span>
+                                                        <div className="relative w-full">
+                                                            <select
+                                                                value={startTime ? startTime.split(':')[1] : ''}
+                                                                onChange={(e) => {
+                                                                    const h = startTime ? startTime.split(':')[0] : '09';
+                                                                    const m = e.target.value;
+                                                                    setStartTime(`${h}:${m}`);
+                                                                }}
+                                                                className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
+                                                            >
+                                                                {['00', '15', '30', '45'].map((m) => (
+                                                                    <option key={m} value={m}>{m}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">終了時間</label>
+                                                    <div className="flex gap-1 items-center">
+                                                        <div className="relative w-full">
+                                                            <select
+                                                                value={endTime ? endTime.split(':')[0] : ''}
+                                                                onChange={(e) => {
+                                                                    const h = e.target.value;
+                                                                    const m = endTime ? endTime.split(':')[1] : '00';
+                                                                    setEndTime(`${h}:${m}`);
+                                                                }}
+                                                                className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
+                                                            >
+                                                                <option value="" disabled>--</option>
+                                                                {Array.from({ length: 24 }).map((_, i) => (
+                                                                    <option key={i} value={i.toString().padStart(2, '0')}>
+                                                                        {i.toString().padStart(2, '0')}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                        <span className="text-gray-300 text-xs font-bold">:</span>
+                                                        <div className="relative w-full">
+                                                            <select
+                                                                value={endTime ? endTime.split(':')[1] : ''}
+                                                                onChange={(e) => {
+                                                                    const h = endTime ? endTime.split(':')[0] : '18';
+                                                                    const m = e.target.value;
+                                                                    setEndTime(`${h}:${m}`);
+                                                                }}
+                                                                className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
+                                                            >
+                                                                {['00', '15', '30', '45'].map((m) => (
+                                                                    <option key={m} value={m}>{m}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         )}
-                                    </button>
-                                </form>
+
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">事由</label>
+                                            <textarea
+                                                required
+                                                value={reason}
+                                                onChange={(e) => setReason(e.target.value)}
+                                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs h-20 resize-none bg-gray-50/50"
+                                                placeholder="私用のため..."
+                                            />
+                                        </div>
+                                        {submitError && (
+                                            <div className="p-2 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2 text-red-600 text-[10px] font-bold animate-in fade-in slide-in-from-top-1">
+                                                <AlertCircle size={12} className="shrink-0 mt-0.5" />
+                                                <span>{submitError}</span>
+                                            </div>
+                                        )}
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                            className="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 text-xs flex items-center justify-center gap-2"
+                                        >
+                                            {isSubmitting ? (
+                                                <span className="animate-pulse">送信中...</span>
+                                            ) : (
+                                                <>
+                                                    <span>申請を送信</span>
+                                                    <ArrowRight size={14} />
+                                                </>
+                                            )}
+                                        </button>
+                                    </form>
+                                )}
                             </div>
                         </div>
 
