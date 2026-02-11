@@ -17,4 +17,5 @@ public class PaidLeaveStatusDto {
     private Boolean isObligationMet; // taken >= 5.0
     private Boolean isWarning; // true if met=false and approaching deadline
     private Double daysRemainingToObligation; // 5.0 - taken
+    private LocalDate obligatoryDeadline; // Deadline for the 5-day rule
 }

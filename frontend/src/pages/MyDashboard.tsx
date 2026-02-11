@@ -324,42 +324,51 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                     <div className="grid lg:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-2">
                         {/* Application Form */}
                         <div className="lg:col-span-12 xl:col-span-5 space-y-4">
-                            {/* Compliance Alert Widget */}
+                            {/* Compliance Alert Widget (M3 Optimized) */}
                             {leaveStatus?.obligatoryTarget > 0 && (
-                                <div className={`border rounded-2xl p-5 shadow-sm ${leaveStatus.isObligationMet
-                                    ? 'bg-emerald-50/50 border-emerald-100'
+                                <div className={`border rounded-[28px] p-6 shadow-m3-1 hover:shadow-m3-2 transition-shadow ${leaveStatus.isObligationMet
+                                    ? 'bg-m3-surface-container-low border-emerald-100'
                                     : leaveStatus.isWarning
-                                        ? 'bg-amber-50/50 border-amber-200'
-                                        : 'bg-white border-gray-100'
+                                        ? 'bg-m3-error-container/10 border-m3-error/20'
+                                        : 'bg-m3-surface-container-low border-m3-outline-variant'
                                     }`}>
-                                    <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2 mb-3">
-                                        <CheckCircle2 size={16} className={leaveStatus.isObligationMet ? "text-emerald-500" : "text-gray-400"} />
-                                        {leaveStatus.isObligationMet ? "年5日の有給取得達成" : "年5日の有給取得義務"}
-                                    </h3>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="font-bold text-m3-on-surface text-sm flex items-center gap-2">
+                                            <CheckCircle2 size={18} className={leaveStatus.isObligationMet ? "text-m3-primary" : "text-m3-on-surface-variant"} />
+                                            {leaveStatus.isObligationMet ? "年5日の有給取得達成" : "年5日の有給取得義務"}
+                                        </h3>
+                                        {leaveStatus.obligatoryDeadline && (
+                                            <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${leaveStatus.isWarning && !leaveStatus.isObligationMet
+                                                ? 'bg-red-100 text-red-700'
+                                                : 'bg-m3-surface-container-high text-m3-on-surface-variant'}`}>
+                                                期限：{new Date(leaveStatus.obligatoryDeadline).toLocaleDateString('ja-JP')}まで
+                                            </span>
+                                        )}
+                                    </div>
 
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between text-xs font-bold text-gray-500">
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-end text-xs font-bold text-m3-on-surface-variant">
                                             <span>
                                                 取得実績:
-                                                <span className={leaveStatus.isObligationMet ? "text-emerald-600 ml-1 text-lg" : "text-gray-800 ml-1 text-lg"}>
+                                                <span className={leaveStatus.isObligationMet ? "text-m3-primary ml-1 text-2xl" : "text-m3-on-surface ml-1 text-2xl"}>
                                                     {leaveStatus.obligatoryDaysTaken}
                                                 </span>
-                                                <span className="text-xs mx-0.5">/</span>
+                                                <span className="text-sm mx-1">/</span>
                                                 {leaveStatus.obligatoryTarget}日
                                             </span>
                                             {!leaveStatus.isObligationMet && (
-                                                <span className="text-amber-600">あと{leaveStatus.daysRemainingToObligation}日</span>
+                                                <span className={`${leaveStatus.isWarning ? 'text-red-600' : 'text-m3-secondary'}`}>あと{leaveStatus.daysRemainingToObligation}日</span>
                                             )}
                                         </div>
 
-                                        {/* Progress Bar */}
-                                        <div className="h-2.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                        {/* Progress Bar (M3 Style: Thinner track, thicker indicator) */}
+                                        <div className="h-4 w-full bg-m3-surface-container-highest rounded-full overflow-hidden p-1">
                                             <div
-                                                className={`h-full rounded-full transition-all duration-500 ${leaveStatus.isObligationMet
+                                                className={`h-full rounded-full transition-all duration-700 ease-out ${leaveStatus.isObligationMet
                                                     ? 'bg-emerald-500'
                                                     : leaveStatus.isWarning
-                                                        ? 'bg-amber-500'
-                                                        : 'bg-blue-400'
+                                                        ? 'bg-red-500'
+                                                        : 'bg-m3-primary'
                                                     }`}
                                                 style={{ width: `${Math.min(100, (leaveStatus.obligatoryDaysTaken / leaveStatus.obligatoryTarget) * 100)}%` }}
                                             />
@@ -367,14 +376,14 @@ export default function MyDashboard({ user }: MyDashboardProps) {
 
                                         {/* Status Text */}
                                         {leaveStatus.isWarning && !leaveStatus.isObligationMet && (
-                                            <div className="flex items-start gap-2 text-[10px] text-amber-700 font-bold bg-amber-100/50 p-2 rounded-lg mt-2">
-                                                <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-                                                <span>年5日の取得義務まで残り{leaveStatus.daysRemainingToObligation}日です。期限が迫っています。計画的な取得をお願いします。</span>
+                                            <div className="flex items-start gap-2 text-[10px] text-red-700 font-bold bg-red-50 p-3 rounded-xl mt-2 border border-red-100 animate-pulse">
+                                                <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                                                <span>年5日の取得義務まで残り{leaveStatus.daysRemainingToObligation}日です。期限（{new Date(leaveStatus.obligatoryDeadline!).toLocaleDateString('ja-JP')}）が迫っています。計画的な取得をお願いします。</span>
                                             </div>
                                         )}
                                         {leaveStatus.isObligationMet && (
-                                            <div className="flex items-center gap-2 text-[10px] text-emerald-700 font-bold bg-emerald-100/50 p-2 rounded-lg mt-2">
-                                                <CheckCircle2 size={14} className="shrink-0" />
+                                            <div className="flex items-center gap-2 text-[10px] text-emerald-700 font-bold bg-emerald-100/30 p-2 rounded-xl mt-2">
+                                                <CheckCircle2 size={16} className="shrink-0" />
                                                 <span>今年度の有給取得義務基準を達成しました。</span>
                                             </div>
                                         )}

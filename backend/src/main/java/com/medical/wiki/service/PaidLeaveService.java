@@ -371,6 +371,7 @@ public class PaidLeaveService {
                 .isObligationMet(isObligationMet)
                 .isWarning(isWarning)
                 .daysRemainingToObligation(daysRemainingToObligation)
+                .obligatoryDeadline(nextGrantDate)
                 .build();
     }
 
