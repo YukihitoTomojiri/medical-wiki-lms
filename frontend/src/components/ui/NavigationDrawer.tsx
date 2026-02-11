@@ -8,6 +8,7 @@ interface NavItem {
     icon: LucideIcon;
     path: string;
     roles?: string[]; // Allowed roles
+    end?: boolean;    // Strict match (exact path)
 }
 
 interface NavigationDrawerProps {
@@ -29,21 +30,23 @@ export const NavigationDrawer = ({ items, user, onItemClick }: NavigationDrawerP
     return (
         <nav className="flex flex-col gap-0.5 py-2">
             {filteredItems.map((item) => {
-                // Exact match or child route match (but not for parent routes like /admin when on /admin/users)
-                // We want `/admin` to be active ONLY when on `/admin` exactly
-                // We want `/admin/users` to be active when on `/admin/users` or `/admin/users/*`
+                // Determine active state
+                // If 'end' is true, use exact match
+                // Otherwise, use startsWith for sub-routes
                 const currentPath = location.pathname;
+                let isActive = false;
 
-                // Allow exact match for /admin (Dashboard)
-                // For other routes like /admin/users, allow prefixes
-                const isActive = item.path === '/admin'
-                    ? currentPath === item.path
-                    : (currentPath === item.path || currentPath.startsWith(item.path + '/'));
+                if (item.end) {
+                    isActive = currentPath === item.path;
+                } else {
+                    isActive = currentPath === item.path || currentPath.startsWith(item.path + '/');
+                }
 
                 return (
                     <NavLink
                         key={item.path}
                         to={item.path}
+                        end={item.end}
                         onClick={onItemClick}
                         className={`
                             flex items-center gap-3 h-14 px-6 mx-3 rounded-full transition-all duration-200 group

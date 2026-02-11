@@ -21,7 +21,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
     ], []);
 
     const adminItems = useMemo(() => [
-        { path: '/admin', label: '管理者ダッシュボード', icon: LayoutDashboard, roles: ['ADMIN', 'DEVELOPER'] },
+        { path: '/admin', label: '管理者ダッシュボード', icon: LayoutDashboard, roles: ['ADMIN', 'DEVELOPER'], end: true },
         { path: '/admin/users', label: 'ユーザー管理', icon: Users, roles: ['ADMIN', 'DEVELOPER'] },
         { path: '/admin/announcements', label: 'お知らせ管理', icon: Bell, roles: ['ADMIN', 'DEVELOPER'] },
         { path: '/admin/organization', label: '組織管理', icon: Building2, roles: ['ADMIN', 'DEVELOPER'] },

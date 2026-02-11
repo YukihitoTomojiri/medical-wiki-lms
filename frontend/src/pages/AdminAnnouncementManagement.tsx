@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, AlertCircle, X, Save } from 'lucide-react';
+import { Plus, Edit2, Trash2, AlertCircle, X, Save, Bell } from 'lucide-react';
 import { api, Announcement } from '../api';
+import PageHeader from '../components/layout/PageHeader';
+import { Button } from '../components/ui/Button';
 import { User } from '../types';
 
 interface props {
@@ -133,44 +135,47 @@ export default function AdminAnnouncementManagement({ user }: props) {
         }
     };
 
-    if (loading) return <div className="p-8 text-center">Loading...</div>;
+    if (loading) return <div className="p-12 text-center text-gray-500">Loading...</div>;
 
     return (
-        <div className="max-w-6xl mx-auto p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">お知らせ管理</h1>
-                <button
+        <div className="max-w-7xl mx-auto px-4 py-6 space-y-6 animate-in fade-in duration-500">
+            <PageHeader
+                title="お知らせ管理"
+                subtitle="全施設または特定施設へのお知らせを配信・管理します"
+                icon={Bell}
+            >
+                <Button
+                    variant="filled"
                     onClick={() => handleOpenModal()}
-                    className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition-colors"
+                    icon={<Plus size={18} />}
                 >
-                    <Plus size={18} />
-                    <span>新規作成</span>
-                </button>
-            </div>
+                    新規作成
+                </Button>
+            </PageHeader>
 
             {error && (
-                <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 flex items-center gap-2">
+                <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 flex items-center gap-2 border border-red-100">
                     <AlertCircle size={20} />
                     {error}
                 </div>
             )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-[28px] border border-gray-100 shadow-sm overflow-hidden">
                 <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-100">
+                    <thead className="bg-gray-50/50 border-b border-gray-100">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">優先度</th>
-                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">タイトル</th>
-                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">掲載期限</th>
-                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">作成日</th>
-                            <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">操作</th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">優先度</th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">タイトル</th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">掲載期限</th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">作成日</th>
+                            <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">操作</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {announcements.map((a) => (
-                            <tr key={a.id} className="hover:bg-gray-50/50">
+                            <tr key={a.id} className="hover:bg-gray-50/50 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${a.priority === 'HIGH' ? 'bg-red-100 text-red-700' :
+                                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${a.priority === 'HIGH' ? 'bg-red-100 text-red-700' :
                                         a.priority === 'LOW' ? 'bg-gray-100 text-gray-600' :
                                             'bg-blue-100 text-blue-700'
                                         }`}>
@@ -178,10 +183,10 @@ export default function AdminAnnouncementManagement({ user }: props) {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="text-sm font-medium text-gray-900">{a.title}</div>
-                                    <div className="text-xs text-gray-500 truncate max-w-xs">{a.content}</div>
+                                    <div className="text-sm font-bold text-gray-900 mb-0.5">{a.title}</div>
+                                    <div className="text-xs text-gray-500 truncate max-w-md">{a.content}</div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
                                     {a.displayUntil}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -190,13 +195,13 @@ export default function AdminAnnouncementManagement({ user }: props) {
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button
                                         onClick={() => handleOpenModal(a)}
-                                        className="text-indigo-600 hover:text-indigo-900 mr-4"
+                                        className="text-indigo-600 hover:text-indigo-900 mr-4 p-1 hover:bg-indigo-50 rounded transition-colors"
                                     >
                                         <Edit2 size={16} />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(a.id)}
-                                        className="text-red-500 hover:text-red-700"
+                                        className="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 rounded transition-colors"
                                     >
                                         <Trash2 size={16} />
                                     </button>
@@ -205,7 +210,7 @@ export default function AdminAnnouncementManagement({ user }: props) {
                         ))}
                         {announcements.length === 0 && (
                             <tr>
-                                <td colSpan={5} className="px-6 py-8 text-center text-gray-400 text-sm">
+                                <td colSpan={5} className="px-6 py-12 text-center text-gray-400 text-sm">
                                     お知らせはありません
                                 </td>
                             </tr>
@@ -216,56 +221,56 @@ export default function AdminAnnouncementManagement({ user }: props) {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl animate-in fade-in zoom-in-95 duration-200">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+                    <div className="bg-white rounded-[28px] w-full max-w-lg shadow-xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h2 className="text-lg font-bold text-gray-800">
                                 {editingId ? 'お知らせを編集' : '新規お知らせ作成'}
                             </h2>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 hover:bg-gray-200/50 p-2 rounded-full transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">タイトル</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1.5">タイトル</label>
                                 <input
                                     type="text"
                                     required
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    className="w-full px-4 py-2.5 border border-m3-outline/20 rounded-xl focus:ring-2 focus:ring-m3-primary focus:border-m3-primary outline-none transition-all bg-m3-surface-container-lowest"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-gray-50/30"
                                     placeholder="お知らせのタイトルを入力"
                                 />
                             </div>
 
                             {/* Developer Only Option */}
                             {user.role === 'DEVELOPER' && (
-                                <div className="p-4 bg-m3-surface-container-low rounded-xl border border-m3-outline-variant/30">
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">配信対象</label>
-                                    <div className="flex gap-4">
-                                        <label className="flex items-center gap-2 cursor-pointer">
+                                <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                                    <label className="block text-sm font-bold text-blue-900 mb-3">配信対象</label>
+                                    <div className="flex gap-6">
+                                        <label className="flex items-center gap-2 cursor-pointer group">
                                             <input
                                                 type="radio"
                                                 name="target"
                                                 checked={target === 'ALL'}
                                                 onChange={() => setTarget('ALL')}
-                                                className="w-4 h-4 text-m3-primary focus:ring-m3-primary"
+                                                className="w-4 h-4 text-m3-primary focus:ring-m3-primary border-gray-300"
                                             />
-                                            <span className="text-sm font-medium text-gray-700">全施設（共通通知）</span>
+                                            <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors">全施設（共通通知）</span>
                                         </label>
-                                        <label className="flex items-center gap-2 cursor-pointer">
+                                        <label className="flex items-center gap-2 cursor-pointer group">
                                             <input
                                                 type="radio"
                                                 name="target"
                                                 checked={target === 'FACILITY'}
                                                 onChange={() => setTarget('FACILITY')}
-                                                className="w-4 h-4 text-m3-primary focus:ring-m3-primary"
+                                                className="w-4 h-4 text-m3-primary focus:ring-m3-primary border-gray-300"
                                             />
-                                            <span className="text-sm font-medium text-gray-700">自施設のみ</span>
+                                            <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors">自施設のみ</span>
                                         </label>
                                     </div>
-                                    <p className="text-xs text-m3-on-surface-variant mt-2">
+                                    <p className="text-xs text-blue-600/80 mt-2 ml-1">
                                         ※「全施設」を選択すると、全ての施設のユーザーのダッシュボードに表示されます。
                                     </p>
                                 </div>
@@ -273,11 +278,11 @@ export default function AdminAnnouncementManagement({ user }: props) {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">優先度</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1.5">優先度</label>
                                     <select
                                         value={priority}
                                         onChange={(e) => setPriority(e.target.value as any)}
-                                        className="w-full px-4 py-2.5 border border-m3-outline/20 rounded-xl focus:ring-2 focus:ring-m3-primary focus:border-m3-primary outline-none transition-all bg-m3-surface-container-lowest"
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-gray-50/30 appearance-none"
                                     >
                                         <option value="HIGH">重要 (HIGH)</option>
                                         <option value="NORMAL">通常 (NORMAL)</option>
@@ -285,44 +290,43 @@ export default function AdminAnnouncementManagement({ user }: props) {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">掲載期限</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1.5">掲載期限</label>
                                     <input
                                         type="date"
                                         required
                                         value={displayUntil}
                                         onChange={(e) => setDisplayUntil(e.target.value)}
-                                        className="w-full px-4 py-2.5 border border-m3-outline/20 rounded-xl focus:ring-2 focus:ring-m3-primary focus:border-m3-primary outline-none transition-all bg-m3-surface-container-lowest"
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-gray-50/30"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">内容</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1.5">内容</label>
                                 <textarea
                                     required
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
                                     rows={6}
                                     placeholder="お知らせの内容を入力してください"
-                                    className="w-full px-4 py-2.5 border border-m3-outline/20 rounded-xl focus:ring-2 focus:ring-m3-primary focus:border-m3-primary outline-none resize-none bg-m3-surface-container-lowest"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none resize-none bg-gray-50/30"
                                 />
                             </div>
 
                             <div className="pt-4 flex justify-end gap-3 border-t border-gray-100">
-                                <button
-                                    type="button"
+                                <Button
+                                    variant="text"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="px-5 py-2.5 text-m3-on-surface-variant font-bold hover:bg-m3-surface-container-high rounded-full transition-colors"
                                 >
                                     キャンセル
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant="filled"
                                     type="submit"
-                                    className="px-6 py-2.5 bg-m3-primary text-m3-on-primary font-bold rounded-full hover:bg-m3-primary/90 shadow-m3-1 hover:shadow-m3-2 transition-all flex items-center gap-2"
+                                    icon={<Save size={18} />}
                                 >
-                                    <Save size={18} />
                                     保存
-                                </button>
+                                </Button>
                             </div>
                         </form>
                     </div>
