@@ -13,22 +13,22 @@ export default function PageHeader({
     title,
     description,
     icon: Icon,
-    iconColor = "text-gray-600",
-    iconBgColor = "bg-gray-100",
+    iconColor = "text-m3-on-secondary-container",
+    iconBgColor = "bg-m3-secondary-container",
     actions
 }: PageHeaderProps) {
     return (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
                 {Icon && (
-                    <div className={`p-3 rounded-xl ${iconBgColor} ${iconColor}`}>
+                    <div className={`p-3 rounded-2xl ${iconBgColor} ${iconColor} transition-colors`}>
                         <Icon size={24} />
                     </div>
                 )}
                 <div>
-                    <h1 className="text-2xl font-black text-gray-800 tracking-tight">{title}</h1>
+                    <h1 className="text-2xl font-black text-m3-on-surface tracking-tight">{title}</h1>
                     {description && (
-                        <p className="text-sm font-medium text-gray-500 mt-1">{description}</p>
+                        <p className="text-sm font-medium text-m3-on-surface-variant mt-0.5">{description}</p>
                     )}
                 </div>
             </div>

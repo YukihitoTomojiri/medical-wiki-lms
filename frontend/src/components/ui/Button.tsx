@@ -8,26 +8,26 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className = '', variant = 'primary', size = 'default', isLoading, icon, children, ...props }, ref) => {
-        const baseStyles = 'inline-flex items-center justify-center font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-m3-primary disabled:opacity-50 disabled:cursor-not-allowed';
+    ({ className = '', variant = 'filled', size = 'default', isLoading, icon, children, ...props }, ref) => {
+        const baseStyles = 'inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-m3-primary disabled:opacity-50 disabled:cursor-not-allowed';
 
         const variantStyles: Record<string, string> = {
-            filled: 'bg-m3-primary text-m3-on-primary hover:bg-opacity-90 active:bg-opacity-80 shadow-sm hover:shadow active:shadow-none',
-            tonal: 'bg-m3-secondary-container text-m3-on-secondary-container hover:bg-opacity-80 active:bg-opacity-70',
-            outlined: 'border border-m3-outline text-m3-primary hover:bg-m3-primary hover:bg-opacity-5 active:bg-opacity-10',
-            text: 'text-m3-primary hover:bg-m3-primary hover:bg-opacity-5 active:bg-opacity-10 min-w-0 px-2',
-            elevated: 'bg-m3-surface-container-low text-m3-primary shadow hover:shadow-md active:shadow-sm',
-            danger: 'bg-m3-error text-m3-on-error hover:bg-opacity-90 shadow-sm',
-            primary: 'bg-m3-primary text-m3-on-primary hover:bg-opacity-90 active:bg-opacity-80 shadow-sm hover:shadow active:shadow-none' // Alias for default
+            filled: 'bg-m3-primary text-m3-on-primary hover:shadow-m3-1 active:shadow-m3-0 hover:brightness-110',
+            tonal: 'bg-m3-secondary-container text-m3-on-secondary-container hover:shadow-m3-1 active:shadow-m3-0 hover:brightness-95',
+            outlined: 'border border-m3-outline text-m3-primary hover:bg-m3-primary/5 active:bg-m3-primary/10',
+            text: 'text-m3-primary hover:bg-m3-primary/5 active:bg-m3-primary/10 min-w-0 px-2',
+            elevated: 'bg-m3-surface-container-low text-m3-primary shadow-m3-1 hover:shadow-m3-2 active:shadow-m3-1',
+            danger: 'bg-m3-error text-m3-on-error hover:shadow-m3-1 active:shadow-m3-0 hover:brightness-110',
+            primary: 'bg-m3-primary text-m3-on-primary hover:shadow-m3-1 active:shadow-m3-0 hover:brightness-110',
         };
 
-        // M3 Elevation & Shape (Full rounded for buttons usually, or XL)
+        // M3 Shape: Full rounded (pill) for all button sizes
         const sizeStyles: Record<string, string> = {
-            default: 'h-10 px-4 py-2 rounded-full', // Pill shape for buttons
-            sm: 'h-9 px-3 rounded-full text-xs',
-            md: 'h-10 px-4 py-2 rounded-full', // 'md' maps to default
-            lg: 'h-12 px-8 rounded-full',
-            icon: 'h-10 w-10 rounded-full p-2 flex items-center justify-center'
+            default: 'h-10 px-6 py-2 rounded-full text-sm',
+            sm: 'h-9 px-4 rounded-full text-xs',
+            md: 'h-10 px-6 py-2 rounded-full text-sm',
+            lg: 'h-12 px-8 rounded-full text-base',
+            icon: 'h-10 w-10 rounded-full p-2 flex items-center justify-center',
         };
 
         const currentSizeStyle = sizeStyles[size || 'default'] || sizeStyles.default;
@@ -39,7 +39,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 disabled={isLoading || props.disabled}
                 {...props}
             >
-                {icon && <span className="text-current">{icon}</span>}
+                {isLoading && (
+                    <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                )}
+                {!isLoading && icon && <span className="text-current">{icon}</span>}
                 {children}
             </button>
         );
