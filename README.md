@@ -115,6 +115,17 @@ graph TD
   - 開発者画面のログコンソール背景を完全に不透明 (`bg-slate-900`) にし、`z-index` を調整して最前面に表示。
   - ログアウトボタンをサイドバーからヘッダー（ユーザーアイコン横）に移設し、利便性を向上。
 
+### [Material Design 3 UIアップデート] (feature/ui-m3-update)
+- **feat**: UIコンポーネントをMaterial Design 3 (M3) の形状ガイドラインに準拠させるデザインリフレッシュ。
+  - **Shape Scale**: `tailwind.config.js` に M3 Shape トークン (`m3-xs` ～ `m3-xl`) を導入。
+  - **Button**: M3 elevation shadow、state layer（brightness変更によるホバー）、loading spinner 内蔵。
+  - **Card**: 角丸を `rounded-m3-xl` (28px) に拡大、影を抑え Surface 階層で深度を表現。
+  - **Input**: M3 Outlined（角丸ボーダー）と Filled（上角丸＋下線）スタイルを明確化。
+  - **Badge**: `rounded-md` → `rounded-full`（ピル形状）に変更。
+  - **ConfirmModal**: M3 Dialog 仕様（`rounded-m3-xl`, scrim color, ピル形状ボタン）に刷新。
+  - **PageHeader**: アイコンコンテナ角丸拡大、M3 カラートークン統一。
+  - **Login**: 全入力・ボタン・カードを M3 トークンで統一。
+
 
 - **不具合修正**: 開発者/管理者ユーザーでログイン時に管理画面へのリンクが消失していた問題を解決。
 - **認可ロジック**: `useAuth` フックに `isAdmin` ヘルパーを追加し、フロントエンドでの権限判定を共通化。

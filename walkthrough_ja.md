@@ -293,3 +293,27 @@ Myダッシュボードにアクセスし、上部のカード（学習完了、
     - サイドメニュー下部にあったログアウトボタンを廃止しました。
     - 新しいトップナビゲーション（ヘッダー）のユーザーアイコン横に、`LogOut` アイコンを配置しました。
     - これにより、サイドメニューを開閉することなく、どの画面からでもワンクリックでログアウトが可能になり、ログコンソールとの物理的な干渉も解消されました。
+
+## 19. Material Design 3 UIアップデート (2026-02-11)
+
+### 🎨 M3 Shape & Component リフレッシュ
+UIコンポーネントをMaterial Design 3の形状ガイドラインに準拠させ、視覚的なモダン化を図りました。
+
+#### Tailwind Config
+- `borderRadius` に M3 Shape Scale (`m3-none`〜`m3-xl`) を追加し、デザイントークンとして一元管理
+- `boxShadow` に M3 Elevation レベル (`m3-0`〜`m3-3`) を追加
+- 不足していたカラートークン (`secondary-container`, `tertiary-container`, `error-container` 等) を補完
+
+#### UIプリミティブ
+- **Button**: `gap-2` でアイコンとテキストの間隔を確保、shadowをM3トークンに統一、`isLoading` 時のスピナーを内蔵化
+- **Card**: 角丸を `rounded-m3-xl` (28px) に拡大し、影を抑えてSurface階層で深度を表現
+- **Input**: Outlined（`rounded-m3-lg` + ボーダー）と Filled（上角丸 + 下線）を明確化
+- **Badge**: `rounded-md` → `rounded-full`（ピル形状）
+- **NavigationDrawer**: 高さを `h-14` に統一、非アクティブ時のアイコン線幅を細く
+
+#### コンポーネント
+- **ConfirmModal**: M3 Dialog（`rounded-m3-xl`, scrimカラー, ピル形状ボタン, 右揃えアクション）
+- **PageHeader**: アイコンコンテナを `rounded-2xl` に拡大、デフォルトカラーをM3トークンに変更
+
+#### ページ
+- **Login**: カード・入力・ボタン・エラー表示をすべてM3トークンで統一

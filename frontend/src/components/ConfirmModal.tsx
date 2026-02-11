@@ -25,48 +25,48 @@ export function ConfirmModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-            {/* Overlay */}
+            {/* Scrim (M3 overlay) */}
             <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                className="absolute inset-0 bg-m3-on-surface/32 backdrop-blur-sm"
                 onClick={onCancel}
             />
 
-            {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Dialog — M3 Extra Large shape (28px) */}
+            <div className="relative bg-m3-surface-container-high rounded-m3-xl shadow-m3-3 w-full max-w-md mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                <div className="flex items-center justify-between p-6 pb-4">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-red-100 rounded-xl">
-                            <AlertTriangle className="text-red-600" size={24} />
+                        <div className="p-2.5 bg-m3-error-container rounded-full">
+                            <AlertTriangle className="text-m3-error" size={22} />
                         </div>
-                        <h3 className="text-lg font-black text-gray-800">{title}</h3>
+                        <h3 className="text-lg font-bold text-m3-on-surface">{title}</h3>
                     </div>
                     <button
                         onClick={onCancel}
-                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+                        className="p-2 text-m3-on-surface-variant hover:bg-m3-on-surface/8 rounded-full transition-colors"
                     >
                         <X size={20} />
                     </button>
                 </div>
 
                 {/* Body */}
-                <div className="p-6">
-                    <p className="text-gray-600 font-medium leading-relaxed">{message}</p>
+                <div className="px-6 pb-6">
+                    <p className="text-m3-on-surface-variant text-sm font-medium leading-relaxed">{message}</p>
                 </div>
 
-                {/* Footer */}
-                <div className="flex gap-3 p-6 pt-0">
+                {/* Actions — M3: right-aligned, pill-shaped buttons */}
+                <div className="flex justify-end gap-2 px-6 pb-6">
                     <button
                         onClick={onCancel}
                         disabled={isLoading}
-                        className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50"
+                        className="px-6 py-2.5 text-m3-primary font-medium rounded-full hover:bg-m3-primary/5 transition-colors disabled:opacity-50 text-sm"
                     >
                         {cancelLabel}
                     </button>
                     <button
                         onClick={onConfirm}
                         disabled={isLoading}
-                        className="flex-1 px-4 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="px-6 py-2.5 bg-m3-error text-m3-on-error font-medium rounded-full hover:shadow-m3-1 transition-all disabled:opacity-50 flex items-center gap-2 text-sm"
                     >
                         {isLoading ? (
                             <>

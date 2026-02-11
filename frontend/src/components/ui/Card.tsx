@@ -6,12 +6,13 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
     ({ className = '', variant = 'elevated', children, ...props }, ref) => {
-        const baseStyles = 'bg-white rounded-xl shadow-none border border-m3-outline-variant/30 transition-all duration-200';
+        // M3 Card: Extra Large shape (28px radius), surface layering for depth
+        const baseStyles = 'rounded-m3-xl transition-all duration-200';
 
         const variantStyles = {
-            elevated: 'shadow-m3-1 border-transparent bg-m3-surface-container-low',
-            filled: 'bg-m3-surface-container-highest border-none',
-            outlined: 'border border-m3-outline-variant bg-transparent'
+            elevated: 'bg-m3-surface-container-low shadow-m3-1',
+            filled: 'bg-m3-surface-container-highest shadow-m3-0',
+            outlined: 'bg-m3-surface border border-m3-outline-variant shadow-m3-0',
         };
 
         return (
