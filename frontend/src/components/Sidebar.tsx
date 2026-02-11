@@ -35,15 +35,8 @@ export default function Sidebar({ onLogout, onClose }: SidebarProps) {
     return (
         <div className="flex flex-col h-full bg-m3-surface-container-low border-r border-m3-outline-variant/20 font-sans">
             {/* Branding Area for Mobile/Drawer */}
-            <div className="p-6 md:p-8 flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-m3-primary text-m3-on-primary rounded-xl flex items-center justify-center shadow-md">
-                    <BookOpen size={20} />
-                </div>
-                <div>
-                    <h1 className="text-sm font-bold text-m3-on-surface tracking-tight">Medical Wiki</h1>
-                    <p className="text-[10px] text-m3-outline font-medium tracking-wider uppercase">LMS Network</p>
-                </div>
-            </div>
+            {/* Branding Area removed for Modern Header integration */}
+            <div className="h-4" />
 
             <nav className="flex-1 overflow-y-auto px-2 space-y-6">
                 <div>

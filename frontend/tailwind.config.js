@@ -43,6 +43,10 @@ export default {
                 'm3-orange-background': '#FFFBFF',
                 'm3-orange-surface': '#FFFBFF',
                 'm3-orange-outline': '#827568',
+
+                // === Modern Header ===
+                'm3-header-bg': '#2D1600',
+                'm3-header-text': '#FFDDB3',
             },
             borderRadius: {
                 'md': '0.75rem',    // 12px

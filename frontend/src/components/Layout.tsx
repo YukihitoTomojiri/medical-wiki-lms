@@ -1,9 +1,8 @@
 import { ReactNode, useState } from 'react';
 import {
-    Menu,
     LogOut,
-    Building2,
 } from 'lucide-react';
+import Navbar from './layout/Navbar';
 import Sidebar from './Sidebar';
 import { Button } from './ui/Button';
 import { useAuth } from '../context/AuthContext';
@@ -30,67 +29,39 @@ export default function Layout({ children }: LayoutProps) {
     if (!user) return null;
 
     return (
-        <div className="min-h-screen bg-m3-background text-m3-on-background flex">
-            {/* Mobile Drawer Overlay */}
-            {sidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity"
-                    onClick={() => setSidebarOpen(false)}
-                />
-            )}
+        <div className="min-h-screen bg-m3-background text-m3-on-background flex flex-col">
+            {/* Modern Top Navbar */}
+            <Navbar onMenuClick={() => setSidebarOpen(true)} />
 
-            {/* Sidebar (Drawer) */}
-            <aside
-                className={`
-                    fixed inset-y-0 left-0 z-50 w-80 bg-m3-surface-container-low transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none
-                    lg:relative lg:translate-x-0
-                    ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-                `}
-            >
-                <Sidebar onLogout={handleLogoutClick} onClose={() => setSidebarOpen(false)} />
-            </aside>
+            <div className="flex flex-1 overflow-hidden relative">
+                {/* Mobile Drawer Overlay */}
+                {sidebarOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity"
+                        onClick={() => setSidebarOpen(false)}
+                    />
+                )}
 
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-                {/* M3 Top App Bar */}
-                <header className="h-16 px-4 flex items-center justify-between bg-m3-surface/80 backdrop-blur-md sticky top-0 z-30 border-b border-m3-outline-variant/20 lg:hidden">
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => setSidebarOpen(true)}
-                            className="p-2 text-m3-on-surface hover:bg-m3-surface-variant/30 rounded-full"
-                        >
-                            <Menu size={24} />
-                        </button>
-                        <h1 className="text-lg font-medium text-m3-on-surface">Medical Wiki</h1>
-                    </div>
-                </header>
+                {/* Sidebar (Drawer) */}
+                <aside
+                    className={`
+                        fixed inset-y-0 left-0 z-50 w-80 bg-m3-surface-container-low transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none
+                        lg:relative lg:translate-x-0
+                        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                    `}
+                >
+                    <Sidebar onLogout={handleLogoutClick} onClose={() => setSidebarOpen(false)} />
+                </aside>
 
-                {/* Content */}
-                <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
-                    <div className="max-w-7xl mx-auto animate-in fade-in duration-500">
-                        {/* Desktop Header / Breadcrumb placeholder or User profile could go here if needed, 
-                            but usually M3 has top bar or just content. 
-                            Let's add a subtle top bar for User Profile on Desktop since Sidebar handles nav. 
-                        */}
-                        <div className="hidden lg:flex justify-end mb-6 items-center gap-4">
-                            <div className="flex items-center gap-2 px-3 py-1 bg-m3-surface-variant rounded-full text-xs font-medium text-m3-on-surface-variant">
-                                <Building2 size={14} />
-                                {user.facility}
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="text-right">
-                                    <p className="text-sm font-bold text-m3-on-surface">{user.name}</p>
-                                    <p className="text-xs text-m3-outline">{user.role}</p>
-                                </div>
-                                <div className="w-10 h-10 rounded-full bg-m3-primary-container text-m3-on-primary-container flex items-center justify-center font-bold text-lg">
-                                    {user.name.charAt(0)}
-                                </div>
-                            </div>
+                {/* Main Content Area */}
+                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                    {/* Content */}
+                    <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
+                        <div className="max-w-7xl mx-auto animate-in fade-in duration-500">
+                            {children}
                         </div>
-
-                        {children}
-                    </div>
-                </main>
+                    </main>
+                </div>
             </div>
 
             {/* Logout Confirmation Dialog (M3 Style) */}
