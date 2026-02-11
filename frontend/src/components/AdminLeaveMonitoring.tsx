@@ -114,15 +114,15 @@ export default function AdminLeaveMonitoring() {
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                <div className="overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
                     <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-gray-50 border-b border-gray-200 text-xs text-gray-500 uppercase tracking-wider">
-                                <th className="p-4">社員情報</th>
-                                <th className="p-4">基準日 / 期間</th>
-                                <th className="p-4 w-1/3">取得義務進捗 (年5日)</th>
-                                <th className="p-4 text-center">状態</th>
+                        <thead className="sticky top-0 z-10">
+                            <tr className="bg-gray-50 border-b border-gray-200 text-xs text-gray-500 uppercase tracking-wider shadow-sm">
+                                <th className="p-4 bg-gray-50">社員情報</th>
+                                <th className="p-4 bg-gray-50">基準日 / 期間</th>
+                                <th className="p-4 bg-gray-50 w-1/3">取得義務進捗 (年5日)</th>
+                                <th className="p-4 bg-gray-50 text-center">状態</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
