@@ -667,6 +667,7 @@ export const api = {
         isObligationMet?: boolean;
         isWarning?: boolean;
         daysRemainingToObligation?: number;
+        obligatoryDeadline?: string;
     }> => {
         const response = await fetch(`${API_BASE}/users/me/leave-status`, {
             headers: getHeaders(userId)
