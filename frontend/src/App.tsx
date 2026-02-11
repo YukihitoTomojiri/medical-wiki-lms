@@ -7,6 +7,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import DeveloperDashboard from './pages/DeveloperDashboard';
 import AllUsersAdmin from './pages/AllUsersAdmin';
 import AdminUserManagement from './pages/AdminUserManagement';
+import AdminAnnouncementManagement from './pages/AdminAnnouncementManagement';
 import OrganizationManagement from './pages/OrganizationManagement';
 import ManualEdit from './pages/ManualEdit';
 import Layout from './components/Layout';
@@ -68,6 +69,7 @@ function AppRoutes() {
                         <Route path="/admin/manuals/new" element={<ManualEdit user={user} />} />
                         <Route path="/admin/manuals/edit/:id" element={<ManualEdit user={user} />} />
                         <Route path="/admin/all-users" element={<AllUsersAdmin />} />
+                        <Route path="/admin/announcements" element={<AdminAnnouncementManagement user={user} />} />
                     </>
                 )}
 
