@@ -10,8 +10,8 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
     const { user } = useAuth();
 
     return (
-        <nav className="bg-m3-header-bg text-white px-4 md:px-6 py-3 flex items-center justify-between shadow-lg z-50 relative">
-            <div className="flex items-center gap-4 md:gap-8">
+        <nav className="bg-m3-header-bg px-4 md:px-6 h-16 flex items-center justify-between shadow-lg sticky top-0 z-50">
+            <div className="flex items-center gap-4 md:gap-10">
                 {/* Mobile Menu Button */}
                 <button
                     onClick={onMenuClick}
@@ -22,29 +22,29 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
 
                 <Logo />
 
-                <div className="hidden md:flex items-center gap-2 text-m3-header-text/60 text-sm font-medium border-l border-white/10 pl-6 h-8">
-                    <span className="text-orange-400 text-lg">🥼</span>
-                    <span>専門知識で、現場を守る。</span>
+                {/* Micro Copy */}
+                <div className="hidden lg:flex items-center gap-2 border-l border-white/10 pl-10 h-10">
+                    <span className="text-sm font-medium text-orange-100/70 flex items-center gap-2">
+                        <span className="animate-pulse text-orange-400">●</span>
+                        想像力で、現場をアップデートする。
+                    </span>
                 </div>
             </div>
 
             <div className="flex items-center gap-4 md:gap-6">
-                <div className="flex items-center gap-4 text-sm font-bold text-m3-header-text/80">
-                    <button className="hidden sm:block hover:text-white transition-colors">ABOUT</button>
+                <button className="text-xs font-bold text-orange-100/80 hover:text-white transition-colors tracking-widest hidden sm:block">
+                    ABOUT
+                </button>
 
-                    {/* User Profile */}
-                    {user && (
-                        <div className="flex items-center gap-3 pl-4 border-l border-white/10">
-                            <div className="text-right hidden sm:block">
-                                <div className="text-xs text-orange-200/70">{user.facility}</div>
-                                <div className="text-white leading-none">{user.name}</div>
-                            </div>
-                            <div className="w-9 h-9 rounded-full bg-orange-200 text-orange-900 flex items-center justify-center font-bold text-sm shadow-inner ring-2 ring-white/20">
-                                {user.name.charAt(0)}
-                            </div>
+                {/* User Profile */}
+                {user && (
+                    <div className="flex items-center gap-3 bg-white/5 py-1.5 px-3 rounded-full border border-white/10 transition-colors hover:bg-white/10 cursor-pointer">
+                        <span className="text-xs font-bold text-white/90 hidden md:block">{user.facility || 'Facility'}</span>
+                        <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-xs shadow-sm ring-2 ring-white/20">
+                            {user.name.charAt(0)}
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </nav>
     );
