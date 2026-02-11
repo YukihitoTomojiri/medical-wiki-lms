@@ -61,7 +61,6 @@ export default function AdminDashboard() {
                 {activeTab === 'dashboard' && <ComplianceDashboard />}
                 {activeTab === 'paid_leaves' && <PaidLeaveManagement />}
                 {activeTab === 'leave_monitoring' && <AdminLeaveMonitoring />}
-                {activeTab === 'leave_monitoring' && <AdminLeaveMonitoring />}
             </div>
         </div>
     );
