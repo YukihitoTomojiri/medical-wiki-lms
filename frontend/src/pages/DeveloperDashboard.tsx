@@ -1237,9 +1237,9 @@ export default function DeveloperDashboard() {
 
 
                 {/* System Log Footer with Integrated Diagnostics */}
-                <div className="fixed bottom-0 left-0 right-0 bg-m3-surface-container-high text-m3-on-surface-variant border-t border-m3-outline-variant shadow-2xl transition-transform duration-300 ease-out transform translate-y-[calc(100%-88px)] hover:translate-y-0 z-50 backdrop-blur-sm">
+                <div className="fixed bottom-0 left-0 right-0 bg-slate-900 text-slate-100 border-t border-slate-700 shadow-2xl transition-transform duration-300 ease-out transform translate-y-[calc(100%-88px)] hover:translate-y-0 z-[100]">
                     {/* Diagnostics Bar - Always visible */}
-                    <div className="bg-m3-surface-container-high/95 px-4 py-2 flex items-center justify-between border-b border-m3-outline-variant">
+                    <div className="bg-slate-800/95 px-4 py-2 flex items-center justify-between border-b border-slate-700">
                         <div className="flex items-center gap-3 flex-wrap">
                             {/* System Status */}
                             <div className="flex items-center gap-2 pr-3 border-r border-m3-outline-variant">
@@ -1292,13 +1292,13 @@ export default function DeveloperDashboard() {
                     </div>
 
                     {/* Console Header */}
-                    <div className="bg-m3-surface-container px-4 py-2 flex items-center justify-between cursor-pointer group hover:bg-m3-surface-container-high transition-colors">
+                    <div className="bg-slate-800 px-4 py-2 flex items-center justify-between cursor-pointer group hover:bg-slate-700 transition-colors">
                         <div className="flex items-center gap-3">
-                            <div className="p-1 bg-m3-secondary-container rounded group-hover:bg-m3-secondary-container/80 transition-colors">
-                                <Terminal size={14} className="text-m3-on-secondary-container" />
+                            <div className="p-1 bg-slate-700 rounded group-hover:bg-slate-600 transition-colors">
+                                <Terminal size={14} className="text-orange-400" />
                             </div>
-                            <span className="text-xs font-bold uppercase tracking-wider text-m3-on-surface-variant group-hover:text-m3-on-surface transition-colors">System Log Console</span>
-                            <span className="px-1.5 py-0.5 bg-m3-surface-container-highest rounded text-[10px] text-m3-on-surface-variant">{logs.length} events</span>
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-300 group-hover:text-white transition-colors">System Log Console</span>
+                            <span className="px-1.5 py-0.5 bg-slate-900 rounded text-[10px] text-slate-400">{logs.length} events</span>
                         </div>
                         <div className="flex gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
                             <div className="w-2 h-2 rounded-full bg-m3-error" />
@@ -1308,23 +1308,23 @@ export default function DeveloperDashboard() {
                     </div>
 
                     {/* Log Entries */}
-                    <div className="h-48 overflow-y-auto p-4 font-mono text-xs space-y-1 scrollbar-thin scrollbar-thumb-m3-outline scrollbar-track-m3-surface-container">
+                    <div className="h-48 overflow-y-auto p-4 font-mono text-xs space-y-1 bg-black/50 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
                         {logs.map(log => (
-                            <div key={log.id} className="flex gap-3 hover:bg-m3-on-surface/5 p-0.5 rounded px-2 border-l-2 border-transparent hover:border-m3-primary transition-all items-center">
+                            <div key={log.id} className="flex gap-3 hover:bg-white/5 p-0.5 rounded px-2 border-l-2 border-transparent hover:border-orange-500 transition-all items-center">
                                 {/* Environment Badge */}
-                                <span className="px-1.5 py-0.5 bg-m3-surface-container-highest text-m3-on-surface-variant rounded text-[8px] font-bold uppercase tracking-wider border border-m3-outline-variant flex-shrink-0">
+                                <span className="px-1.5 py-0.5 bg-slate-800 text-slate-400 rounded text-[8px] font-bold uppercase tracking-wider border border-slate-700 flex-shrink-0">
                                     ENV
                                 </span>
-                                <span className="text-m3-on-surface-variant/70 select-none w-20 flex-shrink-0">{log.timestamp}</span>
-                                <span className={`font-bold w-16 uppercase flex-shrink-0 ${log.type === 'error' ? 'text-m3-error' :
-                                    log.type === 'success' ? 'text-emerald-600' : 'text-blue-600'
+                                <span className="text-slate-500 select-none w-20 flex-shrink-0">{log.timestamp}</span>
+                                <span className={`font-bold w-16 uppercase flex-shrink-0 ${log.type === 'error' ? 'text-rose-400' :
+                                    log.type === 'success' ? 'text-emerald-400' : 'text-blue-400'
                                     }`}>
                                     {log.type}
                                 </span>
-                                <span className="text-m3-on-surface truncate">{log.message}</span>
+                                <span className="text-slate-300 truncate">{log.message}</span>
                             </div>
                         ))}
-                        {logs.length === 0 && <span className="text-m3-on-surface-variant italic px-2">System initialized. Waiting for events...</span>}
+                        {logs.length === 0 && <span className="text-slate-500 italic px-2">System initialized. Waiting for events...</span>}
                     </div>
                 </div>
             </div>
