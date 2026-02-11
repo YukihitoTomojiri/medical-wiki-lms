@@ -29,7 +29,7 @@ export default function Layout({ children }: LayoutProps) {
     if (!user) return null;
 
     return (
-        <div className="min-h-screen bg-m3-background text-m3-on-background flex flex-col">
+        <div className="h-screen bg-m3-background text-m3-on-background flex flex-col">
             {/* Modern Top Navbar */}
             <Navbar
                 onMenuClick={() => setSidebarOpen(true)}
@@ -48,7 +48,7 @@ export default function Layout({ children }: LayoutProps) {
                 {/* Sidebar (Drawer) */}
                 <aside
                     className={`
-                        fixed inset-y-0 left-0 z-50 w-80 bg-m3-surface-container-low transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none
+                        fixed inset-y-0 left-0 z-40 w-80 bg-m3-surface-container-low transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none
                         lg:relative lg:translate-x-0
                         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                     `}
