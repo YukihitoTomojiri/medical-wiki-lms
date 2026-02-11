@@ -46,7 +46,8 @@ export default {
 
                 // === Modern Header ===
                 'm3-header-bg': '#2D1600',
-                'm3-header-text': '#FFDDB3',
+                'm3-header-text': '#FFFFFF',
+                'm3-header-text-secondary': '#FFDDB3',
             },
             borderRadius: {
                 'md': '0.75rem',    // 12px
