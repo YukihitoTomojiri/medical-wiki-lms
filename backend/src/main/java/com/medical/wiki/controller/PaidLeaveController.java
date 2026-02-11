@@ -35,6 +35,13 @@ public class PaidLeaveController {
                 leaveType);
     }
 
+    @PostMapping("/leaves/apply-bulk")
+    public List<PaidLeaveDto> submitBulkRequests(
+            @RequestHeader(value = "X-User-Id") Long userId,
+            @RequestBody List<PaidLeaveRequest> requests) {
+        return service.submitBulkRequests(userId, requests);
+    }
+
     @GetMapping("/leaves/history")
     public List<PaidLeaveDto> getMyRequests(@RequestHeader(value = "X-User-Id") Long userId) {
         return service.getMyRequests(userId);

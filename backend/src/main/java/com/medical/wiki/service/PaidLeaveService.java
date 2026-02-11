@@ -45,6 +45,8 @@ public class PaidLeaveService {
         double baseDays = (double) java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
         double daysRequested = (leaveType == PaidLeave.LeaveType.FULL) ? baseDays : baseDays * 0.5;
 
+        // Note: We check balance here for single request.
+        // For bulk requests, we need to check total.
         if (user.getPaidLeaveDays() < daysRequested) {
             throw new IllegalArgumentException("有給休暇の残日数が不足しています。申請日数: " + daysRequested
                     + ", Available: " + user.getPaidLeaveDays());
@@ -60,6 +62,72 @@ public class PaidLeaveService {
                 .build();
 
         return PaidLeaveDto.fromEntity(repository.save(paidLeave));
+    }
+
+    @Transactional
+    public List<PaidLeaveDto> submitBulkRequests(Long userId,
+            List<com.medical.wiki.controller.PaidLeaveController.PaidLeaveRequest> requests) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 1. Calculate Total Days Requested
+        double totalDaysRequested = 0.0;
+        List<PaidLeave> newLeaves = new java.util.ArrayList<>();
+
+        for (com.medical.wiki.controller.PaidLeaveController.PaidLeaveRequest req : requests) {
+            LocalDate start = req.getStartDate();
+            LocalDate end = req.getEndDate();
+
+            if (start.isAfter(end)) {
+                throw new IllegalArgumentException("開始日(" + start + ")は終了日(" + end + ")以前の日付を入力してください。");
+            }
+
+            // Check overlap with existing requests
+            if (repository.existsOverlapping(userId, start, end,
+                    java.util.Arrays.asList(PaidLeave.Status.PENDING, PaidLeave.Status.APPROVED))) {
+                throw new IllegalArgumentException(start + "から" + end + "の期間は既に申請済みです");
+            }
+
+            // Check overlap within the bulk request list itself
+            for (PaidLeave other : newLeaves) {
+                // If (StartA <= EndB) and (EndA >= StartB) -> Overlap
+                if (!start.isAfter(other.getEndDate()) && !end.isBefore(other.getStartDate())) {
+                    throw new IllegalArgumentException("申請リスト内で期間が重複しています: " + start + "~" + end);
+                }
+            }
+
+            PaidLeave.LeaveType type = PaidLeave.LeaveType.FULL;
+            try {
+                if (req.getLeaveType() != null) {
+                    type = PaidLeave.LeaveType.valueOf(req.getLeaveType().toUpperCase());
+                }
+            } catch (IllegalArgumentException e) {
+                // Default FULL
+            }
+
+            double baseDays = (double) java.time.temporal.ChronoUnit.DAYS.between(start, end) + 1;
+            double days = (type == PaidLeave.LeaveType.FULL) ? baseDays : baseDays * 0.5;
+            totalDaysRequested += days;
+
+            newLeaves.add(PaidLeave.builder()
+                    .user(user)
+                    .startDate(start)
+                    .endDate(end)
+                    .reason(req.getReason())
+                    .status(PaidLeave.Status.PENDING)
+                    .leaveType(type)
+                    .build());
+        }
+
+        // 2. Check Balance
+        if (user.getPaidLeaveDays() < totalDaysRequested) {
+            throw new IllegalArgumentException("有給休暇の残日数が不足しています。申請合計: " + totalDaysRequested
+                    + "日, 残り: " + user.getPaidLeaveDays() + "日");
+        }
+
+        // 3. Save All
+        List<PaidLeave> saved = repository.saveAll(newLeaves);
+        return saved.stream().map(PaidLeaveDto::fromEntity).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
