@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import PaidLeaveRequestForm from '../components/PaidLeaveRequestForm';
+import DashboardAnnouncements from '../components/DashboardAnnouncements';
 
 interface MyDashboardProps {
     user: User;
@@ -150,6 +151,8 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                 subtitle={`ようこそ、${user.name}さん。今日のタスクを確認しましょう。`}
                 icon={LayoutDashboard}
             />
+
+            <DashboardAnnouncements userId={user.id} />
 
             {/* Summary Cards as Navigation Buttons */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -19,6 +19,16 @@ export interface AdminLeaveMonitoring {
     isViolation: boolean;
 }
 
+export interface Announcement {
+    id: number;
+    title: string;
+    content: string;
+    priority: 'HIGH' | 'NORMAL' | 'LOW';
+    displayUntil: string;
+    facilityId?: number;
+    createdAt: string;
+}
+
 const API_BASE = '/api';
 
 const getHeaders = (userId?: number): Record<string, string> => {
@@ -709,6 +719,51 @@ export const api = {
         });
         if (!res.ok) return [];
         return res.json();
+    },
+
+    // Announcements
+    getAnnouncements: async (userId: number): Promise<Announcement[]> => {
+        const res = await fetch(`${API_BASE}/announcements`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    getAdminAnnouncements: async (userId: number): Promise<Announcement[]> => {
+        const res = await fetch(`${API_BASE}/admin/announcements`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    createAnnouncement: async (userId: number, data: { title: string; content: string; priority: string; displayUntil: string; facilityId?: number }): Promise<Announcement> => {
+        const res = await fetch(`${API_BASE}/admin/announcements`, {
+            method: 'POST',
+            headers: getHeaders(userId),
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error('Failed to create announcement');
+        return res.json();
+    },
+
+    updateAnnouncement: async (userId: number, id: number, data: { title: string; content: string; priority: string; displayUntil: string }): Promise<Announcement> => {
+        const res = await fetch(`${API_BASE}/admin/announcements/${id}`, {
+            method: 'PUT',
+            headers: getHeaders(userId),
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error('Failed to update announcement');
+        return res.json();
+    },
+
+    deleteAnnouncement: async (userId: number, id: number): Promise<void> => {
+        const res = await fetch(`${API_BASE}/admin/announcements/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) throw new Error('Failed to delete announcement');
     }
 };
 
