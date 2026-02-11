@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api';
+import PageHeader from '../components/layout/PageHeader';
 import { User, Progress } from '../types';
 import {
     BookOpen,
@@ -16,6 +17,7 @@ import {
     Sun,
     Sunrise,
     Sunset,
+    LayoutDashboard,
     AlertTriangle
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -141,13 +143,12 @@ export default function MyDashboard({ user }: MyDashboardProps) {
 
     return (
         <div className="space-y-6 max-w-6xl mx-auto">
-            {/* Header Area - Removed Admin Link for Separation */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Myダッシュボード</h2>
-                    <p className="text-gray-500 mt-1">ようこそ、{user.name}さん。今日のタスクを確認しましょう。</p>
-                </div>
-            </div>
+            {/* Header Area */}
+            <PageHeader
+                title="Myダッシュボード"
+                subtitle={`ようこそ、${user.name}さん。今日のタスクを確認しましょう。`}
+                icon={LayoutDashboard}
+            />
 
             {/* Summary Cards as Navigation Buttons */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -326,10 +327,10 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                             {/* Compliance Alert Widget */}
                             {leaveStatus?.obligatoryTarget > 0 && (
                                 <div className={`border rounded-2xl p-5 shadow-sm ${leaveStatus.isObligationMet
-                                        ? 'bg-emerald-50/50 border-emerald-100'
-                                        : leaveStatus.isWarning
-                                            ? 'bg-amber-50/50 border-amber-200'
-                                            : 'bg-white border-gray-100'
+                                    ? 'bg-emerald-50/50 border-emerald-100'
+                                    : leaveStatus.isWarning
+                                        ? 'bg-amber-50/50 border-amber-200'
+                                        : 'bg-white border-gray-100'
                                     }`}>
                                     <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2 mb-3">
                                         <CheckCircle2 size={16} className={leaveStatus.isObligationMet ? "text-emerald-500" : "text-gray-400"} />
@@ -355,10 +356,10 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                                         <div className="h-2.5 w-full bg-gray-100 rounded-full overflow-hidden">
                                             <div
                                                 className={`h-full rounded-full transition-all duration-500 ${leaveStatus.isObligationMet
-                                                        ? 'bg-emerald-500'
-                                                        : leaveStatus.isWarning
-                                                            ? 'bg-amber-500'
-                                                            : 'bg-blue-400'
+                                                    ? 'bg-emerald-500'
+                                                    : leaveStatus.isWarning
+                                                        ? 'bg-amber-500'
+                                                        : 'bg-blue-400'
                                                     }`}
                                                 style={{ width: `${Math.min(100, (leaveStatus.obligatoryDaysTaken / leaveStatus.obligatoryTarget) * 100)}%` }}
                                             />

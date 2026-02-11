@@ -11,7 +11,7 @@ import {
     Clock,
     Circle
 } from 'lucide-react';
-import PageHeader from '../components/PageHeader';
+import PageHeader from '../components/layout/PageHeader';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -72,20 +72,17 @@ export default function ManualList({ user }: ManualListProps) {
             {/* Header */}
             <PageHeader
                 title="マニュアル一覧"
-                description="社内マニュアル・研修資料を確認できます"
+                subtitle="社内マニュアル・研修資料を確認できます"
                 icon={BookOpen}
-                iconColor="text-m3-primary"
-                iconBgColor="bg-m3-primary-container"
-                actions={
-                    user.role === 'ADMIN' && (
-                        <Link to="/admin/manuals/new">
-                            <Button variant="filled" icon={<Plus size={18} />}>
-                                新規作成
-                            </Button>
-                        </Link>
-                    )
-                }
-            />
+            >
+                {user.role === 'ADMIN' && (
+                    <Link to="/admin/manuals/new">
+                        <Button variant="filled" icon={<Plus size={18} />}>
+                            新規作成
+                        </Button>
+                    </Link>
+                )}
+            </PageHeader>
 
             {/* M3 Cards for Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

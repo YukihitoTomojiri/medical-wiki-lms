@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../api';
 import { Manual, User } from '../types';
+import PageHeader from '../components/layout/PageHeader';
 import ReactMarkdown from 'react-markdown';
 import {
     ArrowLeft,
     CheckCircle2,
     BookCheck,
     Edit,
-    Clock,
-    User as UserIcon
+    Clock
 } from 'lucide-react';
 
 interface ManualDetailProps {
@@ -77,18 +77,35 @@ export default function ManualDetail({ user }: ManualDetailProps) {
 
     return (
         <div className="max-w-4xl mx-auto">
-            {/* Back button */}
-            <button
-                onClick={() => navigate('/manuals')}
-                className="flex items-center gap-2 text-gray-600 hover:text-primary-600 transition-colors mb-6"
-            >
-                <ArrowLeft size={20} />
-                <span>一覧に戻る</span>
-            </button>
 
-            {/* Header */}
+            <PageHeader
+                title={manual.title}
+                subtitle={`${manual.category} | 作成者: ${manual.authorName}`}
+                icon={BookCheck}
+            >
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => navigate('/manuals')}
+                        className="flex items-center gap-2 px-4 py-2 bg-white/50 hover:bg-white/80 text-orange-900 rounded-lg transition-all text-sm font-medium"
+                    >
+                        <ArrowLeft size={18} />
+                        一覧に戻る
+                    </button>
+                    {user.role === 'ADMIN' && (
+                        <Link
+                            to={`/admin/manuals/edit/${manual.id}`}
+                            className="flex items-center gap-2 px-4 py-2 bg-orange-200 text-orange-900 hover:bg-orange-300 rounded-lg transition-all text-sm font-medium"
+                        >
+                            <Edit size={18} />
+                            編集
+                        </Link>
+                    )}
+                </div>
+            </PageHeader>
+
+            {/* Metadata & Content */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
-                <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-6 border-b border-gray-100">
                     <div className="flex items-center gap-2">
                         <span className="px-3 py-1 bg-primary-50 text-primary-600 rounded-full text-sm font-medium">
                             {manual.category}
@@ -100,41 +117,20 @@ export default function ManualDetail({ user }: ManualDetailProps) {
                             </span>
                         )}
                     </div>
-                    {user.role === 'ADMIN' && (
-                        <Link
-                            to={`/admin/manuals/edit/${manual.id}`}
-                            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all"
-                        >
-                            <Edit size={18} />
-                            編集
-                        </Link>
-                    )}
-                </div>
-
-                <h1 className="text-2xl font-bold text-gray-800 mb-4">
-                    {manual.title}
-                </h1>
-
-                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                    <div className="flex items-center gap-2">
-                        <UserIcon size={16} />
-                        <span>{manual.authorName}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Clock size={16} />
-                        <span>作成: {new Date(manual.createdAt).toLocaleDateString('ja-JP')}</span>
-                    </div>
-                    {manual.updatedAt !== manual.createdAt && (
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
                         <div className="flex items-center gap-2">
                             <Clock size={16} />
-                            <span>更新: {new Date(manual.updatedAt).toLocaleDateString('ja-JP')}</span>
+                            <span>作成: {new Date(manual.createdAt).toLocaleDateString('ja-JP')}</span>
                         </div>
-                    )}
+                        {manual.updatedAt !== manual.createdAt && (
+                            <div className="flex items-center gap-2">
+                                <Clock size={16} />
+                                <span>更新: {new Date(manual.updatedAt).toLocaleDateString('ja-JP')}</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
 
-            {/* Content */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 mb-6">
                 {manual.pdfUrl ? (
                     <div className="space-y-6">
                         <div className="aspect-[1/1.4] w-full bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
@@ -160,7 +156,7 @@ export default function ManualDetail({ user }: ManualDetailProps) {
                 )}
             </div>
 
-            {/* Read button */}
+
             <div className="bg-gradient-to-r from-primary-50 to-amber-50 rounded-2xl p-6 border border-primary-100">
                 {manual.isRead ? (
                     <div className="flex items-center justify-center gap-3 text-emerald-600">
@@ -189,6 +185,6 @@ export default function ManualDetail({ user }: ManualDetailProps) {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }
