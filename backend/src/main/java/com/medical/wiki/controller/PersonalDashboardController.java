@@ -21,51 +21,55 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PersonalDashboardController {
 
-    private final com.medical.wiki.repository.UserRepository userRepository;
-    private final ProgressRepository progressRepository;
-    private final ManualRepository manualRepository;
-    private final PaidLeaveRepository paidLeaveRepository;
-    private final com.medical.wiki.repository.AttendanceRequestRepository attendanceRequestRepository;
+        private final com.medical.wiki.repository.UserRepository userRepository;
+        private final ProgressRepository progressRepository;
+        private final ManualRepository manualRepository;
+        private final PaidLeaveRepository paidLeaveRepository;
+        private final com.medical.wiki.repository.AttendanceRequestRepository attendanceRequestRepository;
+        private final com.medical.wiki.service.AnnouncementService announcementService;
 
-    @GetMapping("/my/summary")
-    public PersonalDashboardDto getDashboard(@RequestHeader(value = "X-User-Id") Long userId) {
-        List<Progress> progressList = progressRepository.findByUserIdOrderByReadAtDesc(userId);
-        long totalManuals = manualRepository.count();
+        @GetMapping("/my/summary")
+        public PersonalDashboardDto getDashboard(@RequestHeader(value = "X-User-Id") Long userId) {
+                List<Progress> progressList = progressRepository.findByUserIdOrderByReadAtDesc(userId);
+                long totalManuals = manualRepository.count();
 
-        com.medical.wiki.entity.User user = userRepository.findById(userId).orElseThrow();
+                com.medical.wiki.entity.User user = userRepository.findById(userId).orElseThrow();
 
-        // Calculate monthly read count
-        LocalDate now = LocalDate.now();
-        int monthlyCount = (int) progressList.stream()
-                .filter(p -> {
-                    LocalDate readDate = p.getReadAt().toLocalDate();
-                    return readDate.getMonth() == now.getMonth() && readDate.getYear() == now.getYear();
-                })
-                .count();
+                // Calculate monthly read count
+                LocalDate now = LocalDate.now();
+                int monthlyCount = (int) progressList.stream()
+                                .filter(p -> {
+                                        LocalDate readDate = p.getReadAt().toLocalDate();
+                                        return readDate.getMonth() == now.getMonth()
+                                                        && readDate.getYear() == now.getYear();
+                                })
+                                .count();
 
-        String lastReadDate = progressList.isEmpty() ? "-"
-                : progressList.get(0).getReadAt().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+                String lastReadDate = progressList.isEmpty() ? "-"
+                                : progressList.get(0).getReadAt().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
 
-        int pendingPaidLeaves = (int) paidLeaveRepository.countByUserIdAndStatus(userId, PaidLeave.Status.PENDING);
-        int approvedPaidLeaves = (int) paidLeaveRepository.countByUserIdAndStatus(userId, PaidLeave.Status.APPROVED);
+                int pendingPaidLeaves = (int) paidLeaveRepository.countByUserIdAndStatus(userId,
+                                PaidLeave.Status.PENDING);
+                int approvedPaidLeaves = (int) paidLeaveRepository.countByUserIdAndStatus(userId,
+                                PaidLeave.Status.APPROVED);
 
-        int pendingAttRequests = (int) attendanceRequestRepository.countByUserIdAndStatus(userId,
-                com.medical.wiki.entity.AttendanceRequest.Status.PENDING);
-        int approvedAttRequests = (int) attendanceRequestRepository.countByUserIdAndStatus(userId,
-                com.medical.wiki.entity.AttendanceRequest.Status.APPROVED);
+                int pendingAttRequests = (int) attendanceRequestRepository.countByUserIdAndStatus(userId,
+                                com.medical.wiki.entity.AttendanceRequest.Status.PENDING);
+                int approvedAttRequests = (int) attendanceRequestRepository.countByUserIdAndStatus(userId,
+                                com.medical.wiki.entity.AttendanceRequest.Status.APPROVED);
 
-        int pendingLeaves = pendingPaidLeaves + pendingAttRequests;
-        int approvedLeaves = approvedPaidLeaves + approvedAttRequests;
+                int pendingLeaves = pendingPaidLeaves + pendingAttRequests;
+                int approvedLeaves = approvedPaidLeaves + approvedAttRequests;
 
-        return PersonalDashboardDto.builder()
-                .completedManualsCount(progressList.size())
-                .totalManualsCount((int) totalManuals)
-                .monthlyReadCount(monthlyCount)
-                .lastReadDate(lastReadDate)
-                .pendingLeaveRequestsCount(pendingLeaves)
-                .approvedLeaveRequestsCount(approvedLeaves)
-                .paidLeaveDays(user.getPaidLeaveDays() != null ? user.getPaidLeaveDays() : 0.0)
-                .unreadNotificationsCount(0) // Mock
-                .build();
-    }
+                return PersonalDashboardDto.builder()
+                                .completedManualsCount(progressList.size())
+                                .totalManualsCount((int) totalManuals)
+                                .monthlyReadCount(monthlyCount)
+                                .lastReadDate(lastReadDate)
+                                .pendingLeaveRequestsCount(pendingLeaves)
+                                .approvedLeaveRequestsCount(approvedLeaves)
+                                .paidLeaveDays(user.getPaidLeaveDays() != null ? user.getPaidLeaveDays() : 0.0)
+                                .unreadNotificationsCount(announcementService.getAnnouncementsForUser(userId).size())
+                                .build();
+        }
 }
