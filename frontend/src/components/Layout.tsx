@@ -31,7 +31,10 @@ export default function Layout({ children }: LayoutProps) {
     return (
         <div className="min-h-screen bg-m3-background text-m3-on-background flex flex-col">
             {/* Modern Top Navbar */}
-            <Navbar onMenuClick={() => setSidebarOpen(true)} />
+            <Navbar
+                onMenuClick={() => setSidebarOpen(true)}
+                onLogout={handleLogoutClick}
+            />
 
             <div className="flex flex-1 overflow-hidden relative">
                 {/* Mobile Drawer Overlay */}
@@ -50,7 +53,7 @@ export default function Layout({ children }: LayoutProps) {
                         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                     `}
                 >
-                    <Sidebar onLogout={handleLogoutClick} onClose={() => setSidebarOpen(false)} />
+                    <Sidebar onClose={() => setSidebarOpen(false)} />
                 </aside>
 
                 {/* Main Content Area */}
