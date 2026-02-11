@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface AnnouncementRepository extends JpaRepository<Announcement, Long> {
 
-    @Query("SELECT a FROM Announcement a WHERE " +
+    @Query("SELECT a FROM Announcement a LEFT JOIN FETCH a.createdBy WHERE " +
             "(a.facilityId IS NULL OR a.facilityId = :facilityId) AND " +
             "a.deletedAt IS NULL AND " +
             "a.displayUntil >= :today " +

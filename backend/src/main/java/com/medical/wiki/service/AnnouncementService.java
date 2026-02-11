@@ -23,6 +23,7 @@ public class AnnouncementService {
     private final FacilityRepository facilityRepository;
 
     // Get active announcements for a specific user (Dashboard view)
+    @Transactional(readOnly = true)
     public List<Announcement> getAnnouncementsForUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));

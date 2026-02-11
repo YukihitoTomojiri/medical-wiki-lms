@@ -156,6 +156,10 @@ graph TD
 - **feat**: カードをクリックすることでコンテンツエリアが切り替わる「タブナビゲーション」UIを採用し、省スペース化と情報へのアクセス性を向上。
 - **fix**: バックエンドのお知らせ取得ロジックを修正し、一般ユーザーが「全体のお知らせ」と「自施設のお知らせ」の両方を正しく受け取れるように改善（カウントバッジも正確に反映）。
 
+### [Fix: Global Notice Visibility] (fix/all-facility-notice-visibility)
+- **fix**: Dashboardにおけるお知らせ表示で、全施設向け（Global）のお知らせが表示されない問題を修正し、明示的に「全体」バッジを表示するように改善。
+- **perf**: `AnnouncementRepository` に `JOIN FETCH` を導入し、N+1問題を解消およびLazy Loadingエラーを根絶。
+
 ### [Fix: User Notice Display] (fix/user-notice-display)
 - **fix**: 一般ユーザー（ROLE_USER）のお知らせ一覧取得時に発生していた500エラー（JSONシリアライズ時の無限再帰・LazyLoadエラー）を修正。
 - **refactor**: `Announcement` エンティティを直接返却する実装を廃止し、`AnnouncementDto` を導入してセキュアかつ軽量なデータ転送を実現。
