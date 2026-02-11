@@ -3,7 +3,7 @@ import React from 'react';
 
 interface PageHeaderProps {
     title: string;
-    subtitle?: string;
+    subtitle?: React.ReactNode;
     icon?: LucideIcon;
     children?: React.ReactNode;
 }
@@ -21,9 +21,9 @@ const PageHeader = ({ title, subtitle, icon: Icon, children }: PageHeaderProps) 
                         </h1>
                     </div>
                     {subtitle && (
-                        <p className="text-orange-800/80 font-medium ml-1">
+                        <div className="text-orange-800/80 font-medium ml-1">
                             {subtitle}
-                        </p>
+                        </div>
                     )}
                 </div>
 

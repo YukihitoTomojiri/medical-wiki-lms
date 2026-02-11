@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import PageHeader from '../components/layout/PageHeader';
 
 
 
@@ -465,34 +466,31 @@ export default function DeveloperDashboard() {
             />
             <div className="space-y-6 pb-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
-                <div className="flex items-center justify-between pt-4">
-                    <div>
-                        <h2 className="text-2xl font-bold text-m3-on-surface tracking-tight flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-m3-tertiary-container flex items-center justify-center text-m3-on-tertiary-container">
-                                <Activity size={20} />
-                            </div>
-                            開発者ダッシュボード
-                        </h2>
-                        <div className="flex items-center gap-4 mt-2 ml-14">
-                            <p className="text-m3-on-surface-variant font-medium text-xs flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-m3-primary"></span>
+                <PageHeader
+                    title="開発者ダッシュボード"
+                    icon={Activity}
+                    subtitle={
+                        <div className="flex items-center gap-4 mt-1">
+                            <span className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-orange-500"></span>
                                 システム v{stats.version} 稼働中
-                            </p>
-                            <p className="text-m3-outline text-xs flex items-center gap-2 border-l pl-4 border-m3-outline-variant/30">
+                            </span>
+                            <span className="text-orange-800/60 flex items-center gap-2 border-l border-orange-200 pl-4">
                                 <RefreshCw size={12} />
                                 最終同期: {lastSync}
-                            </p>
+                            </span>
                         </div>
-                    </div>
-
+                    }
+                >
                     <Button
                         variant="outlined"
                         onClick={fetchData}
                         icon={<RefreshCw size={18} className={loading ? 'animate-spin' : ''} />}
+                        className="bg-white border-orange-200 text-orange-700 hover:bg-orange-50"
                     >
                         更新
                     </Button>
-                </div>
+                </PageHeader>
 
                 {/* Tab Navigation */}
                 <div className="flex p-1 bg-m3-surface-container-high rounded-full w-fit mb-4">

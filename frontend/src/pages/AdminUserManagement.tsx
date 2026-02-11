@@ -8,16 +8,17 @@ import {
     CheckCircle,
     X,
     RefreshCw,
-    Shield,
     UserPlus,
     Building2,
     Calendar,
-    UserCircle
+    UserCircle,
+    Users
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
+import PageHeader from '../components/layout/PageHeader';
 
 interface Props {
     user: User;
@@ -192,148 +193,143 @@ export default function AdminUserManagement({ user }: Props) {
 
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+        <div className="max-w-7xl mx-auto px-4 py-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-medium text-m3-on-surface tracking-tight flex items-center gap-3">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-m3-primary-container text-m3-on-primary-container">
-                            <Shield size={18} />
-                        </div>
-                        ユーザー管理
-                    </h1>
-                    <p className="text-m3-on-surface-variant text-sm mt-1 ml-11">
-                        職員の登録、情報の編集、権限設定を行います
-                    </p>
-                </div>
+            <PageHeader
+                title="ユーザー管理"
+                subtitle="職員の登録、情報の編集、権限設定を行います"
+                icon={Users}
+            >
                 <Button variant="filled" onClick={handleAddClick} icon={<UserPlus size={18} />}>
                     新規ユーザー登録
                 </Button>
-            </div>
+            </PageHeader>
 
-            {/* Filters */}
-            <Card variant="filled" className="p-4 flex flex-wrap gap-4 items-center bg-m3-surface-container">
-                <div className="flex-1 min-w-[250px] relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-m3-on-surface-variant" size={18} />
-                    <input
-                        type="text"
-                        placeholder="氏名または職員番号で検索..."
-                        className="w-full pl-10 pr-4 py-2.5 bg-m3-surface border border-m3-outline-variant rounded-full focus:ring-2 focus:ring-m3-primary focus:border-m3-primary text-sm transition-all"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                    />
+            <div className="bg-white rounded-[28px] border border-stone-200 p-6 shadow-sm space-y-6">
+                {/* Filters */}
+                <div className="flex flex-wrap gap-4 items-center">
+                    <div className="flex-1 min-w-[250px] relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                            type="text"
+                            placeholder="氏名または職員番号で検索..."
+                            className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-full focus:ring-2 focus:ring-orange-200 focus:border-orange-400 text-sm transition-all"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    {user.role === 'DEVELOPER' && (
+                        <select
+                            className="px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-full focus:ring-2 focus:ring-orange-200 text-sm text-gray-700"
+                            value={selectedFacility}
+                            onChange={e => setSelectedFacility(e.target.value)}
+                        >
+                            <option value="">全施設</option>
+                            {facilities.map(f => <option key={f} value={f}>{f}</option>)}
+                        </select>
+                    )}
+
+                    <Button variant="outlined" onClick={() => fetchUsers()} size="md" className="rounded-full px-3">
+                        <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+                    </Button>
                 </div>
 
-                {user.role === 'DEVELOPER' && (
-                    <select
-                        className="px-4 py-2.5 bg-m3-surface border border-m3-outline-variant rounded-full focus:ring-2 focus:ring-m3-primary text-sm text-m3-on-surface"
-                        value={selectedFacility}
-                        onChange={e => setSelectedFacility(e.target.value)}
-                    >
-                        <option value="">全施設</option>
-                        {facilities.map(f => <option key={f} value={f}>{f}</option>)}
-                    </select>
+                {/* Success Message */}
+                {successMessage && (
+                    <div className="bg-emerald-50 text-emerald-900 p-4 rounded-xl border border-emerald-100 flex items-center gap-3 font-medium animate-in fade-in">
+                        <CheckCircle size={20} />
+                        {successMessage}
+                        <button onClick={() => setSuccessMessage(null)} className="ml-auto hover:bg-emerald-100 p-1 rounded-full">
+                            <X size={16} />
+                        </button>
+                    </div>
                 )}
 
-                <Button variant="outlined" onClick={() => fetchUsers()} size="md" className="rounded-full px-3">
-                    <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
-                </Button>
-            </Card>
-
-            {/* Success Message */}
-            {successMessage && (
-                <div className="bg-emerald-50 text-emerald-900 p-4 rounded-xl border border-emerald-100 flex items-center gap-3 font-medium animate-in fade-in">
-                    <CheckCircle size={20} />
-                    {successMessage}
-                    <button onClick={() => setSuccessMessage(null)} className="ml-auto hover:bg-emerald-100 p-1 rounded-full">
-                        <X size={16} />
-                    </button>
-                </div>
-            )}
-
-            {/* Users List Data Table */}
-            <Card variant="outlined" className="overflow-hidden bg-m3-surface">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead className="bg-m3-surface-container-low border-b border-m3-outline-variant">
-                            <tr>
-                                <th className="px-6 py-4 text-xs font-bold text-m3-on-surface-variant">職員</th>
-                                <th className="px-6 py-4 text-xs font-bold text-m3-on-surface-variant">所属</th>
-                                <th className="px-6 py-4 text-xs font-bold text-m3-on-surface-variant">権限</th>
-                                <th className="px-6 py-4 text-xs font-bold text-m3-on-surface-variant hidden md:table-cell">入職日</th>
-                                <th className="px-6 py-4 text-xs font-bold text-m3-on-surface-variant text-right">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-m3-outline-variant/20">
-                            {loading ? (
+                {/* Users List Data Table */}
+                <Card variant="outlined" className="overflow-hidden bg-white border-0 !shadow-none ring-1 ring-stone-200">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-stone-50 border-b border-stone-200">
                                 <tr>
-                                    <td colSpan={5} className="p-12 text-center text-m3-outline-variant">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <RefreshCw className="animate-spin text-m3-primary" size={32} />
-                                            <span className="text-sm">データを読み込み中...</span>
-                                        </div>
-                                    </td>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500">職員</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500">所属</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500">権限</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 hidden md:table-cell">入職日</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 text-right">操作</th>
                                 </tr>
-                            ) : filteredUsers.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="p-12 text-center text-m3-outline-variant">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <UserCircle size={48} className="opacity-20" />
-                                            <span className="text-sm">ユーザーが見つかりませんでした</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredUsers.map(u => (
-                                    <tr key={u.id} className="group hover:bg-m3-surface-container-highest/50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-m3-secondary-container flex items-center justify-center text-m3-on-secondary-container font-bold text-sm">
-                                                    {u.name.charAt(0)}
-                                                </div>
-                                                <div>
-                                                    <div className="font-medium text-m3-on-surface">{u.name}</div>
-                                                    <div className="text-xs text-m3-outline font-mono">{u.employeeId}</div>
-                                                </div>
+                            </thead>
+                            <tbody className="divide-y divide-stone-100">
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={5} className="p-12 text-center text-gray-400">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <RefreshCw className="animate-spin text-orange-500" size={32} />
+                                                <span className="text-sm">データを読み込み中...</span>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-1.5 text-sm font-medium text-m3-on-surface">
-                                                <Building2 size={14} className="text-m3-outline" />
-                                                {u.facility}
-                                            </div>
-                                            <div className="text-xs text-m3-outline pl-5">{u.department}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <Badge variant={
-                                                u.role === 'ADMIN' ? 'error' :
-                                                    u.role === 'DEVELOPER' ? 'warning' : 'success'
-                                            }>
-                                                {u.role}
-                                            </Badge>
-                                        </td>
-                                        <td className="px-6 py-4 hidden md:table-cell">
-                                            <div className="flex items-center gap-2 text-sm text-m3-outline">
-                                                <Calendar size={14} />
-                                                {u.joinedDate || '-'}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <Button
-                                                variant="text"
-                                                size="sm"
-                                                onClick={() => handleEditClick(u)}
-                                                className="text-m3-outline hover:text-m3-primary"
-                                                icon={<Edit2 size={18} />}
-                                            />
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </Card>
+                                ) : filteredUsers.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="p-12 text-center text-gray-400">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <UserCircle size={48} className="opacity-20" />
+                                                <span className="text-sm">ユーザーが見つかりませんでした</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredUsers.map(u => (
+                                        <tr key={u.id} className="group hover:bg-orange-50/50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold text-sm">
+                                                        {u.name.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-medium text-gray-800">{u.name}</div>
+                                                        <div className="text-xs text-gray-400 font-mono">{u.employeeId}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                                                    <Building2 size={14} className="text-gray-400" />
+                                                    {u.facility}
+                                                </div>
+                                                <div className="text-xs text-gray-400 pl-5">{u.department}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <Badge variant={
+                                                    u.role === 'ADMIN' ? 'error' :
+                                                        u.role === 'DEVELOPER' ? 'warning' : 'success'
+                                                }>
+                                                    {u.role}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-6 py-4 hidden md:table-cell">
+                                                <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                    <Calendar size={14} />
+                                                    {u.joinedDate || '-'}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <Button
+                                                    variant="text"
+                                                    size="sm"
+                                                    onClick={() => handleEditClick(u)}
+                                                    className="text-gray-400 hover:text-orange-600"
+                                                    icon={<Edit2 size={18} />}
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </Card>
+            </div>
 
             {/* Modals */}
             {showAddModal && (
