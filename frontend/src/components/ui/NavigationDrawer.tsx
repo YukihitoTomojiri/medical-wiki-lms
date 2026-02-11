@@ -33,9 +33,12 @@ export const NavigationDrawer = ({ items, user, onItemClick }: NavigationDrawerP
                 // We want `/admin` to be active ONLY when on `/admin` exactly
                 // We want `/admin/users` to be active when on `/admin/users` or `/admin/users/*`
                 const currentPath = location.pathname;
-                const isExactMatch = currentPath === item.path;
-                const isChildRoute = currentPath.startsWith(item.path + '/');
-                const isActive = isExactMatch || isChildRoute;
+
+                // Allow exact match for /admin (Dashboard)
+                // For other routes like /admin/users, allow prefixes
+                const isActive = item.path === '/admin'
+                    ? currentPath === item.path
+                    : (currentPath === item.path || currentPath.startsWith(item.path + '/'));
 
                 return (
                     <NavLink
