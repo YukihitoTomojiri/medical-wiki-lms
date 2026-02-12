@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -31,6 +33,14 @@ public class User {
 
     @Column(nullable = false)
     private String department;
+
+    @Column(name = "job_type")
+    private String jobType;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_committees", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "committee_id"))
+    @Builder.Default
+    private Set<Committee> committees = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

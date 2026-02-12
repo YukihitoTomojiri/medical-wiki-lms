@@ -17,6 +17,10 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import DevConsole from './pages/DevConsole';
 import SubmissionSuccessPage from './pages/SubmissionSuccessPage';
+import TrainingList from './pages/TrainingList';
+import TrainingDetail from './pages/TrainingDetail';
+import TrainingAdmin from './pages/TrainingAdmin';
+import TrainingResponseAdmin from './pages/TrainingResponseAdmin';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 
@@ -61,6 +65,9 @@ function AppRoutes() {
                     <Route path="/developer" element={<DeveloperDashboard />} />
                 )}
 
+                <Route path="/training" element={<TrainingList />} />
+                <Route path="/training/:id" element={<TrainingDetail />} />
+
                 {(isAdmin) && (
                     <>
                         <Route path="/admin" element={<AdminDashboard />} />
@@ -70,6 +77,8 @@ function AppRoutes() {
                         <Route path="/admin/manuals/edit/:id" element={<ManualEdit user={user} />} />
                         <Route path="/admin/all-users" element={<AllUsersAdmin />} />
                         <Route path="/admin/announcements" element={<AdminAnnouncementManagement user={user} />} />
+                        <Route path="/admin/training" element={<TrainingAdmin />} />
+                        <Route path="/admin/training/responses/:eventId" element={<TrainingResponseAdmin />} />
                     </>
                 )}
 
