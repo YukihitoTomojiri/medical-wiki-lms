@@ -10,9 +10,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TrainingResponseService {
@@ -52,7 +54,31 @@ public class TrainingResponseService {
         return trainingResponseRepository.findByTrainingEventId(eventId);
     }
 
+    @Transactional(readOnly = true)
     public List<TrainingResponse> getMyResponses(Long userId) {
+        log.debug("Fetching responses for user: ID={}", userId);
         return trainingResponseRepository.findByUserId(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public String exportResponses(Long eventId) {
+        TrainingEvent event = trainingEventRepository.findById(eventId)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+        List<TrainingResponse> responses = trainingResponseRepository.findByTrainingEventId(eventId);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("研修タイトル: ").append(event.getTitle()).append("\n");
+        sb.append("記述日: ").append(LocalDateTime.now()).append("\n");
+        sb.append("回答数: ").append(responses.size()).append("\n\n");
+        sb.append("--- 回答一覧 ---\n");
+
+        for (TrainingResponse res : responses) {
+            sb.append("氏名: ").append(res.getAttendeeName()).append("\n");
+            sb.append("回答日時: ").append(res.getAttendedAt()).append("\n");
+            sb.append("内容: ").append(res.getAnswersJson()).append("\n");
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 }

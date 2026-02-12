@@ -16,4 +16,5 @@ public class PersonalDashboardDto {
     private double paidLeaveDays;
 
     private int unreadNotificationsCount;
+    private int completedTrainingCount;
 }

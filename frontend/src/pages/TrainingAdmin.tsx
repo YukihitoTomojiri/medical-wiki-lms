@@ -16,6 +16,8 @@ export default function TrainingAdmin() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [videoUrl, setVideoUrl] = useState('');
+    const [videoUrl2, setVideoUrl2] = useState('');
+    const [videoUrl3, setVideoUrl3] = useState('');
     const [materialsUrl, setMaterialsUrl] = useState('');
     const [targetCommitteeId, setTargetCommitteeId] = useState<number | null>(null);
     const [targetJobType, setTargetJobType] = useState('');
@@ -48,7 +50,7 @@ export default function TrainingAdmin() {
         e.preventDefault();
         try {
             await api.createTrainingEvent(user!.id, {
-                title, description, videoUrl, materialsUrl,
+                title, description, videoUrl, videoUrl2, videoUrl3, materialsUrl,
                 targetCommitteeId, targetJobType: targetJobType || null,
                 startTime, endTime
             });
@@ -155,10 +157,22 @@ export default function TrainingAdmin() {
                                 value={description} onChange={e => setDescription(e.target.value)} required
                             />
                             <input
-                                placeholder="YouTube URL"
+                                placeholder="YouTube URL 1"
                                 className="w-full p-2 border rounded"
                                 value={videoUrl} onChange={e => setVideoUrl(e.target.value)}
                             />
+                            <div className="grid grid-cols-2 gap-4">
+                                <input
+                                    placeholder="YouTube URL 2 (任意)"
+                                    className="p-2 border rounded"
+                                    value={videoUrl2} onChange={e => setVideoUrl2(e.target.value)}
+                                />
+                                <input
+                                    placeholder="YouTube URL 3 (任意)"
+                                    className="p-2 border rounded"
+                                    value={videoUrl3} onChange={e => setVideoUrl3(e.target.value)}
+                                />
+                            </div>
                             <input
                                 placeholder="資料URL (PDFなど)"
                                 className="w-full p-2 border rounded"

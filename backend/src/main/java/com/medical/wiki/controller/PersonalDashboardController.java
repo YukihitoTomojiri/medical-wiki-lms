@@ -27,6 +27,7 @@ public class PersonalDashboardController {
         private final PaidLeaveRepository paidLeaveRepository;
         private final com.medical.wiki.repository.AttendanceRequestRepository attendanceRequestRepository;
         private final com.medical.wiki.service.AnnouncementService announcementService;
+        private final com.medical.wiki.repository.TrainingResponseRepository trainingResponseRepository;
 
         @GetMapping("/my/summary")
         public PersonalDashboardDto getDashboard(@RequestHeader(value = "X-User-Id") Long userId) {
@@ -70,6 +71,7 @@ public class PersonalDashboardController {
                                 .approvedLeaveRequestsCount(approvedLeaves)
                                 .paidLeaveDays(user.getPaidLeaveDays() != null ? user.getPaidLeaveDays() : 0.0)
                                 .unreadNotificationsCount(announcementService.getAnnouncementsForUser(userId).size())
+                                .completedTrainingCount((int) trainingResponseRepository.findByUserId(userId).size())
                                 .build();
         }
 }

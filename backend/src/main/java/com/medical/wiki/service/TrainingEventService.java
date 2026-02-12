@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -17,6 +18,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TrainingEventService {
@@ -79,6 +81,7 @@ public class TrainingEventService {
 
     @Transactional
     public TrainingEvent createEvent(Long userId, String title, String description, String videoUrl,
+            String videoUrl2, String videoUrl3,
             String materialsUrl, Long targetCommitteeId, String targetJobType,
             LocalDateTime startTime, LocalDateTime endTime) {
         User user = userRepository.findById(userId)
@@ -100,6 +103,8 @@ public class TrainingEventService {
                 .title(title)
                 .description(description)
                 .videoUrl(videoUrl)
+                .videoUrl2(videoUrl2)
+                .videoUrl3(videoUrl3)
                 .materialsUrl(materialsUrl)
                 .targetCommitteeId(targetCommitteeId)
                 .targetJobType(targetJobType)
@@ -115,6 +120,7 @@ public class TrainingEventService {
 
     @Transactional
     public TrainingEvent updateEvent(Long userId, Long eventId, String title, String description, String videoUrl,
+            String videoUrl2, String videoUrl3,
             String materialsUrl, Long targetCommitteeId, String targetJobType,
             LocalDateTime startTime, LocalDateTime endTime) {
         // ... Permissions ...
@@ -130,6 +136,8 @@ public class TrainingEventService {
         event.setTitle(title);
         event.setDescription(description);
         event.setVideoUrl(videoUrl);
+        event.setVideoUrl2(videoUrl2);
+        event.setVideoUrl3(videoUrl3);
         event.setMaterialsUrl(materialsUrl);
         event.setTargetCommitteeId(targetCommitteeId);
         event.setTargetJobType(targetJobType);
@@ -148,11 +156,15 @@ public class TrainingEventService {
 
     @Transactional(readOnly = true)
     public TrainingEvent getEvent(Long userId, Long eventId) {
+        log.info("Loading training detail: UserID={}, EventID={}", userId, eventId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         TrainingEvent event = trainingEventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
+                .orElseThrow(() -> {
+                    log.warn("Training event not found for detail view: EventID={}", eventId);
+                    return new RuntimeException("Event not found");
+                });
 
         if (user.getRole() == User.Role.DEVELOPER) {
             return event;

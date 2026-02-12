@@ -34,6 +34,8 @@ export interface TrainingEvent {
     title: string;
     description: string;
     videoUrl?: string;
+    videoUrl2?: string;
+    videoUrl3?: string;
     materialsUrl?: string;
     targetCommitteeId?: number;
     targetJobType?: string;
@@ -877,6 +879,14 @@ export const api = {
         });
         if (!res.ok) return [];
         return res.json();
+    },
+
+    exportTrainingResponses: async (eventId: number): Promise<string> => {
+        const res = await fetch(`${API_BASE}/training/responses/${eventId}/export`, {
+            method: 'GET',
+            headers: getHeaders(),
+        });
+        return res.text();
     },
 
     createCommittee: async (userId: number, name: string, description: string): Promise<Committee> => {

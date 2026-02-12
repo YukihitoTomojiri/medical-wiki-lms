@@ -32,8 +32,13 @@ public class TrainingResponseController {
         return trainingResponseService.getResponsesForEvent(eventId);
     }
 
-    @GetMapping("/me")
-    public List<TrainingResponse> getMyResponses(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return trainingResponseService.getMyResponses(userPrincipal.getId());
+    @GetMapping("/my")
+    public List<TrainingResponse> getMyResponses(@RequestHeader("X-User-Id") Long userId) {
+        return trainingResponseService.getMyResponses(userId);
+    }
+
+    @GetMapping("/{eventId}/export")
+    public String getExport(@PathVariable Long eventId) {
+        return trainingResponseService.exportResponses(eventId);
     }
 }
