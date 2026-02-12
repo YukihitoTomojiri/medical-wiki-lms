@@ -10,9 +10,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TrainingResponseService {
@@ -52,7 +54,9 @@ public class TrainingResponseService {
         return trainingResponseRepository.findByTrainingEventId(eventId);
     }
 
+    @Transactional(readOnly = true)
     public List<TrainingResponse> getMyResponses(Long userId) {
+        log.debug("Fetching responses for user: ID={}", userId);
         return trainingResponseRepository.findByUserId(userId);
     }
 
