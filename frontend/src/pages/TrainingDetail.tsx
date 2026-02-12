@@ -1,7 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api, TrainingEvent } from '../api';
 import { BookOpen, Calendar, Clock, FileText, CheckCircle2, PlayCircle, Video, ArrowLeft, Download, Send, Star, MessageSquare } from 'lucide-react';
+
+const getYoutubeId = (url: string) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+};
+
+const getFileIcon = (url: string) => {
+    if (url.endsWith('.pdf')) return <FileText className="text-red-500" size={24} />;
+    if (url.endsWith('.doc') || url.endsWith('.docx')) return <FileText className="text-blue-500" size={24} />;
+    if (url.endsWith('.xls') || url.endsWith('.xlsx')) return <FileText className="text-green-500" size={24} />;
+    return <FileText className="text-gray-400" size={24} />;
+};
+
+const getFileName = (url: string) => {
+    return url.split('/').pop() || '資料ファイル';
+};
 
 export default function TrainingDetail() {
     const { id } = useParams();
@@ -18,8 +36,11 @@ export default function TrainingDetail() {
     const [comment, setComment] = useState('');
 
     useEffect(() => {
+        let isMounted = true;
         const loadData = async () => {
+            if (!id) return;
             try {
+                setLoading(true);
                 const storedUser = localStorage.getItem('user');
                 const userData = storedUser ? JSON.parse(storedUser) : null;
 
@@ -28,19 +49,29 @@ export default function TrainingDetail() {
                     return;
                 }
 
-                const eventData = await api.getTrainingEvent(userData.id, Number(id));
-                setEvent(eventData);
+                const [eventData, myResponses] = await Promise.all([
+                    api.getTrainingEvent(userData.id, Number(id)),
+                    api.getMyTrainingResponses(userData.id)
+                ]);
 
-                const myResponses = await api.getMyTrainingResponses(userData.id);
-                setResponses(myResponses);
+                if (isMounted) {
+                    setEvent(eventData);
+                    setResponses(myResponses);
+                    setError(null);
+                }
             } catch (err: any) {
-                console.error("Failed to load training details", err);
-                setError(err.message === 'Training event not found' ? '対象の研修が見つからないか、閲覧権限がありません。' : 'データの読み込みに失敗しました。');
+                if (isMounted) {
+                    console.error("Failed to load training details", err);
+                    setError(err.message === 'Training event not found' ? '対象の研修が見つからないか、閲覧権限がありません。' : 'データの読み込みに失敗しました。');
+                }
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
         loadData();
+        return () => { isMounted = false; };
     }, [id, navigate]);
 
     const handleSubmit = async () => {
@@ -71,6 +102,21 @@ export default function TrainingDetail() {
         }
     };
 
+    const isCompleted = useMemo(() => {
+        return event ? responses.some((r: any) => r.eventId === event.id) : false;
+    }, [responses, event]);
+
+    const activeVideos = useMemo(() => {
+        if (!event) return [];
+        return [
+            { id: getYoutubeId(event.videoUrl || ''), url: event.videoUrl, index: 1 },
+            { id: getYoutubeId(event.videoUrl2 || ''), url: event.videoUrl2, index: 2 },
+            { id: getYoutubeId(event.videoUrl3 || ''), url: event.videoUrl3, index: 3 }
+        ].filter(v => v.id);
+    }, [event]);
+
+    const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
+
     if (loading) {
         return (
             <div className="min-h-[60vh] flex items-center justify-center">
@@ -98,38 +144,6 @@ export default function TrainingDetail() {
             </div>
         );
     }
-
-    const isCompleted = responses.some(r => r.eventId === event.id);
-
-    const getYoutubeId = (url: string) => {
-        if (!url) return null;
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
-    };
-
-    const youtubeId1 = event.videoUrl ? getYoutubeId(event.videoUrl) : null;
-    const youtubeId2 = event.videoUrl2 ? getYoutubeId(event.videoUrl2) : null;
-    const youtubeId3 = event.videoUrl3 ? getYoutubeId(event.videoUrl3) : null;
-
-    const activeVideos = [
-        { id: youtubeId1, url: event.videoUrl, index: 1 },
-        { id: youtubeId2, url: event.videoUrl2, index: 2 },
-        { id: youtubeId3, url: event.videoUrl3, index: 3 }
-    ].filter(v => v.id);
-
-    const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
-
-    const getFileIcon = (url: string) => {
-        if (url.endsWith('.pdf')) return <FileText className="text-red-500" size={24} />;
-        if (url.endsWith('.doc') || url.endsWith('.docx')) return <FileText className="text-blue-500" size={24} />;
-        if (url.endsWith('.xls') || url.endsWith('.xlsx')) return <FileText className="text-green-500" size={24} />;
-        return <FileText className="text-gray-400" size={24} />;
-    };
-
-    const getFileName = (url: string) => {
-        return url.split('/').pop() || '資料ファイル';
-    };
 
     return (
         <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
@@ -391,7 +405,7 @@ export default function TrainingDetail() {
                                 <div>
                                     <h4 className="font-black text-3xl tracking-tight">受講完了</h4>
                                     <p className="text-white/60 text-xs font-bold uppercase tracking-widest mt-2 px-6">
-                                        回答済: {new Date(responses.find(r => r.eventId === event.id)?.attendedAt).toLocaleDateString('ja-JP')} {new Date(responses.find(r => r.eventId === event.id)?.attendedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
+                                        回答済: {new Date(responses.find((r: any) => r.eventId === event.id)?.attendedAt).toLocaleDateString('ja-JP')} {new Date(responses.find((r: any) => r.eventId === event.id)?.attendedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                 </div>
                                 <div className="pt-4">
@@ -410,4 +424,3 @@ export default function TrainingDetail() {
         </div>
     );
 }
-

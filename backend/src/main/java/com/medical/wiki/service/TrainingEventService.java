@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -17,6 +18,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TrainingEventService {
@@ -154,11 +156,15 @@ public class TrainingEventService {
 
     @Transactional(readOnly = true)
     public TrainingEvent getEvent(Long userId, Long eventId) {
+        log.info("Loading training detail: UserID={}, EventID={}", userId, eventId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         TrainingEvent event = trainingEventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
+                .orElseThrow(() -> {
+                    log.warn("Training event not found for detail view: EventID={}", eventId);
+                    return new RuntimeException("Event not found");
+                });
 
         if (user.getRole() == User.Role.DEVELOPER) {
             return event;
