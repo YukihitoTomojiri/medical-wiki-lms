@@ -189,38 +189,46 @@ export default function TrainingDetail() {
                 <div className="lg:col-span-8 space-y-10">
                     {/* Video / Player Section */}
                     {activeVideos.length > 0 ? (
-                        <div className={`grid gap-6 ${activeVideos.length > 1 ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                            {activeVideos.map((v, idx) => (
-                                <div key={idx} className="relative aspect-video rounded-[2rem] overflow-hidden bg-m3-surface-container shadow-xl ring-1 ring-m3-outline-variant/10">
-                                    {activeVideoIndex === v.index ? (
-                                        <iframe
-                                            width="100%"
-                                            height="100%"
-                                            src={`https://www.youtube.com/embed/${v.id}?autoplay=1`}
-                                            title={`YouTube video player ${v.index}`}
-                                            frameBorder="0"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                            allowFullScreen
-                                            className="w-full h-full"
-                                        />
-                                    ) : (
-                                        <div
-                                            className="w-full h-full bg-cover bg-center cursor-pointer relative group"
-                                            style={{ backgroundImage: `url(https://img.youtube.com/vi/${v.id}/maxresdefault.jpg)` }}
-                                            onClick={() => setActiveVideoIndex(v.index)}
-                                        >
-                                            <div className="absolute inset-0 bg-m3-on-surface/40 group-hover:bg-m3-on-surface/20 transition-all duration-300 flex items-center justify-center">
-                                                <div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center shadow-xl border border-white/40 group-hover:scale-110 group-hover:bg-red-600 transition-all duration-300">
-                                                    <PlayCircle size={40} className="text-white fill-white/10 ml-0.5" />
+                        <div className="space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="p-3 bg-red-500/10 rounded-xl text-red-600">
+                                    <Video size={24} />
+                                </div>
+                                <h2 className="text-2xl font-bold text-m3-on-surface">研修動画</h2>
+                            </div>
+                            <div className="space-y-6">
+                                {activeVideos.map((v, idx) => (
+                                    <div key={idx} className="relative aspect-video rounded-3xl overflow-hidden bg-m3-surface-container shadow-xl ring-1 ring-m3-outline-variant/10">
+                                        {activeVideoIndex === v.index ? (
+                                            <iframe
+                                                width="100%"
+                                                height="100%"
+                                                src={`https://www.youtube.com/embed/${v.id}?autoplay=1`}
+                                                title={`YouTube video player ${v.index}`}
+                                                frameBorder="0"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                allowFullScreen
+                                                className="w-full h-full"
+                                            />
+                                        ) : (
+                                            <div
+                                                className="w-full h-full bg-cover bg-center cursor-pointer relative group"
+                                                style={{ backgroundImage: `url(https://img.youtube.com/vi/${v.id}/maxresdefault.jpg)` }}
+                                                onClick={() => setActiveVideoIndex(v.index)}
+                                            >
+                                                <div className="absolute inset-0 bg-m3-on-surface/40 group-hover:bg-m3-on-surface/20 transition-all duration-300 flex items-center justify-center">
+                                                    <div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center shadow-xl border border-white/40 group-hover:scale-110 group-hover:bg-red-600 transition-all duration-300">
+                                                        <PlayCircle size={40} className="text-white fill-white/10 ml-0.5" />
+                                                    </div>
+                                                </div>
+                                                <div className="absolute bottom-6 left-6 p-4 rounded-2xl backdrop-blur-md bg-black/40 border border-white/10 opacity-100 transition-all duration-300">
+                                                    <p className="text-white text-sm font-bold truncate">動画コンテンツ {v.index}</p>
                                                 </div>
                                             </div>
-                                            <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl backdrop-blur-md bg-black/40 border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                                                <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest">Video {v.index}</p>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     ) : (
                         <div className="relative aspect-video rounded-[3rem] overflow-hidden bg-m3-surface-container shadow-2xl shadow-blue-500/10 flex flex-col items-center justify-center text-m3-on-surface-variant/30">
@@ -244,47 +252,6 @@ export default function TrainingDetail() {
                         </div>
                     </div>
 
-                    {/* Videos Section */}
-                    {(event.videoUrl || event.videoUrl2 || event.videoUrl3) && (
-                        <div className="grid grid-cols-1 gap-8 mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-                            {event.videoUrl && (
-                                <div className="bg-stone-900 rounded-[32px] overflow-hidden shadow-2xl border border-stone-800 group hover:ring-4 ring-m3-primary/20 transition-all">
-                                    <div className="aspect-video relative">
-                                        <iframe
-                                            className="absolute inset-0 w-full h-full"
-                                            src={`https://www.youtube.com/embed/${getYoutubeId(event.videoUrl)}`}
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                            allowFullScreen
-                                        />
-                                    </div>
-                                </div>
-                            )}
-                            {event.videoUrl2 && (
-                                <div className="bg-stone-900 rounded-[32px] overflow-hidden shadow-2xl border border-stone-800 group hover:ring-4 ring-m3-primary/20 transition-all">
-                                    <div className="aspect-video relative">
-                                        <iframe
-                                            className="absolute inset-0 w-full h-full"
-                                            src={`https://www.youtube.com/embed/${getYoutubeId(event.videoUrl2)}`}
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                            allowFullScreen
-                                        />
-                                    </div>
-                                </div>
-                            )}
-                            {event.videoUrl3 && (
-                                <div className="bg-stone-900 rounded-[32px] overflow-hidden shadow-2xl border border-stone-800 group hover:ring-4 ring-m3-primary/20 transition-all">
-                                    <div className="aspect-video relative">
-                                        <iframe
-                                            className="absolute inset-0 w-full h-full"
-                                            src={`https://www.youtube.com/embed/${getYoutubeId(event.videoUrl3)}`}
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                            allowFullScreen
-                                        />
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
 
                     {/* Questionnaire Section */}
                     {!isCompleted && (

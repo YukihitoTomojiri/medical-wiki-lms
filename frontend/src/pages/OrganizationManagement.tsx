@@ -54,13 +54,15 @@ export default function OrganizationManagement() {
         setLoading(true);
         try {
             const [facs, depts] = await Promise.all([
-                api.getFacilities(targetUserId),
-                api.getDepartments(targetUserId)
+                api.getFacilities(targetUserId).catch(err => { console.error("Facs failed", err); return []; }),
+                api.getDepartments(targetUserId).catch(err => { console.error("Depts failed", err); return []; })
             ]);
+            console.log("Loaded Orgs:", { facs, depts });
             setFacilities(facs);
             setDepartments(depts);
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
+            setError("データの取得に失敗しました: " + e.message);
         } finally {
             setLoading(false);
         }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api, TrainingEvent, Committee } from '../api';
 import { useAuth } from '../context/AuthContext';
-import { Plus, QrCode as QrIcon, Users, FileText, Edit2, Trash2 } from 'lucide-react';
+import { Plus, QrCode as QrIcon, Users, FileText, Edit2, Trash2, Youtube } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 
@@ -185,39 +185,62 @@ export default function TrainingAdmin() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                     <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 shadow-xl">
                         <h2 className="text-xl font-bold mb-4">{editingEvent ? '研修会の編集' : '新規研修会作成'}</h2>
-                        <form onSubmit={handleCreate} className="space-y-4">
-                            <input
-                                placeholder="タイトル"
-                                className="w-full p-2 border rounded"
-                                value={title} onChange={e => setTitle(e.target.value)} required
-                            />
-                            <textarea
-                                placeholder="説明"
-                                className="w-full p-2 border rounded h-24"
-                                value={description} onChange={e => setDescription(e.target.value)} required
-                            />
-                            <input
-                                placeholder="YouTube URL 1"
-                                className="w-full p-2 border rounded"
-                                value={videoUrl} onChange={e => setVideoUrl(e.target.value)}
-                            />
-                            <div className="grid grid-cols-2 gap-4">
+                        <form onSubmit={handleCreate} className="space-y-6">
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-bold text-m3-on-surface-variant flex items-center gap-2">
+                                    <FileText size={18} className="text-m3-primary" /> 基本情報
+                                </h3>
                                 <input
-                                    placeholder="YouTube URL 2 (任意)"
-                                    className="p-2 border rounded"
-                                    value={videoUrl2} onChange={e => setVideoUrl2(e.target.value)}
+                                    placeholder="タイトル"
+                                    className="w-full p-2 border rounded"
+                                    value={title} onChange={e => setTitle(e.target.value)} required
                                 />
-                                <input
-                                    placeholder="YouTube URL 3 (任意)"
-                                    className="p-2 border rounded"
-                                    value={videoUrl3} onChange={e => setVideoUrl3(e.target.value)}
+                                <textarea
+                                    placeholder="説明"
+                                    className="w-full p-2 border rounded h-24"
+                                    value={description} onChange={e => setDescription(e.target.value)} required
                                 />
                             </div>
-                            <input
-                                placeholder="資料URL (PDFなど)"
-                                className="w-full p-2 border rounded"
-                                value={materialsUrl} onChange={e => setMaterialsUrl(e.target.value)}
-                            />
+
+                            <div className="h-px bg-m3-outline-variant/10" />
+
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-bold text-m3-on-surface-variant flex items-center gap-2">
+                                    <Youtube size={18} className="text-red-500" /> 動画学習設定
+                                </h3>
+                                <div className="space-y-3">
+                                    <input
+                                        placeholder="YouTube URL 1"
+                                        className="w-full p-2 border rounded"
+                                        value={videoUrl} onChange={e => setVideoUrl(e.target.value)}
+                                    />
+                                    <input
+                                        placeholder="YouTube URL 2 (任意)"
+                                        className="w-full p-2 border rounded"
+                                        value={videoUrl2} onChange={e => setVideoUrl2(e.target.value)}
+                                    />
+                                    <input
+                                        placeholder="YouTube URL 3 (任意)"
+                                        className="w-full p-2 border rounded"
+                                        value={videoUrl3} onChange={e => setVideoUrl3(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="h-px bg-m3-outline-variant/10" />
+
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-bold text-m3-on-surface-variant flex items-center gap-2">
+                                    <FileText size={18} className="text-blue-500" /> 配布資料設定
+                                </h3>
+                                <input
+                                    placeholder="資料URL (PDFなど)"
+                                    className="w-full p-2 border rounded"
+                                    value={materialsUrl} onChange={e => setMaterialsUrl(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="h-px bg-m3-outline-variant/10" />
 
                             <div className="grid grid-cols-2 gap-4">
                                 <select
