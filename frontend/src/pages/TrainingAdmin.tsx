@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api, TrainingEvent, Committee } from '../api';
 import { useAuth } from '../context/AuthContext';
-import { Plus, QrCode as QrIcon, Users, FileText } from 'lucide-react';
+import { Plus, QrCode as QrIcon, Users, FileText, Edit2, Trash2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ export default function TrainingAdmin() {
     const [events, setEvents] = useState<TrainingEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [editingEvent, setEditingEvent] = useState<TrainingEvent | null>(null);
 
     // Create Form State
     const [title, setTitle] = useState('');
@@ -49,16 +50,49 @@ export default function TrainingAdmin() {
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await api.createTrainingEvent(user!.id, {
+            const data = {
                 title, description, videoUrl, videoUrl2, videoUrl3, materialsUrl,
                 targetCommitteeId, targetJobType: targetJobType || null,
                 startTime, endTime
-            });
+            };
+
+            if (editingEvent) {
+                await api.updateTrainingEvent(user!.id, editingEvent.id, data);
+            } else {
+                await api.createTrainingEvent(user!.id, data);
+            }
             setShowCreateModal(false);
+            setEditingEvent(null);
             loadData();
         } catch (error) {
             console.error(error);
-            alert('作成に失敗しました');
+            alert(editingEvent ? '更新に失敗しました' : '作成に失敗しました');
+        }
+    };
+
+    const handleEdit = (event: TrainingEvent) => {
+        setEditingEvent(event);
+        setTitle(event.title);
+        setDescription(event.description || '');
+        setVideoUrl(event.videoUrl || '');
+        setVideoUrl2(event.videoUrl2 || '');
+        setVideoUrl3(event.videoUrl3 || '');
+        setMaterialsUrl(event.materialsUrl || '');
+        setTargetCommitteeId(event.targetCommitteeId);
+        setTargetJobType(event.targetJobType || '');
+        setStartTime(new Date(event.startTime).toISOString().slice(0, 16));
+        setEndTime(new Date(event.endTime).toISOString().slice(0, 16));
+        setShowCreateModal(true);
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!window.confirm('この研修会を削除してもよろしいですか？')) return;
+        try {
+            await api.deleteTrainingEvent(user!.id, id);
+            loadData();
+        } catch (error) {
+            console.error(error);
+            alert('削除に失敗しました');
         }
     };
 
@@ -97,7 +131,7 @@ export default function TrainingAdmin() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-m3-on-surface">研修会管理</h1>
-                <Button variant="filled" onClick={() => setShowCreateModal(true)} className="flex items-center gap-2">
+                <Button variant="filled" onClick={() => { setEditingEvent(null); setShowCreateModal(true); }} className="flex items-center gap-2">
                     <Plus size={18} /> 新規作成
                 </Button>
             </div>
@@ -133,6 +167,12 @@ export default function TrainingAdmin() {
                                     <Button variant="text" onClick={() => navigate(`/training/${event.id}`)} title="プレビュー">
                                         <FileText size={18} />
                                     </Button>
+                                    <Button variant="text" onClick={() => handleEdit(event)} title="編集">
+                                        <Edit2 size={18} className="text-m3-primary" />
+                                    </Button>
+                                    <Button variant="text" onClick={() => handleDelete(event.id)} title="削除">
+                                        <Trash2 size={18} className="text-m3-error" />
+                                    </Button>
                                 </td>
                             </tr>
                         ))}
@@ -140,11 +180,11 @@ export default function TrainingAdmin() {
                 </table>
             </div>
 
-            {/* Create Modal */}
+            {/* Create/Edit Modal */}
             {showCreateModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                     <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 shadow-xl">
-                        <h2 className="text-xl font-bold mb-4">新規研修会作成</h2>
+                        <h2 className="text-xl font-bold mb-4">{editingEvent ? '研修会の編集' : '新規研修会作成'}</h2>
                         <form onSubmit={handleCreate} className="space-y-4">
                             <input
                                 placeholder="タイトル"
@@ -217,8 +257,8 @@ export default function TrainingAdmin() {
                             </div>
 
                             <div className="flex justify-end gap-3 mt-6">
-                                <Button variant="text" type="button" onClick={() => setShowCreateModal(false)}>キャンセル</Button>
-                                <Button variant="filled" type="submit">作成</Button>
+                                <Button variant="text" type="button" onClick={() => { setShowCreateModal(false); setEditingEvent(null); }}>キャンセル</Button>
+                                <Button variant="filled" type="submit">{editingEvent ? '保存' : '作成'}</Button>
                             </div>
                         </form>
                     </div>

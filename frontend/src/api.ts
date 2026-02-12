@@ -851,6 +851,27 @@ export const api = {
         return res.json();
     },
 
+    updateTrainingEvent: async (userId: number, id: number, data: any): Promise<TrainingEvent> => {
+        const res = await fetch(`${API_BASE}/training/events/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getHeaders(userId)
+            },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error('Failed to update event');
+        return res.json();
+    },
+
+    deleteTrainingEvent: async (userId: number, id: number): Promise<void> => {
+        const res = await fetch(`${API_BASE}/training/events/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) throw new Error('Failed to delete event');
+    },
+
     getTrainingQrCode: async (userId: number, id: number): Promise<string> => {
         const res = await fetch(`${API_BASE}/training/events/${id}/qrcode`, {
             headers: getHeaders(userId),

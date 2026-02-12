@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api, TrainingEvent } from '../api';
-import { BookOpen, Calendar, Clock, FileText, CheckCircle2, PlayCircle, Video, ArrowLeft, Download, Send, Star, MessageSquare } from 'lucide-react';
+import { BookOpen, Calendar, Clock, FileText, CheckCircle2, PlayCircle, Video, ArrowLeft, Download, Send, Star, MessageSquare, Edit2 } from 'lucide-react';
 
 const getYoutubeId = (url: string) => {
     if (!url) return null;
@@ -29,6 +29,7 @@ export default function TrainingDetail() {
     const [responses, setResponses] = useState<any[]>([]);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [userRole, setUserRole] = useState<string | null>(null);
 
     // Questionnaire Form State
     const [comprehension, setComprehension] = useState(5);
@@ -57,6 +58,7 @@ export default function TrainingDetail() {
                 if (isMounted) {
                     setEvent(eventData);
                     setResponses(myResponses);
+                    setUserRole(userData.role);
                     setError(null);
                 }
             } catch (err: any) {
@@ -164,9 +166,21 @@ export default function TrainingDetail() {
                             </span>
                         )}
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black text-m3-on-surface tracking-tight leading-tight">
-                        {event.title}
-                    </h1>
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-4xl md:text-5xl font-black text-m3-on-surface tracking-tight leading-tight">
+                            {event.title}
+                        </h1>
+                        {(userRole === 'ADMIN' || userRole === 'DEVELOPER') && (
+                            <button
+                                onClick={() => navigate('/admin/training')} // Simple redirect to admin list as we don't have a direct edit page yet, but the user requested an edit button.
+                                // Actually, it's better to navigate to admin and let them find it, or we could add a specific param.
+                                // But for now, direct navigation to Admin Training is a good start as requested.
+                                className="flex items-center gap-2 px-6 py-2 bg-m3-primary/10 text-m3-primary hover:bg-m3-primary/20 rounded-full font-bold transition-all shadow-sm"
+                            >
+                                <Edit2 size={18} /> 編集
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 

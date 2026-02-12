@@ -67,4 +67,33 @@ public class TrainingEventController {
         String url = trainingEventService.getQrCodeUrl(id);
         return ResponseEntity.ok(Map.of("url", url));
     }
+
+    @PutMapping("/{id}")
+    public TrainingEvent updateEvent(@AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> payload) {
+        String title = (String) payload.get("title");
+        String description = (String) payload.get("description");
+        String videoUrl = (String) payload.get("videoUrl");
+        String videoUrl2 = (String) payload.get("videoUrl2");
+        String videoUrl3 = (String) payload.get("videoUrl3");
+        String materialsUrl = (String) payload.get("materialsUrl");
+        Long targetCommitteeId = payload.get("targetCommitteeId") != null
+                ? ((Number) payload.get("targetCommitteeId")).longValue()
+                : null;
+        String targetJobType = (String) payload.get("targetJobType");
+        LocalDateTime startTime = LocalDateTime.parse((String) payload.get("startTime"));
+        LocalDateTime endTime = LocalDateTime.parse((String) payload.get("endTime"));
+
+        return trainingEventService.updateEvent(userPrincipal.getId(), id, title, description, videoUrl, videoUrl2,
+                videoUrl3,
+                materialsUrl, targetCommitteeId, targetJobType, startTime, endTime);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEvent(@AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable Long id) {
+        trainingEventService.deleteEvent(userPrincipal.getId(), id);
+        return ResponseEntity.noContent().build();
+    }
 }

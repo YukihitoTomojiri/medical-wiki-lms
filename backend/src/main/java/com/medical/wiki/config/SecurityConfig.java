@@ -43,6 +43,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/departments/**").hasAnyRole("ADMIN", "DEVELOPER")
                         .requestMatchers("/api/departments/**").hasAnyRole("ADMIN", "DEVELOPER")
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "DEVELOPER")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/training/events/**")
+                        .hasAnyRole("ADMIN", "DEVELOPER")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/training/events/**")
+                        .hasAnyRole("ADMIN", "DEVELOPER")
                         .requestMatchers("/api/training/events/admin/**").hasAnyRole("ADMIN", "DEVELOPER")
                         .requestMatchers("/api/training/responses/**").authenticated() // Allow all authenticated users
                                                                                        // to submit/view own responses
