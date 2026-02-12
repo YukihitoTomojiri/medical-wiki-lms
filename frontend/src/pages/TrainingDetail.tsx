@@ -204,9 +204,22 @@ export default function TrainingDetail() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                 {/* Left: Main Content (Video & Description) */}
                 <div className="lg:col-span-8 space-y-10">
+                    {/* Description Card */}
+                    <div className="relative p-10 bg-white rounded-[2.5rem] border border-m3-outline-variant/10 shadow-sm overflow-hidden">
+                        <div className="flex items-center gap-5 mb-8">
+                            <div className="p-3 bg-m3-primary/10 rounded-2xl text-m3-primary">
+                                <BookOpen size={28} />
+                            </div>
+                            <h2 className="text-2xl font-black text-m3-on-surface tracking-tight">研修の目的と概要</h2>
+                        </div>
+                        <div className="prose prose-lg max-w-none text-m3-on-surface-variant leading-relaxed whitespace-pre-wrap">
+                            {event.description || "この研修に関する詳細な説明は提供されていません。"}
+                        </div>
+                    </div>
+
                     {/* Video / Player Section */}
                     {activeVideos.length > 0 ? (
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                             <div className="flex items-center gap-4 mb-2">
                                 <div className="p-3 bg-red-500/10 rounded-xl text-red-600">
                                     <Video size={24} />
@@ -255,19 +268,6 @@ export default function TrainingDetail() {
                             <p className="font-black text-2xl tracking-tight">動画コンテンツはありません</p>
                         </div>
                     )}
-
-                    {/* Description Card */}
-                    <div className="relative p-12 bg-white rounded-[3rem] border border-m3-outline-variant/10 shadow-sm overflow-hidden">
-                        <div className="flex items-center gap-5 mb-10">
-                            <div className="p-4 bg-m3-primary/10 rounded-2xl text-m3-primary">
-                                <BookOpen size={32} />
-                            </div>
-                            <h2 className="text-3xl font-black text-m3-on-surface tracking-tight">研修の目的と概要</h2>
-                        </div>
-                        <div className="prose prose-lg max-w-none text-m3-on-surface-variant leading-relaxed whitespace-pre-wrap">
-                            {event.description || "この研修に関する詳細な説明は提供されていません。"}
-                        </div>
-                    </div>
 
 
                     {/* Questionnaire Section */}
