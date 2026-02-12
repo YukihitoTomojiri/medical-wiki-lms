@@ -22,13 +22,13 @@ public class TrainingEvent {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "video_url")
+    @Column(name = "video_url", columnDefinition = "TEXT")
     private String videoUrl; // YouTube ID or URL
 
-    @Column(name = "video_url_2")
+    @Column(name = "video_url_2", columnDefinition = "TEXT")
     private String videoUrl2;
 
-    @Column(name = "video_url_3")
+    @Column(name = "video_url_3", columnDefinition = "TEXT")
     private String videoUrl3;
 
     @Column(name = "materials_url")
