@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { api, TrainingEvent, TrainingResponse } from '../api';
+import { api, TrainingEvent } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { Video, FileText, Download, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/Button';

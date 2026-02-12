@@ -50,4 +50,8 @@ public class TrainingResponseService {
     public List<TrainingResponse> getResponsesForEvent(Long eventId) {
         return trainingResponseRepository.findByTrainingEventId(eventId);
     }
+
+    public List<TrainingResponse> getMyResponses(Long userId) {
+        return trainingResponseRepository.findByUserId(userId);
+    }
 }

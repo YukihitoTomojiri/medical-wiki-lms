@@ -5,7 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface TrainingResponseRepository extends JpaRepository<TrainingResponse, Long> {
-    List<TrainingResponse> findByTrainingEventId(Long eventId);
+    List<TrainingResponse> findByTrainingEventId(Long trainingEventId);
 
-    boolean existsByTrainingEventIdAndUserId(Long eventId, Long userId);
+    List<TrainingResponse> findByUserId(Long userId);
+
+    boolean existsByTrainingEventIdAndUserId(Long trainingEventId, Long userId);
 }

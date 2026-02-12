@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api, TrainingEvent, Committee } from '../api';
 import { useAuth } from '../context/AuthContext';
-import { Plus, QRCode as QrIcon, Users, FileText } from 'lucide-react';
+import { Plus, QrCode as QrIcon, Users, FileText } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 

@@ -31,4 +31,9 @@ public class TrainingResponseController {
         // Add permission check if needed (Admin only)
         return trainingResponseService.getResponsesForEvent(eventId);
     }
+
+    @GetMapping("/me")
+    public List<TrainingResponse> getMyResponses(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return trainingResponseService.getMyResponses(userPrincipal.getId());
+    }
 }

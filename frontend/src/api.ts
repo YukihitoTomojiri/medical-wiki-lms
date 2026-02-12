@@ -804,6 +804,14 @@ export const api = {
         return res.json();
     },
 
+    getMyTrainingResponses: async (userId: number): Promise<TrainingResponse[]> => {
+        const res = await fetch(`${API_BASE}/training/responses/me`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
     getAdminTrainingEvents: async (userId: number): Promise<TrainingEvent[]> => {
         const res = await fetch(`${API_BASE}/training/events/admin`, {
             headers: getHeaders(userId),
