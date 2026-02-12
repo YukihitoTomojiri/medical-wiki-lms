@@ -847,7 +847,10 @@ export const api = {
             },
             body: JSON.stringify(data),
         });
-        if (!res.ok) throw new Error('Failed to create event');
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.message || errorData.error || 'Failed to create event');
+        }
         return res.json();
     },
 
@@ -860,7 +863,10 @@ export const api = {
             },
             body: JSON.stringify(data),
         });
-        if (!res.ok) throw new Error('Failed to update event');
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.message || errorData.error || 'Failed to update event');
+        }
         return res.json();
     },
 
