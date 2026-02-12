@@ -5,9 +5,26 @@ import { BookOpen, Calendar, Clock, FileText, CheckCircle2, PlayCircle, Video, A
 
 const getYoutubeId = (url: string) => {
     if (!url) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+    try {
+        // Handle direct ID input
+        if (url.length === 11 && !url.includes('/') && !url.includes('.')) return url;
+
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        if (match && match[2].length === 11) {
+            return match[2];
+        }
+
+        // Fallback for some edge cases or just the ID at the end of a slash
+        const parts = url.split('/');
+        const lastPart = parts[parts.length - 1].split('?')[0];
+        if (lastPart.length === 11) return lastPart;
+
+        return null;
+    } catch (e) {
+        console.error("Error parsing YouTube URL", e);
+        return null;
+    }
 };
 
 const getFileIcon = (url: string) => {

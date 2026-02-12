@@ -208,22 +208,37 @@ export default function TrainingAdmin() {
                                 <h3 className="text-sm font-bold text-m3-on-surface-variant flex items-center gap-2">
                                     <Youtube size={18} className="text-red-500" /> 動画学習設定
                                 </h3>
-                                <div className="space-y-3">
-                                    <input
-                                        placeholder="YouTube URL 1"
-                                        className="w-full p-2 border rounded"
-                                        value={videoUrl} onChange={e => setVideoUrl(e.target.value)}
-                                    />
-                                    <input
-                                        placeholder="YouTube URL 2 (任意)"
-                                        className="w-full p-2 border rounded"
-                                        value={videoUrl2} onChange={e => setVideoUrl2(e.target.value)}
-                                    />
-                                    <input
-                                        placeholder="YouTube URL 3 (任意)"
-                                        className="w-full p-2 border rounded"
-                                        value={videoUrl3} onChange={e => setVideoUrl3(e.target.value)}
-                                    />
+                                <div className="space-y-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-m3-on-surface-variant flex items-center gap-1.5 ml-1">
+                                            <Youtube size={14} className="text-red-500" /> 動画1 (メイン)
+                                        </label>
+                                        <input
+                                            placeholder="YouTube URLを入力 (例: https://www.youtube.com/watch?v=...)"
+                                            className="w-full p-2 border rounded focus:ring-2 ring-m3-primary/20 outline-none"
+                                            value={videoUrl} onChange={e => setVideoUrl(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-m3-on-surface-variant flex items-center gap-1.5 ml-1">
+                                            <Youtube size={14} className="text-gray-400" /> 動画2 (任意)
+                                        </label>
+                                        <input
+                                            placeholder="YouTube URLを入力 (任意)"
+                                            className="w-full p-2 border rounded focus:ring-2 ring-m3-primary/20 outline-none"
+                                            value={videoUrl2} onChange={e => setVideoUrl2(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-m3-on-surface-variant flex items-center gap-1.5 ml-1">
+                                            <Youtube size={14} className="text-gray-400" /> 動画3 (任意)
+                                        </label>
+                                        <input
+                                            placeholder="YouTube URLを入力 (任意)"
+                                            className="w-full p-2 border rounded focus:ring-2 ring-m3-primary/20 outline-none"
+                                            value={videoUrl3} onChange={e => setVideoUrl3(e.target.value)}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
