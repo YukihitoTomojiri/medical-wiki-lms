@@ -158,7 +158,7 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                     </div>
                     <div className="flex items-baseline gap-2">
                         <span className="text-3xl font-black text-gray-800">{uncompletedCount}</span>
-                        <span className="text-xs font-bold text-gray-400">件の未完了</span>
+                        <span className="text-xs font-bold text-gray-400">件の未完了 / {dashboardData?.completedTrainingCount || 0}件完了</span>
                     </div>
                     {activeTab === 'STUDY' && (
                         <div className="absolute bottom-0 left-0 w-full h-1 bg-orange-500" />

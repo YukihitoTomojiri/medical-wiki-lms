@@ -79,6 +79,7 @@ public class TrainingEventService {
 
     @Transactional
     public TrainingEvent createEvent(Long userId, String title, String description, String videoUrl,
+            String videoUrl2, String videoUrl3,
             String materialsUrl, Long targetCommitteeId, String targetJobType,
             LocalDateTime startTime, LocalDateTime endTime) {
         User user = userRepository.findById(userId)
@@ -100,6 +101,8 @@ public class TrainingEventService {
                 .title(title)
                 .description(description)
                 .videoUrl(videoUrl)
+                .videoUrl2(videoUrl2)
+                .videoUrl3(videoUrl3)
                 .materialsUrl(materialsUrl)
                 .targetCommitteeId(targetCommitteeId)
                 .targetJobType(targetJobType)
@@ -115,6 +118,7 @@ public class TrainingEventService {
 
     @Transactional
     public TrainingEvent updateEvent(Long userId, Long eventId, String title, String description, String videoUrl,
+            String videoUrl2, String videoUrl3,
             String materialsUrl, Long targetCommitteeId, String targetJobType,
             LocalDateTime startTime, LocalDateTime endTime) {
         // ... Permissions ...
@@ -130,6 +134,8 @@ public class TrainingEventService {
         event.setTitle(title);
         event.setDescription(description);
         event.setVideoUrl(videoUrl);
+        event.setVideoUrl2(videoUrl2);
+        event.setVideoUrl3(videoUrl3);
         event.setMaterialsUrl(materialsUrl);
         event.setTargetCommitteeId(targetCommitteeId);
         event.setTargetJobType(targetJobType);

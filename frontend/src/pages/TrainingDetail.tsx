@@ -9,7 +9,6 @@ export default function TrainingDetail() {
     const [event, setEvent] = useState<TrainingEvent | null>(null);
     const [loading, setLoading] = useState(true);
     const [responses, setResponses] = useState<any[]>([]);
-    const [showVideo, setShowVideo] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -109,7 +108,17 @@ export default function TrainingDetail() {
         return (match && match[2].length === 11) ? match[2] : null;
     };
 
-    const youtubeId = event.videoUrl ? getYoutubeId(event.videoUrl) : null;
+    const youtubeId1 = event.videoUrl ? getYoutubeId(event.videoUrl) : null;
+    const youtubeId2 = event.videoUrl2 ? getYoutubeId(event.videoUrl2) : null;
+    const youtubeId3 = event.videoUrl3 ? getYoutubeId(event.videoUrl3) : null;
+
+    const activeVideos = [
+        { id: youtubeId1, url: event.videoUrl, index: 1 },
+        { id: youtubeId2, url: event.videoUrl2, index: 2 },
+        { id: youtubeId3, url: event.videoUrl3, index: 3 }
+    ].filter(v => v.id);
+
+    const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
 
     const getFileIcon = (url: string) => {
         if (url.endsWith('.pdf')) return <FileText className="text-red-500" size={24} />;
@@ -151,43 +160,48 @@ export default function TrainingDetail() {
                 {/* Left: Main Content (Video & Description) */}
                 <div className="lg:col-span-8 space-y-10">
                     {/* Video / Player Section */}
-                    <div className="relative aspect-video rounded-[3rem] overflow-hidden bg-m3-surface-container shadow-2xl shadow-blue-500/10 ring-1 ring-m3-outline-variant/10">
-                        {showVideo && youtubeId ? (
-                            <iframe
-                                width="100%"
-                                height="100%"
-                                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`}
-                                title="YouTube video player"
-                                frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                allowFullScreen
-                                className="w-full h-full"
-                            />
-                        ) : youtubeId ? (
-                            <div
-                                className="w-full h-full bg-cover bg-center cursor-pointer relative group"
-                                style={{ backgroundImage: `url(https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg)` }}
-                                onClick={() => setShowVideo(true)}
-                            >
-                                <div className="absolute inset-0 bg-m3-on-surface/40 group-hover:bg-m3-on-surface/20 transition-all duration-500 flex items-center justify-center">
-                                    <div className="w-28 h-28 bg-white/20 backdrop-blur-2xl rounded-full flex items-center justify-center shadow-2xl border border-white/40 group-hover:scale-110 group-hover:bg-red-600/90 group-hover:border-transparent transition-all duration-500">
-                                        <PlayCircle size={72} className="text-white fill-white/10 ml-1" />
-                                    </div>
+                    {activeVideos.length > 0 ? (
+                        <div className={`grid gap-6 ${activeVideos.length > 1 ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                            {activeVideos.map((v, idx) => (
+                                <div key={idx} className="relative aspect-video rounded-[2rem] overflow-hidden bg-m3-surface-container shadow-xl ring-1 ring-m3-outline-variant/10">
+                                    {activeVideoIndex === v.index ? (
+                                        <iframe
+                                            width="100%"
+                                            height="100%"
+                                            src={`https://www.youtube.com/embed/${v.id}?autoplay=1`}
+                                            title={`YouTube video player ${v.index}`}
+                                            frameBorder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                            allowFullScreen
+                                            className="w-full h-full"
+                                        />
+                                    ) : (
+                                        <div
+                                            className="w-full h-full bg-cover bg-center cursor-pointer relative group"
+                                            style={{ backgroundImage: `url(https://img.youtube.com/vi/${v.id}/maxresdefault.jpg)` }}
+                                            onClick={() => setActiveVideoIndex(v.index)}
+                                        >
+                                            <div className="absolute inset-0 bg-m3-on-surface/40 group-hover:bg-m3-on-surface/20 transition-all duration-300 flex items-center justify-center">
+                                                <div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center shadow-xl border border-white/40 group-hover:scale-110 group-hover:bg-red-600 transition-all duration-300">
+                                                    <PlayCircle size={40} className="text-white fill-white/10 ml-0.5" />
+                                                </div>
+                                            </div>
+                                            <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl backdrop-blur-md bg-black/40 border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                                <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest">Video {v.index}</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="absolute bottom-10 left-10 right-10 p-8 rounded-[2rem] backdrop-blur-xl bg-black/40 border border-white/10 translate-y-4 group-hover:translate-y-0 transition-all duration-500 opacity-0 group-hover:opacity-100">
-                                    <p className="text-white/60 text-xs font-bold uppercase tracking-[0.3em] mb-2">Ready to watch</p>
-                                    <h2 className="text-white text-3xl font-black truncate leading-tight">{event.title}</h2>
-                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="relative aspect-video rounded-[3rem] overflow-hidden bg-m3-surface-container shadow-2xl shadow-blue-500/10 flex flex-col items-center justify-center text-m3-on-surface-variant/30">
+                            <div className="p-10 rounded-full bg-m3-surface-container-high mb-6">
+                                <Video size={64} className="opacity-30" />
                             </div>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center h-full text-m3-on-surface-variant/30 bg-m3-surface-container">
-                                <div className="p-10 rounded-full bg-m3-surface-container-high mb-6">
-                                    <Video size={64} className="opacity-30" />
-                                </div>
-                                <p className="font-black text-2xl tracking-tight">動画コンテンツはありません</p>
-                            </div>
-                        )}
-                    </div>
+                            <p className="font-black text-2xl tracking-tight">動画コンテンツはありません</p>
+                        </div>
+                    )}
 
                     {/* Description Card */}
                     <div className="relative p-12 bg-white rounded-[3rem] border border-m3-outline-variant/10 shadow-sm overflow-hidden">

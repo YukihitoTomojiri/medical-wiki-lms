@@ -27,17 +27,15 @@ export default function TrainingResponseAdmin() {
             .finally(() => setLoading(false));
     }, [user, eventId]);
 
-    const handleBulkCopy = () => {
-        // Format: Name - Date - Answer Q1 - Answer Q2 ...
-        const text = responses.map(r => {
-            const answers = JSON.parse(r.answersJson || '{}');
-            const date = new Date(r.attendedAt).toLocaleString();
-            return `${r.attendeeName}\t${date}\t${answers.q1 || ''}\t${answers.q2 || ''}\t${answers.q3 || ''}`;
-        }).join('\n');
-
-        navigator.clipboard.writeText(text).then(() => {
-            alert('クリップボードにコピーしました（タブ区切り）');
-        });
+    const handleBulkCopy = async () => {
+        try {
+            const text = await api.exportTrainingResponses(parseInt(eventId!));
+            await navigator.clipboard.writeText(text);
+            alert('Gemini分析用に回答データをコピーしました。');
+        } catch (error) {
+            console.error(error);
+            alert('コピーに失敗しました');
+        }
     };
 
     if (loading) return <div>Loading...</div>;

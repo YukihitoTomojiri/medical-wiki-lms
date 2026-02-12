@@ -47,6 +47,8 @@ public class TrainingEventController {
         String title = (String) payload.get("title");
         String description = (String) payload.get("description");
         String videoUrl = (String) payload.get("videoUrl");
+        String videoUrl2 = (String) payload.get("videoUrl2");
+        String videoUrl3 = (String) payload.get("videoUrl3");
         String materialsUrl = (String) payload.get("materialsUrl");
         Long targetCommitteeId = payload.get("targetCommitteeId") != null
                 ? ((Number) payload.get("targetCommitteeId")).longValue()
@@ -55,8 +57,9 @@ public class TrainingEventController {
         LocalDateTime startTime = LocalDateTime.parse((String) payload.get("startTime"));
         LocalDateTime endTime = LocalDateTime.parse((String) payload.get("endTime"));
 
-        return trainingEventService.createEvent(userPrincipal.getId(), title, description, videoUrl, materialsUrl,
-                targetCommitteeId, targetJobType, startTime, endTime);
+        return trainingEventService.createEvent(userPrincipal.getId(), title, description, videoUrl, videoUrl2,
+                videoUrl3,
+                materialsUrl, targetCommitteeId, targetJobType, startTime, endTime);
     }
 
     @GetMapping("/{id}/qrcode")

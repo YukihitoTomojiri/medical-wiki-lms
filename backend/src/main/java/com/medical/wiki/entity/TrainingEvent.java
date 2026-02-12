@@ -25,6 +25,12 @@ public class TrainingEvent {
     @Column(name = "video_url")
     private String videoUrl; // YouTube ID or URL
 
+    @Column(name = "video_url_2")
+    private String videoUrl2;
+
+    @Column(name = "video_url_3")
+    private String videoUrl3;
+
     @Column(name = "materials_url")
     private String materialsUrl; // Link to PDF or other materials
 
