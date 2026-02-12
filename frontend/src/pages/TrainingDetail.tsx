@@ -244,6 +244,48 @@ export default function TrainingDetail() {
                         </div>
                     </div>
 
+                    {/* Videos Section */}
+                    {(event.videoUrl || event.videoUrl2 || event.videoUrl3) && (
+                        <div className="grid grid-cols-1 gap-8 mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+                            {event.videoUrl && (
+                                <div className="bg-stone-900 rounded-[32px] overflow-hidden shadow-2xl border border-stone-800 group hover:ring-4 ring-m3-primary/20 transition-all">
+                                    <div className="aspect-video relative">
+                                        <iframe
+                                            className="absolute inset-0 w-full h-full"
+                                            src={`https://www.youtube.com/embed/${getYoutubeId(event.videoUrl)}`}
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                            {event.videoUrl2 && (
+                                <div className="bg-stone-900 rounded-[32px] overflow-hidden shadow-2xl border border-stone-800 group hover:ring-4 ring-m3-primary/20 transition-all">
+                                    <div className="aspect-video relative">
+                                        <iframe
+                                            className="absolute inset-0 w-full h-full"
+                                            src={`https://www.youtube.com/embed/${getYoutubeId(event.videoUrl2)}`}
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                            {event.videoUrl3 && (
+                                <div className="bg-stone-900 rounded-[32px] overflow-hidden shadow-2xl border border-stone-800 group hover:ring-4 ring-m3-primary/20 transition-all">
+                                    <div className="aspect-video relative">
+                                        <iframe
+                                            className="absolute inset-0 w-full h-full"
+                                            src={`https://www.youtube.com/embed/${getYoutubeId(event.videoUrl3)}`}
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {/* Questionnaire Section */}
                     {!isCompleted && (
                         <div className="relative p-12 bg-m3-surface-container-low rounded-[3rem] border border-m3-primary/20 shadow-xl space-y-10 animate-in fade-in slide-in-from-top-4 duration-700 delay-300">

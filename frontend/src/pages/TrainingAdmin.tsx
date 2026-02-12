@@ -80,8 +80,8 @@ export default function TrainingAdmin() {
         setMaterialsUrl(event.materialsUrl || '');
         setTargetCommitteeId(event.targetCommitteeId);
         setTargetJobType(event.targetJobType || '');
-        setStartTime(new Date(event.startTime).toISOString().slice(0, 16));
-        setEndTime(new Date(event.endTime).toISOString().slice(0, 16));
+        setStartTime(new Date(event.startTime).toISOString().slice(0, 10));
+        setEndTime(new Date(event.endTime).toISOString().slice(0, 10));
         setShowCreateModal(true);
     };
 
@@ -154,8 +154,8 @@ export default function TrainingAdmin() {
                                     {event.targetCommitteeId ? committees.find(c => c.id === event.targetCommitteeId)?.name : '全対象'}
                                     {event.targetJobType && ` / ${event.targetJobType}`}
                                 </td>
-                                <td className="p-4">
-                                    {new Date(event.startTime).toLocaleDateString()}
+                                <td className="px-6 py-4 text-sm text-m3-on-surface-variant">
+                                    {new Date(event.startTime).toLocaleDateString('ja-JP')} 〜 {new Date(event.endTime).toLocaleDateString('ja-JP')}
                                 </td>
                                 <td className="p-4 flex gap-2">
                                     <Button variant="text" onClick={() => openQr(event.id)} title="QRコード">
@@ -238,20 +238,24 @@ export default function TrainingAdmin() {
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-xs mb-1 block">開始日時</label>
+                                <div className="space-y-1">
+                                    <label className="text-sm font-bold text-m3-on-surface-variant ml-1">開始日時</label>
                                     <input
-                                        type="datetime-local"
-                                        className="w-full p-2 border rounded"
-                                        value={startTime} onChange={e => setStartTime(e.target.value)} required
+                                        type="date"
+                                        value={startTime}
+                                        onChange={(e) => setStartTime(e.target.value)}
+                                        className="w-full px-4 py-3 bg-m3-surface border border-m3-outline rounded-xl focus:ring-2 ring-m3-primary outline-none"
+                                        required
                                     />
                                 </div>
-                                <div>
-                                    <label className="text-xs mb-1 block">終了日時</label>
+                                <div className="space-y-1">
+                                    <label className="text-sm font-bold text-m3-on-surface-variant ml-1">終了日時</label>
                                     <input
-                                        type="datetime-local"
-                                        className="w-full p-2 border rounded"
-                                        value={endTime} onChange={e => setEndTime(e.target.value)} required
+                                        type="date"
+                                        value={endTime}
+                                        onChange={(e) => setEndTime(e.target.value)}
+                                        className="w-full px-4 py-3 bg-m3-surface border border-m3-outline rounded-xl focus:ring-2 ring-m3-primary outline-none"
+                                        required
                                     />
                                 </div>
                             </div>
