@@ -54,8 +54,23 @@ public class TrainingEventController {
                 ? ((Number) payload.get("targetCommitteeId")).longValue()
                 : null;
         String targetJobType = (String) payload.get("targetJobType");
-        LocalDateTime startTime = LocalDateTime.parse((String) payload.get("startTime"));
-        LocalDateTime endTime = LocalDateTime.parse((String) payload.get("endTime"));
+
+        String startTimeStr = (String) payload.get("startTime");
+        String endTimeStr = (String) payload.get("endTime");
+
+        LocalDateTime startTime;
+        LocalDateTime endTime;
+
+        try {
+            startTime = (startTimeStr != null && !startTimeStr.contains("T"))
+                    ? LocalDateTime.parse(startTimeStr + "T00:00:00")
+                    : LocalDateTime.parse(startTimeStr);
+            endTime = (endTimeStr != null && !endTimeStr.contains("T"))
+                    ? LocalDateTime.parse(endTimeStr + "T23:59:59")
+                    : LocalDateTime.parse(endTimeStr);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid date format: " + e.getMessage());
+        }
 
         return trainingEventService.createEvent(userPrincipal.getId(), title, description, videoUrl, videoUrl2,
                 videoUrl3,
@@ -82,8 +97,23 @@ public class TrainingEventController {
                 ? ((Number) payload.get("targetCommitteeId")).longValue()
                 : null;
         String targetJobType = (String) payload.get("targetJobType");
-        LocalDateTime startTime = LocalDateTime.parse((String) payload.get("startTime"));
-        LocalDateTime endTime = LocalDateTime.parse((String) payload.get("endTime"));
+
+        String startTimeStr = (String) payload.get("startTime");
+        String endTimeStr = (String) payload.get("endTime");
+
+        LocalDateTime startTime;
+        LocalDateTime endTime;
+
+        try {
+            startTime = (startTimeStr != null && !startTimeStr.contains("T"))
+                    ? LocalDateTime.parse(startTimeStr + "T00:00:00")
+                    : LocalDateTime.parse(startTimeStr);
+            endTime = (endTimeStr != null && !endTimeStr.contains("T"))
+                    ? LocalDateTime.parse(endTimeStr + "T23:59:59")
+                    : LocalDateTime.parse(endTimeStr);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid date format: " + e.getMessage());
+        }
 
         return trainingEventService.updateEvent(userPrincipal.getId(), id, title, description, videoUrl, videoUrl2,
                 videoUrl3,

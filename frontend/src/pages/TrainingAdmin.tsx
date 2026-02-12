@@ -78,9 +78,10 @@ export default function TrainingAdmin() {
             setEditingEvent(null);
             resetForm();
             loadData();
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert(editingEvent ? '更新に失敗しました' : '作成に失敗しました');
+            const action = editingEvent ? '更新' : '作成';
+            alert(`${action}に失敗しました: ${error.message}`);
         }
     };
 
