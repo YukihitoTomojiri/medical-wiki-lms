@@ -201,18 +201,16 @@ export default function TrainingAdmin() {
                                 className="w-full p-2 border rounded"
                                 value={videoUrl} onChange={e => setVideoUrl(e.target.value)}
                             />
-                            <div className="grid grid-cols-2 gap-4">
-                                <input
-                                    placeholder="YouTube URL 2 (任意)"
-                                    className="p-2 border rounded"
-                                    value={videoUrl2} onChange={e => setVideoUrl2(e.target.value)}
-                                />
-                                <input
-                                    placeholder="YouTube URL 3 (任意)"
-                                    className="p-2 border rounded"
-                                    value={videoUrl3} onChange={e => setVideoUrl3(e.target.value)}
-                                />
-                            </div>
+                            <input
+                                placeholder="YouTube URL 2 (任意)"
+                                className="w-full p-2 border rounded"
+                                value={videoUrl2} onChange={e => setVideoUrl2(e.target.value)}
+                            />
+                            <input
+                                placeholder="YouTube URL 3 (任意)"
+                                className="w-full p-2 border rounded"
+                                value={videoUrl3} onChange={e => setVideoUrl3(e.target.value)}
+                            />
                             <input
                                 placeholder="資料URL (PDFなど)"
                                 className="w-full p-2 border rounded"
