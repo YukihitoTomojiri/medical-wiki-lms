@@ -36,8 +36,8 @@ public class TrainingEventController {
     }
 
     @GetMapping("/{id}")
-    public TrainingEvent getEvent(@PathVariable Long id) {
-        return trainingEventService.getEvent(id);
+    public TrainingEvent getEvent(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long id) {
+        return trainingEventService.getEvent(userPrincipal.getId(), id);
     }
 
     @PostMapping

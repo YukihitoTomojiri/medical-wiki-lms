@@ -147,8 +147,45 @@ public class TrainingEventService {
     }
 
     @Transactional(readOnly = true)
-    public TrainingEvent getEvent(Long eventId) {
-        return trainingEventRepository.findById(eventId)
+    public TrainingEvent getEvent(Long userId, Long eventId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        TrainingEvent event = trainingEventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
+
+        if (user.getRole() == User.Role.DEVELOPER) {
+            return event;
+        }
+
+        // Check facility for ADMIN/USER
+        if (event.getFacilityId() != null) {
+            Long userFacilityId = null;
+            if (user.getFacility() != null && !user.getFacility().isEmpty()) {
+                userFacilityId = facilityRepository.findByNameAndDeletedAtIsNull(user.getFacility())
+                        .map(f -> f.getId())
+                        .orElse(null);
+            }
+            if (userFacilityId == null || !userFacilityId.equals(event.getFacilityId())) {
+                throw new RuntimeException("Access denied: Facility mismatch");
+            }
+        }
+
+        if (user.getRole() == User.Role.ADMIN) {
+            return event;
+        }
+
+        // ROLE_USER check target
+        boolean committeeMatch = event.getTargetCommitteeId() == null ||
+                user.getCommittees().stream().anyMatch(c -> c.getId().equals(event.getTargetCommitteeId()));
+
+        boolean jobTypeMatch = event.getTargetJobType() == null || event.getTargetJobType().isEmpty() ||
+                (user.getJobType() != null && user.getJobType().equals(event.getTargetJobType()));
+
+        if (!committeeMatch && !jobTypeMatch) {
+            throw new RuntimeException("Access denied: Not a target audience");
+        }
+
+        return event;
     }
 }
