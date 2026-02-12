@@ -47,6 +47,19 @@ export default function TrainingAdmin() {
         }
     };
 
+    const resetForm = () => {
+        setTitle('');
+        setDescription('');
+        setVideoUrl('');
+        setVideoUrl2('');
+        setVideoUrl3('');
+        setMaterialsUrl('');
+        setTargetCommitteeId(null);
+        setTargetJobType('');
+        setStartTime('');
+        setEndTime('');
+    };
+
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
@@ -63,6 +76,7 @@ export default function TrainingAdmin() {
             }
             setShowCreateModal(false);
             setEditingEvent(null);
+            resetForm();
             loadData();
         } catch (error) {
             console.error(error);
@@ -131,7 +145,11 @@ export default function TrainingAdmin() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-m3-on-surface">研修会管理</h1>
-                <Button variant="filled" onClick={() => { setEditingEvent(null); setShowCreateModal(true); }} className="flex items-center gap-2">
+                <Button variant="filled" onClick={() => {
+                    setEditingEvent(null);
+                    resetForm();
+                    setShowCreateModal(true);
+                }} className="flex items-center gap-2">
                     <Plus size={18} /> 新規作成
                 </Button>
             </div>
@@ -299,7 +317,11 @@ export default function TrainingAdmin() {
                             </div>
 
                             <div className="flex justify-end gap-3 mt-6">
-                                <Button variant="text" type="button" onClick={() => { setShowCreateModal(false); setEditingEvent(null); }}>キャンセル</Button>
+                                <Button variant="text" type="button" onClick={() => {
+                                    setShowCreateModal(false);
+                                    setEditingEvent(null);
+                                    resetForm();
+                                }}>キャンセル</Button>
                                 <Button variant="filled" type="submit">{editingEvent ? '保存' : '作成'}</Button>
                             </div>
                         </form>
