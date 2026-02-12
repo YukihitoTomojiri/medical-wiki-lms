@@ -1,7 +1,6 @@
 package com.medical.wiki.controller;
 
 import com.medical.wiki.entity.TrainingEvent;
-import com.medical.wiki.entity.User;
 import com.medical.wiki.repository.UserRepository;
 import com.medical.wiki.service.TrainingEventService;
 import com.medical.wiki.config.UserPrincipal;
@@ -33,7 +32,7 @@ public class TrainingEventController {
 
     @GetMapping("/admin")
     public List<TrainingEvent> getAdminEvents(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return trainingEventService.getAllEventsForAdmin();
+        return trainingEventService.getAllEventsForAdmin(userPrincipal.getId());
     }
 
     @GetMapping("/{id}")

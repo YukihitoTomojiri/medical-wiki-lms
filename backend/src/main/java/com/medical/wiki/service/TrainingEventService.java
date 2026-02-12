@@ -23,6 +23,7 @@ public class TrainingEventService {
 
     private final TrainingEventRepository trainingEventRepository;
     private final UserRepository userRepository;
+    private final com.medical.wiki.repository.FacilityRepository facilityRepository;
 
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
@@ -53,8 +54,27 @@ public class TrainingEventService {
     }
 
     @Transactional(readOnly = true)
-    public List<TrainingEvent> getAllEventsForAdmin() {
-        return trainingEventRepository.findByDeletedAtIsNullOrderByCreatedAtDesc();
+    public List<TrainingEvent> getAllEventsForAdmin(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getRole() == User.Role.DEVELOPER) {
+            return trainingEventRepository.findByDeletedAtIsNullOrderByCreatedAtDesc();
+        }
+
+        Long facilityId = null;
+        if (user.getFacility() != null && !user.getFacility().isEmpty()) {
+            facilityId = facilityRepository.findByNameAndDeletedAtIsNull(user.getFacility())
+                    .map(f -> f.getId())
+                    .orElse(null);
+        }
+
+        if (facilityId != null) {
+            return trainingEventRepository.findByFacilityIdAndDeletedAtIsNullOrderByCreatedAtDesc(facilityId);
+        } else {
+            // Fallback for Admin with no facility
+            return trainingEventRepository.findByDeletedAtIsNullOrderByCreatedAtDesc();
+        }
     }
 
     @Transactional
@@ -69,6 +89,13 @@ public class TrainingEventService {
             throw new RuntimeException("Unauthorized");
         }
 
+        Long facilityId = null;
+        if (user.getFacility() != null && !user.getFacility().isEmpty()) {
+            facilityId = facilityRepository.findByNameAndDeletedAtIsNull(user.getFacility())
+                    .map(f -> f.getId())
+                    .orElse(null);
+        }
+
         TrainingEvent event = TrainingEvent.builder()
                 .title(title)
                 .description(description)
@@ -80,6 +107,7 @@ public class TrainingEventService {
                 .endTime(endTime)
                 .qrCodeToken(UUID.randomUUID().toString())
                 .createdBy(user)
+                .facilityId(facilityId)
                 .build();
 
         return trainingEventRepository.save(event);
