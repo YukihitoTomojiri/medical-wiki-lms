@@ -1,22 +1,44 @@
 import { useEffect, useState } from 'react';
-import { api, TrainingEvent } from '../api';
+import { api, TrainingEvent, Committee } from '../api';
 import { useAuth } from '../context/AuthContext';
-import { Video, FileText, Calendar, ChevronRight } from 'lucide-react';
+import { Video, FileText, Calendar, ChevronRight, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function TrainingList() {
     const { user } = useAuth();
     const [events, setEvents] = useState<TrainingEvent[]>([]);
+    const [committees, setCommittees] = useState<Committee[]>([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
         if (!user) return;
-        api.getTrainingEvents(user.id)
-            .then(setEvents)
+
+        Promise.all([
+            api.getTrainingEvents(user.id),
+            api.getCommittees(user.id)
+        ])
+            .then(([eventsData, committeesData]) => {
+                setEvents(eventsData);
+                setCommittees(committeesData);
+            })
             .catch(console.error)
             .finally(() => setLoading(false));
     }, [user]);
+
+    const getTargetLabel = (event: TrainingEvent) => {
+        if (!event.targetCommitteeId && !event.targetJobType) return "全職員対象";
+
+        const parts = [];
+        if (event.targetCommitteeId) {
+            const committee = committees.find(c => c.id === event.targetCommitteeId);
+            if (committee) parts.push(committee.name);
+        }
+        if (event.targetJobType) {
+            parts.push(event.targetJobType);
+        }
+        return parts.join(' / ');
+    };
 
     if (loading) return <div>Loading...</div>;
 
@@ -35,6 +57,14 @@ export default function TrainingList() {
                             <h3 className="font-bold text-lg text-m3-primary line-clamp-2">{event.title}</h3>
                             {event.videoUrl && <Video size={20} className="text-m3-tertiary shrink-0 ml-2" />}
                         </div>
+
+                        <div className="flex items-center text-xs text-m3-on-surface-variant gap-2 mb-2">
+                            <Users size={14} />
+                            <span className="font-medium text-m3-secondary">
+                                対象: {getTargetLabel(event)}
+                            </span>
+                        </div>
+
                         <p className="text-sm text-m3-on-surface-variant line-clamp-3 mb-4 h-15">
                             {event.description}
                         </p>

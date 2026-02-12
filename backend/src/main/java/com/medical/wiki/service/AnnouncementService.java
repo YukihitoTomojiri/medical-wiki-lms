@@ -28,6 +28,11 @@ public class AnnouncementService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Developer sees all active announcements
+        if (user.getRole() == User.Role.DEVELOPER) {
+            return announcementRepository.findAllActiveAnnouncements(LocalDate.now());
+        }
+
         Long facilityId = null;
         if (user.getFacility() != null && !user.getFacility().isEmpty()) {
             Facility facility = facilityRepository.findByNameAndDeletedAtIsNull(user.getFacility())

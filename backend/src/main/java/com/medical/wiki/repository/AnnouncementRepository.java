@@ -26,6 +26,14 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
     // developer/superadmin - handled in service calling different methods)
     List<Announcement> findByFacilityIdAndDeletedAtIsNullOrderByCreatedAtDesc(Long facilityId);
 
-    // For Developer (Global announcements)
+    // For Developer (Global + All Facilities)
+    @Query("SELECT a FROM Announcement a LEFT JOIN FETCH a.createdBy WHERE " +
+            "a.deletedAt IS NULL AND " +
+            "a.displayUntil >= :today " +
+            "ORDER BY CASE a.priority WHEN 'HIGH' THEN 1 WHEN 'NORMAL' THEN 2 WHEN 'LOW' THEN 3 END ASC, a.createdAt DESC")
+    List<Announcement> findAllActiveAnnouncements(@Param("today") LocalDate today);
+
+    // For Developer (Global announcements) - keeping existing method if needed, but
+    // likely replaced by above for "viewing all"
     List<Announcement> findByFacilityIdIsNullAndDeletedAtIsNullOrderByCreatedAtDesc();
 }

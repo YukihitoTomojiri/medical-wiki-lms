@@ -33,7 +33,7 @@ export default function TrainingAdmin() {
         try {
             const [eventsRes, committeesRes] = await Promise.all([
                 api.getAdminTrainingEvents(user!.id),
-                api.getAllCommittees(user!.id)
+                api.getCommittees(user!.id)
             ]);
             setEvents(eventsRes);
             setCommittees(committeesRes);

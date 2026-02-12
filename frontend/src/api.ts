@@ -804,6 +804,22 @@ export const api = {
         return res.json();
     },
 
+    getTrainingEvent: async (userId: number, id: number): Promise<TrainingEvent> => {
+        const res = await fetch(`${API_BASE}/training/events/${id}`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) throw new Error('Training event not found');
+        return res.json();
+    },
+
+    getCommittees: async (userId: number): Promise<Committee[]> => {
+        const res = await fetch(`${API_BASE}/committees`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
     getMyTrainingResponses: async (userId: number): Promise<TrainingResponse[]> => {
         const res = await fetch(`${API_BASE}/training/responses/me`, {
             headers: getHeaders(userId),
@@ -817,14 +833,6 @@ export const api = {
             headers: getHeaders(userId),
         });
         if (!res.ok) return [];
-        return res.json();
-    },
-
-    getTrainingEvent: async (userId: number, id: number): Promise<TrainingEvent> => {
-        const res = await fetch(`${API_BASE}/training/events/${id}`, {
-            headers: getHeaders(userId),
-        });
-        if (!res.ok) throw new Error('Event not found');
         return res.json();
     },
 
@@ -871,14 +879,6 @@ export const api = {
         return res.json();
     },
 
-    getAllCommittees: async (userId: number): Promise<Committee[]> => {
-        const res = await fetch(`${API_BASE}/committees`, {
-            headers: getHeaders(userId),
-        });
-        if (!res.ok) return [];
-        return res.json();
-    },
-
     createCommittee: async (userId: number, name: string, description: string): Promise<Committee> => {
         const res = await fetch(`${API_BASE}/committees`, {
             method: 'POST',
@@ -890,6 +890,6 @@ export const api = {
         });
         if (!res.ok) throw new Error('Failed to create committee');
         return res.json();
-    }
+    },
 };
 
