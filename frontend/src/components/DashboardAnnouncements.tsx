@@ -65,6 +65,11 @@ export default function DashboardAnnouncements({ userId }: Props) {
                                             重要
                                         </span>
                                     )}
+                                    {!a.facilityId && (
+                                        <span className="text-[10px] font-bold bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-md">
+                                            全体
+                                        </span>
+                                    )}
                                     <span className="text-xs font-medium text-gray-400">
                                         {new Date(a.createdAt).toLocaleDateString()}
                                     </span>
