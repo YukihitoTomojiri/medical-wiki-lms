@@ -49,6 +49,9 @@ public class TrainingEvent {
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
+    @Column(name = "facility_id")
+    private Long facilityId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
