@@ -12,12 +12,14 @@ import java.util.Set;
 public interface TrainingEventRepository extends JpaRepository<TrainingEvent, Long> {
 
         @Query("SELECT e FROM TrainingEvent e WHERE " +
+                        "(e.facilityId IS NULL OR e.facilityId = :facilityId) AND " +
                         "(e.targetCommitteeId IS NULL OR e.targetCommitteeId IN :committeeIds) AND " +
                         "(e.targetJobType IS NULL OR e.targetJobType = :jobType) AND " +
                         "e.deletedAt IS NULL AND " +
                         ":now BETWEEN e.startTime AND e.endTime " +
                         "ORDER BY e.startTime DESC")
         List<TrainingEvent> findVisibleEvents(
+                        @Param("facilityId") Long facilityId,
                         @Param("committeeIds") Set<Long> committeeIds,
                         @Param("jobType") String jobType,
                         @Param("now") LocalDateTime now);

@@ -32,27 +32,48 @@ public class TrainingEventService {
 
     @Transactional(readOnly = true)
     public List<TrainingEvent> getVisibleEvents(Long userId) {
+        log.info("Fetching visible events for user: {}", userId);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+
+        log.debug("User found: role={}, facility={}, jobType={}", user.getRole(), user.getFacility(),
+                user.getJobType());
 
         if (user.getRole() == User.Role.ADMIN || user.getRole() == User.Role.DEVELOPER) {
+            log.debug("Admin/Developer access: returning all non-deleted events");
             return trainingEventRepository.findByDeletedAtIsNullOrderByCreatedAtDesc();
         }
+
+        Long facilityId = null;
+        if (user.getFacility() != null && !user.getFacility().trim().isEmpty()) {
+            facilityId = facilityRepository.findByNameAndDeletedAtIsNull(user.getFacility())
+                    .map(f -> f.getId())
+                    .orElseGet(() -> {
+                        log.warn("Facility not found by name: {}", user.getFacility());
+                        return null;
+                    });
+        }
+        log.debug("Resolved facilityId: {}", facilityId);
 
         Set<Long> committeeIds = user.getCommittees().stream()
                 .map(Committee::getId)
                 .collect(Collectors.toSet());
 
-        // If no committees, pass empty set (but not null, to avoid SQL issues if using
-        // IN empty list?)
-        // JPQL IN empty collection might cause issues, check implementation.
-        // If empty, better handling might be needed, but let's assume empty set works
-        // or pass dummy.
         if (committeeIds.isEmpty()) {
+            log.debug("No committees found, using dummy -1L");
             committeeIds = Collections.singleton(-1L);
         }
 
-        return trainingEventRepository.findVisibleEvents(committeeIds, user.getJobType(), LocalDateTime.now());
+        String jobType = user.getJobType();
+        if (jobType != null && (jobType.trim().isEmpty() || jobType.equalsIgnoreCase("ALL"))) {
+            jobType = null;
+        }
+        log.debug("Effective jobType: {}", jobType);
+
+        List<TrainingEvent> events = trainingEventRepository.findVisibleEvents(facilityId, committeeIds, jobType,
+                LocalDateTime.now());
+        log.info("Found {} visible events for user {}", events.size(), userId);
+        return events;
     }
 
     @Transactional(readOnly = true)
