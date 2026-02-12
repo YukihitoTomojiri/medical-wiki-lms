@@ -142,6 +142,9 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                 icon={LayoutDashboard}
             />
 
+            {/* Announcement Section (Restored) */}
+            <DashboardAnnouncements userId={user.id} />
+
             {/* Summary Cards as Navigation Buttons */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Learning Stats */}
