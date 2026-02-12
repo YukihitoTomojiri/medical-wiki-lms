@@ -33,14 +33,7 @@ public class TrainingEventService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.getRole() == User.Role.ADMIN || user.getRole() == User.Role.DEVELOPER) {
-            // Admin sees all? Or should they see only relevant?
-            // Usually Admin manages all. But for "taking" training, they might want to see
-            // assigned ones.
-            // For list, let's return all for Admin to manage, or maybe separate method for
-            // management.
-            // The repository method findVisibleEvents logic:
-            // (targetCommitteeId IS NULL OR targetCommitteeId IN userCommittees)
-            // (targetJobType IS NULL OR targetJobType = userJobType)
+            return trainingEventRepository.findByDeletedAtIsNullOrderByCreatedAtDesc();
         }
 
         Set<Long> committeeIds = user.getCommittees().stream()
@@ -121,8 +114,8 @@ public class TrainingEventService {
     public String getQrCodeUrl(Long eventId) {
         TrainingEvent event = trainingEventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
-        // e.g. http://localhost:5173/training/attendance?token=...
-        return frontendUrl + "/training/attendance/" + event.getQrCodeToken();
+        // e.g. http://localhost:5173/training/123
+        return frontendUrl + "/training/" + event.getId();
     }
 
     @Transactional(readOnly = true)
