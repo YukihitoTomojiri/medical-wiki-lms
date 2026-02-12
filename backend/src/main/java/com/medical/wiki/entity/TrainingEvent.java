@@ -51,6 +51,7 @@ public class TrainingEvent {
     @Column(name = "qr_code_token", unique = true)
     private String qrCodeToken; // For generating QR code URL
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
