@@ -213,9 +213,9 @@ export default function TrainingDetail() {
                                 </div>
                                 <h2 className="text-2xl font-bold text-m3-on-surface">研修動画</h2>
                             </div>
-                            <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {activeVideos.map((v, idx) => (
-                                    <div key={idx} className="relative aspect-video rounded-3xl overflow-hidden bg-m3-surface-container shadow-xl ring-1 ring-m3-outline-variant/10">
+                                    <div key={idx} className="relative aspect-video rounded-2xl overflow-hidden bg-m3-surface-container shadow-lg ring-1 ring-m3-outline-variant/10 hover:shadow-xl transition-shadow">
                                         {activeVideoIndex === v.index ? (
                                             <iframe
                                                 width="100%"
@@ -234,12 +234,12 @@ export default function TrainingDetail() {
                                                 onClick={() => setActiveVideoIndex(v.index)}
                                             >
                                                 <div className="absolute inset-0 bg-m3-on-surface/40 group-hover:bg-m3-on-surface/20 transition-all duration-300 flex items-center justify-center">
-                                                    <div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center shadow-xl border border-white/40 group-hover:scale-110 group-hover:bg-red-600 transition-all duration-300">
-                                                        <PlayCircle size={40} className="text-white fill-white/10 ml-0.5" />
+                                                    <div className="w-12 h-12 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center shadow-xl border border-white/40 group-hover:scale-110 group-hover:bg-red-600 transition-all duration-300">
+                                                        <PlayCircle size={28} className="text-white fill-white/10 ml-0.5" />
                                                     </div>
                                                 </div>
-                                                <div className="absolute bottom-6 left-6 p-4 rounded-2xl backdrop-blur-md bg-black/40 border border-white/10 opacity-100 transition-all duration-300">
-                                                    <p className="text-white text-sm font-bold truncate">動画コンテンツ {v.index}</p>
+                                                <div className="absolute bottom-3 left-3 px-3 py-2 rounded-xl backdrop-blur-md bg-black/40 border border-white/10">
+                                                    <p className="text-white text-xs font-bold">動画 {v.index}</p>
                                                 </div>
                                             </div>
                                         )}
@@ -369,14 +369,14 @@ export default function TrainingDetail() {
                 {/* Right: Sidebar */}
                 <div className="lg:col-span-4 space-y-6">
                     {/* Event Status Card */}
-                    <div className="bg-white rounded-[3rem] border border-m3-outline-variant/10 p-10 space-y-10">
-                        <div className="flex items-center gap-6 group">
-                            <div className="w-16 h-16 rounded-[1.5rem] bg-m3-secondary-container flex items-center justify-center text-m3-primary group-hover:rotate-6 transition-transform shadow-sm">
-                                <Calendar size={32} />
+                    <div className="bg-white rounded-[2.5rem] border border-m3-outline-variant/10 p-8 space-y-8">
+                        <div className="flex items-center gap-5 group">
+                            <div className="w-14 h-14 rounded-[1.25rem] bg-m3-secondary-container flex items-center justify-center text-m3-primary group-hover:rotate-6 transition-transform shadow-sm">
+                                <Calendar size={28} />
                             </div>
-                            <div>
-                                <p className="text-[10px] font-black text-m3-on-surface-variant/40 uppercase tracking-[0.3em] mb-1">Session Date</p>
-                                <p className="text-2xl font-black text-m3-on-surface leading-tight">
+                            <div className="flex-1">
+                                <p className="text-xs font-bold text-m3-on-surface-variant mb-1">開始日</p>
+                                <p className="text-xl font-black text-m3-on-surface leading-tight">
                                     {new Date(event.startTime).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}
                                 </p>
                             </div>
@@ -384,13 +384,13 @@ export default function TrainingDetail() {
 
                         <div className="h-px bg-m3-outline-variant/10" />
 
-                        <div className="flex items-center gap-6 group">
-                            <div className="w-16 h-16 rounded-[1.5rem] bg-m3-error-container flex items-center justify-center text-m3-error group-hover:-rotate-6 transition-transform shadow-sm">
-                                <Clock size={32} />
+                        <div className="flex items-center gap-5 group">
+                            <div className="w-14 h-14 rounded-[1.25rem] bg-m3-error-container flex items-center justify-center text-m3-error group-hover:-rotate-6 transition-transform shadow-sm">
+                                <Clock size={28} />
                             </div>
-                            <div>
-                                <p className="text-[10px] font-black text-m3-on-surface-variant/40 uppercase tracking-[0.3em] mb-1">Time Limit</p>
-                                <p className="text-2xl font-black text-m3-on-surface leading-tight">
+                            <div className="flex-1">
+                                <p className="text-xs font-bold text-m3-on-surface-variant mb-1">終了日</p>
+                                <p className="text-xl font-black text-m3-on-surface leading-tight">
                                     {new Date(event.endTime).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}
                                 </p>
                             </div>
@@ -398,9 +398,9 @@ export default function TrainingDetail() {
                     </div>
 
                     {/* Materials Card */}
-                    <div className="bg-white rounded-[3rem] border border-m3-outline-variant/10 p-10">
-                        <h3 className="text-xl font-black text-m3-on-surface mb-8 flex items-center gap-4">
-                            <FileText size={24} className="text-m3-primary" /> 研修資料
+                    <div className="bg-white rounded-[2.5rem] border border-m3-outline-variant/10 p-8">
+                        <h3 className="text-lg font-black text-m3-on-surface mb-6 flex items-center gap-3">
+                            <FileText size={22} className="text-m3-primary" /> 研修資料
                         </h3>
                         {event.materialsUrl ? (
                             <a
@@ -409,27 +409,27 @@ export default function TrainingDetail() {
                                 rel="noopener noreferrer"
                                 className="block group"
                             >
-                                <div className="p-6 rounded-[2rem] bg-m3-surface-container-low border border-m3-outline-variant/10 hover:border-m3-primary/30 hover:bg-m3-surface-container-high transition-all group-hover:shadow-xl relative overflow-hidden">
-                                    <div className="absolute top-6 right-6 text-m3-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Download size={22} />
+                                <div className="p-5 rounded-2xl bg-m3-surface-container-low border border-m3-outline-variant/10 hover:border-m3-primary/30 hover:bg-m3-surface-container-high transition-all group-hover:shadow-lg relative overflow-hidden">
+                                    <div className="absolute top-4 right-4 text-m3-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Download size={20} />
                                     </div>
-                                    <div className="flex items-center gap-5">
-                                        <div className="p-4 bg-white rounded-2xl shadow-sm border border-m3-outline-variant/10 group-hover:scale-110 transition-transform">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-white rounded-xl shadow-sm border border-m3-outline-variant/10 group-hover:scale-110 transition-transform">
                                             {getFileIcon(event.materialsUrl)}
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="font-black text-m3-on-surface truncate group-hover:text-m3-primary transition-colors text-lg">
+                                            <p className="font-bold text-m3-on-surface truncate group-hover:text-m3-primary transition-colors">
                                                 {getFileName(event.materialsUrl)}
                                             </p>
-                                            <span className="text-[10px] font-black text-m3-on-surface-variant/40 uppercase tracking-[0.2em] mt-2 block">Download Material</span>
+                                            <span className="text-[10px] font-bold text-m3-on-surface-variant/50 mt-1 block">ダウンロード</span>
                                         </div>
                                     </div>
                                 </div>
                             </a>
                         ) : (
-                            <div className="text-center py-16 bg-m3-surface-container-low rounded-[2rem] border border-dashed border-m3-outline-variant/20 flex flex-col items-center gap-4">
-                                <FileText size={48} className="text-m3-on-surface-variant/10" />
-                                <span className="text-sm font-black text-m3-on-surface-variant/30 tracking-wider uppercase">資料はありません</span>
+                            <div className="text-center py-12 bg-m3-surface-container-low rounded-2xl border border-dashed border-m3-outline-variant/20 flex flex-col items-center gap-3">
+                                <FileText size={40} className="text-m3-on-surface-variant/10" />
+                                <span className="text-xs font-bold text-m3-on-surface-variant/30">資料はありません</span>
                             </div>
                         )}
                     </div>
