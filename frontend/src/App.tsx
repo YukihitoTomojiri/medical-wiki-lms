@@ -68,7 +68,7 @@ function AppRoutes() {
                 <Route path="/training" element={<TrainingList />} />
                 <Route path="/training/:id" element={<TrainingDetail />} />
 
-                {(isAdmin) && (
+                {(isAdmin || isDeveloper) && (
                     <>
                         <Route path="/admin" element={<AdminDashboard />} />
                         <Route path="/admin/users" element={<AdminUserManagement user={user} />} />

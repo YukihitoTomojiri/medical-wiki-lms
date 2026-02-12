@@ -22,7 +22,8 @@ public class TrainingResponseService {
     private final UserRepository userRepository;
 
     @Transactional
-    public TrainingResponse submitResponse(Long userId, Long eventId, String answersJson) {
+    public TrainingResponse submitResponse(@org.springframework.lang.NonNull Long userId,
+            @org.springframework.lang.NonNull Long eventId, String answersJson) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
