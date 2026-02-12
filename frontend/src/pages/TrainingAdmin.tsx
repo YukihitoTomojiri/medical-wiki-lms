@@ -1,0 +1,215 @@
+import { useEffect, useState } from 'react';
+import { api, TrainingEvent, Committee } from '../api';
+import { useAuth } from '../context/AuthContext';
+import { Plus, QrCode as QrIcon, Users, FileText } from 'lucide-react';
+import { Button } from '../components/ui/Button';
+import { useNavigate } from 'react-router-dom';
+
+export default function TrainingAdmin() {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const [events, setEvents] = useState<TrainingEvent[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+
+    // Create Form State
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [videoUrl, setVideoUrl] = useState('');
+    const [materialsUrl, setMaterialsUrl] = useState('');
+    const [targetCommitteeId, setTargetCommitteeId] = useState<number | null>(null);
+    const [targetJobType, setTargetJobType] = useState('');
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
+    const [committees, setCommittees] = useState<Committee[]>([]);
+
+    useEffect(() => {
+        if (!user) return;
+        loadData();
+    }, [user]);
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            const [eventsRes, committeesRes] = await Promise.all([
+                api.getAdminTrainingEvents(user!.id),
+                api.getAllCommittees(user!.id)
+            ]);
+            setEvents(eventsRes);
+            setCommittees(committeesRes);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCreate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            await api.createTrainingEvent(user!.id, {
+                title, description, videoUrl, materialsUrl,
+                targetCommitteeId, targetJobType: targetJobType || null,
+                startTime, endTime
+            });
+            setShowCreateModal(false);
+            loadData();
+        } catch (error) {
+            console.error(error);
+            alert('作成に失敗しました');
+        }
+    };
+
+    const openQr = async (eventId: number) => {
+        try {
+            const url = await api.getTrainingQrCode(user!.id, eventId);
+            const win = window.open('', '_blank');
+            if (win) {
+                win.document.write(`
+                    <html>
+                        <head><title>Quest Check-in QR</title></head>
+                        <body style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; font-family:sans-serif;">
+                            <h1>QRコードをスキャンして受講</h1>
+                            <div id="qrcode"></div>
+                            <p>${url}</p>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+                            <script>
+                                new QRCode(document.getElementById("qrcode"), {
+                                    text: "${url}",
+                                    width: 300,
+                                    height: 300
+                                });
+                            </script>
+                        </body>
+                    </html>
+                `);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    if (loading) return <div>Loading...</div>;
+
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold text-m3-on-surface">研修会管理</h1>
+                <Button variant="filled" onClick={() => setShowCreateModal(true)} className="flex items-center gap-2">
+                    <Plus size={18} /> 新規作成
+                </Button>
+            </div>
+
+            <div className="bg-white rounded-xl shadow border border-m3-outline-variant/20 overflow-hidden">
+                <table className="w-full text-left text-sm text-m3-on-surface">
+                    <thead className="bg-m3-surface-container text-m3-on-surface-variant">
+                        <tr>
+                            <th className="p-4">タイトル</th>
+                            <th className="p-4">対象委員会/職種</th>
+                            <th className="p-4">期間</th>
+                            <th className="p-4">アクション</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-m3-outline-variant/10">
+                        {events.map(event => (
+                            <tr key={event.id} className="hover:bg-m3-surface-container-low">
+                                <td className="p-4 font-medium">{event.title}</td>
+                                <td className="p-4">
+                                    {event.targetCommitteeId ? committees.find(c => c.id === event.targetCommitteeId)?.name : '全対象'}
+                                    {event.targetJobType && ` / ${event.targetJobType}`}
+                                </td>
+                                <td className="p-4">
+                                    {new Date(event.startTime).toLocaleDateString()}
+                                </td>
+                                <td className="p-4 flex gap-2">
+                                    <Button variant="text" onClick={() => openQr(event.id)} title="QRコード">
+                                        <QrIcon size={18} />
+                                    </Button>
+                                    <Button variant="text" onClick={() => navigate(`/admin/training/responses/${event.id}`)} title="回答確認">
+                                        <Users size={18} />
+                                    </Button>
+                                    <Button variant="text" onClick={() => navigate(`/training/${event.id}`)} title="プレビュー">
+                                        <FileText size={18} />
+                                    </Button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Create Modal */}
+            {showCreateModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 shadow-xl">
+                        <h2 className="text-xl font-bold mb-4">新規研修会作成</h2>
+                        <form onSubmit={handleCreate} className="space-y-4">
+                            <input
+                                placeholder="タイトル"
+                                className="w-full p-2 border rounded"
+                                value={title} onChange={e => setTitle(e.target.value)} required
+                            />
+                            <textarea
+                                placeholder="説明"
+                                className="w-full p-2 border rounded h-24"
+                                value={description} onChange={e => setDescription(e.target.value)} required
+                            />
+                            <input
+                                placeholder="YouTube URL"
+                                className="w-full p-2 border rounded"
+                                value={videoUrl} onChange={e => setVideoUrl(e.target.value)}
+                            />
+                            <input
+                                placeholder="資料URL (PDFなど)"
+                                className="w-full p-2 border rounded"
+                                value={materialsUrl} onChange={e => setMaterialsUrl(e.target.value)}
+                            />
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <select
+                                    className="p-2 border rounded"
+                                    value={targetCommitteeId || ''}
+                                    onChange={e => setTargetCommitteeId(e.target.value ? Number(e.target.value) : null)}
+                                >
+                                    <option value="">全委員会対象</option>
+                                    {committees.map(c => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
+                                </select>
+                                <input
+                                    placeholder="職種 (任意)"
+                                    className="p-2 border rounded"
+                                    value={targetJobType} onChange={e => setTargetJobType(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs mb-1 block">開始日時</label>
+                                    <input
+                                        type="datetime-local"
+                                        className="w-full p-2 border rounded"
+                                        value={startTime} onChange={e => setStartTime(e.target.value)} required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs mb-1 block">終了日時</label>
+                                    <input
+                                        type="datetime-local"
+                                        className="w-full p-2 border rounded"
+                                        value={endTime} onChange={e => setEndTime(e.target.value)} required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end gap-3 mt-6">
+                                <Button variant="text" type="button" onClick={() => setShowCreateModal(false)}>キャンセル</Button>
+                                <Button variant="filled" type="submit">作成</Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

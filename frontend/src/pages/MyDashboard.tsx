@@ -6,15 +6,10 @@ import {
     BookOpen,
     CheckCircle2,
     Calendar,
-    TrendingUp,
     Clock,
     XCircle,
-    Plus,
-    ArrowRight,
-    AlertCircle,
-    Filter,
     LayoutDashboard,
-    AlertTriangle
+    AlertCircle
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import PaidLeaveRequestForm from '../components/PaidLeaveRequestForm';
@@ -31,16 +26,11 @@ export default function MyDashboard({ user }: MyDashboardProps) {
     const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
     const [leaveStatus, setLeaveStatus] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'learning' | 'leaves'>('learning');
+    const [activeTab, setActiveTab] = useState<'STUDY' | 'LEAVE' | 'NOTICE'>('STUDY');
+    const [trainingEvents, setTrainingEvents] = useState<any[]>([]);
+    const [trainingResponses, setTrainingResponses] = useState<any[]>([]);
 
-    // History Filter State
-    const [filterType, setFilterType] = useState('ALL');
-    const [durationFilter, setDurationFilter] = useState<'ALL' | 'FULL' | 'HALF'>('ALL');
-    const [historyStartDate] = useState(() => {
-        const d = new Date();
-        d.setFullYear(d.getFullYear() - 1);
-        return d.toISOString().split('T')[0];
-    });
+    const [showLeaveForm, setShowLeaveForm] = useState(false);
 
     // Leave Form State
     const [requestType, setRequestType] = useState('PAID_LEAVE');
@@ -53,30 +43,38 @@ export default function MyDashboard({ user }: MyDashboardProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
+    const [historyStartDate] = useState(() => {
+        const d = new Date();
+        d.setFullYear(d.getFullYear() - 1);
+        return d.toISOString().split('T')[0];
+    });
+
     useEffect(() => {
         loadData();
     }, [user.id, historyStartDate]);
 
     const loadData = async () => {
         try {
-            const [dashData, progressData, historyData, statusData] = await Promise.all([
+            const [dashData, progressData, historyData, statusData, eventsData, responsesData] = await Promise.all([
                 api.getMyDashboard(user.id),
                 api.getMyProgress(user.id),
                 api.getMyHistory(user.id, historyStartDate),
-                api.getLeaveStatus(user.id)
+                api.getLeaveStatus(user.id),
+                api.getTrainingEvents(user.id),
+                api.getMyTrainingResponses(user.id)
             ]);
             setDashboardData(dashData);
             setProgress(progressData);
             setLeaveRequests(historyData);
             setLeaveStatus(statusData);
+            setTrainingEvents(eventsData);
+            setTrainingResponses(responsesData);
         } catch (error) {
             console.error(error);
         } finally {
             setLoading(false);
         }
     };
-
-
 
     const handleSubmitLeave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -133,6 +131,8 @@ export default function MyDashboard({ user }: MyDashboardProps) {
 
     if (loading) return <div className="p-12 text-center text-gray-400">Loading Dashboard...</div>;
 
+    const uncompletedCount = trainingEvents.filter(e => !trainingResponses.some(r => r.eventId === e.id)).length;
+
     return (
         <div className="space-y-6 max-w-6xl mx-auto">
             {/* Header Area */}
@@ -142,498 +142,285 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                 icon={LayoutDashboard}
             />
 
-            {/* Summary Cards as Navigation Buttons */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Learning Stats */}
+            {/* Summary Cards (Tabs) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Card 1: Study */}
                 <button
-                    onClick={() => setActiveTab('learning')}
-                    className={`text-left bg-white p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition-all ${activeTab === 'learning' ? 'border-orange-500 ring-2 ring-orange-100' : 'border-gray-100'
+                    onClick={() => setActiveTab('STUDY')}
+                    className={`relative overflow-hidden rounded-2xl border p-5 text-left transition-all duration-200 group ${activeTab === 'STUDY'
+                        ? 'bg-orange-50 border-orange-200 ring-2 ring-orange-500 ring-opacity-50 shadow-md'
+                        : 'bg-white border-gray-100 hover:border-orange-200 hover:shadow-md'
                         }`}
                 >
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-orange-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
-                    <div className="relative">
-                        <div className="flex items-center gap-2 text-gray-500 mb-2">
-                            <BookOpen size={18} className="text-orange-500" />
-                            <span className={`text-xs font-bold uppercase tracking-wider ${activeTab === 'learning' ? 'text-orange-600' : ''}`}>学習完了</span>
-                        </div>
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-black text-gray-800">{dashboardData?.completedManualsCount}</span>
-                            <span className="text-sm text-gray-400">/ {dashboardData?.totalManualsCount}</span>
-                        </div>
-                        <div className="mt-3 flex items-center text-xs text-orange-600 font-medium">
-                            <TrendingUp size={14} className="mr-1" />
-                            今月: {dashboardData?.monthlyReadCount}件完了
-                        </div>
+                    <div className="flex items-center justify-between mb-4">
+                        <span className={`text-xs font-bold uppercase ${activeTab === 'STUDY' ? 'text-orange-700' : 'text-gray-500'}`}>研修・学習状況</span>
+                        <BookOpen className={activeTab === 'STUDY' ? 'text-orange-600' : 'text-gray-400 group-hover:text-orange-500'} size={20} />
                     </div>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-black text-gray-800">{uncompletedCount}</span>
+                        <span className="text-xs font-bold text-gray-400">件の未完了</span>
+                    </div>
+                    {activeTab === 'STUDY' && (
+                        <div className="absolute bottom-0 left-0 w-full h-1 bg-orange-500" />
+                    )}
                 </button>
 
-                {/* Leave Stats */}
+                {/* Card 2: Leave */}
                 <button
-                    onClick={() => setActiveTab('leaves')}
-                    className={`text-left bg-white p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition-all ${activeTab === 'leaves' ? 'border-emerald-500 ring-2 ring-emerald-100' : 'border-gray-100'
+                    onClick={() => setActiveTab('LEAVE')}
+                    className={`relative overflow-hidden rounded-2xl border p-5 text-left transition-all duration-200 group ${activeTab === 'LEAVE'
+                        ? 'bg-emerald-50 border-emerald-200 ring-2 ring-emerald-500 ring-opacity-50 shadow-md'
+                        : 'bg-white border-gray-100 hover:border-emerald-200 hover:shadow-md'
                         }`}
                 >
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
-                    <div className="relative">
-                        <div className="flex items-center gap-2 text-gray-500 mb-2">
-                            <Calendar size={18} className="text-emerald-500" />
-                            <span className={`text-xs font-bold uppercase tracking-wider ${activeTab === 'leaves' ? 'text-emerald-600' : ''}`}>
-                                有給休暇
-                            </span>
-                        </div>
-                        <div className="flex items-baseline gap-2">
-                            {(() => {
-                                const total = leaveStatus?.remainingDays ?? dashboardData?.paidLeaveDays ?? 0;
-                                const pending = leaveRequests
-                                    .filter(r => r.status === 'PENDING' && (r.type === 'PAID_LEAVE' || !r.type))
-                                    .reduce((acc, r) => {
-                                        const start = new Date(r.startDate);
-                                        const end = new Date(r.endDate);
-                                        const diffTime = Math.abs(end.getTime() - start.getTime());
-                                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                                        const isHalf = r.durationType === 'HALF_AM' || r.durationType === 'HALF_PM';
-                                        return acc + (isHalf ? diffDays * 0.5 : diffDays * 1.0);
-                                    }, 0);
-
-                                const effective = Math.max(0, total - pending);
-
-                                return (
-                                    <div className="flex flex-col w-full">
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-3xl font-black text-gray-800">{String(total).includes('.') ? total : `${total}.0`}</span>
-                                            <span className="text-sm text-gray-400">日</span>
-                                        </div>
-                                        <div className="flex flex-col gap-0.5 mt-1">
-                                            <div className="flex items-center gap-1.5" title="確定済みの残日数です（承認済み取得分を差し引いた値）">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
-                                                <span className="text-[10px] text-gray-400 font-bold">
-                                                    確定: {total.toFixed(1)}
-                                                </span>
-                                            </div>
-                                            {pending > 0 && (
-                                                <div className="flex items-center gap-1.5" title="申請中の休暇が承認された場合の予想残日数です">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
-                                                    <span className="text-[10px] text-gray-400 font-bold">
-                                                        実質: {effective.toFixed(1)}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        {leaveStatus?.nextGrantDate && (
-                                            <div className="mt-3 pt-2 border-t border-emerald-100/50 text-[10px] text-gray-500 font-medium flex items-center gap-1">
-                                                <div className="w-1 h-1 rounded-full bg-emerald-300"></div>
-                                                次回付与: <span className="font-mono font-bold text-emerald-600">{new Date(leaveStatus.nextGrantDate).toLocaleDateString('ja-JP')}</span>
-                                                <span className="text-emerald-500/80">(+{leaveStatus.nextGrantDays}日)</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })()}
-                        </div>
-                        {((dashboardData?.pendingLeaveRequestsCount || 0) <= 0) && (
-                            <div className="mt-2 flex items-center text-xs text-gray-300 font-medium">
-                                <Clock size={14} className="mr-1" />
-                                申請なし
-                            </div>
-                        )}
-                        {((dashboardData?.pendingLeaveRequestsCount || 0) > 0) && (
-                            <div className="mt-2 flex items-center text-xs text-emerald-600 font-medium">
-                                <Clock size={14} className="mr-1" />
-                                申請中: {dashboardData?.pendingLeaveRequestsCount}件
-                            </div>
-                        )}
+                    <div className="flex items-center justify-between mb-4">
+                        <span className={`text-xs font-bold uppercase ${activeTab === 'LEAVE' ? 'text-emerald-700' : 'text-gray-500'}`}>有給休暇</span>
+                        <Calendar className={activeTab === 'LEAVE' ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500'} size={20} />
                     </div>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-black text-gray-800">{leaveStatus?.remainingDays ?? dashboardData?.paidLeaveDays ?? 0}</span>
+                        <span className="text-xs font-bold text-gray-400">日の残日数</span>
+                    </div>
+                    {activeTab === 'LEAVE' && (
+                        <div className="absolute bottom-0 left-0 w-full h-1 bg-emerald-500" />
+                    )}
                 </button>
 
-                {/* Notification Card Removed (Unified into DashboardAnnouncements) */}
+                {/* Card 3: Notices */}
+                <button
+                    onClick={() => setActiveTab('NOTICE')}
+                    className={`relative overflow-hidden rounded-2xl border p-5 text-left transition-all duration-200 group ${activeTab === 'NOTICE'
+                        ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-500 ring-opacity-50 shadow-md'
+                        : 'bg-white border-gray-100 hover:border-blue-200 hover:shadow-md'
+                        }`}
+                >
+                    <div className="flex items-center justify-between mb-4">
+                        <span className={`text-xs font-bold uppercase ${activeTab === 'NOTICE' ? 'text-blue-700' : 'text-gray-500'}`}>お知らせ</span>
+                        <AlertCircle className={activeTab === 'NOTICE' ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-500'} size={20} />
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-sm font-bold text-gray-600">最新情報を確認</span>
+                    </div>
+                    {activeTab === 'NOTICE' && (
+                        <div className="absolute bottom-0 left-0 w-full h-1 bg-blue-500" />
+                    )}
+                </button>
             </div>
 
-            {/* Main Content Area */}
-            <div>
-                {/* Learning Tab Content */}
-                {activeTab === 'learning' && (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                        {progress.length > 0 ? (
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                                <div className="divide-y divide-gray-50">
-                                    {progress.map((item) => (
-                                        <Link
-                                            key={item.id}
-                                            to={`/manuals/${item.manualId}`}
-                                            className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors group"
-                                        >
-                                            <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-orange-100 transition-colors">
-                                                <CheckCircle2 className="text-orange-500" size={20} />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-bold text-gray-800 truncate group-hover:text-orange-700 transition-colors">{item.manualTitle}</p>
-                                                <div className="flex items-center gap-2 text-sm text-gray-500">
-                                                    <span className="px-2 py-0.5 bg-gray-100 rounded-full text-xs font-mono">
-                                                        {new Date(item.readAt).toLocaleDateString('ja-JP')}
-                                                    </span>
-                                                    <span className="text-xs text-gray-400">{item.category}</span>
-                                                </div>
-                                            </div>
-                                            <ArrowRight size={16} className="text-gray-300 group-hover:text-orange-400" />
-                                        </Link>
-                                    ))}
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
-                                <BookOpen className="mx-auto text-gray-300 mb-4" size={48} />
-                                <p className="text-gray-500 font-bold">まだ読了したマニュアルがありません</p>
-                                <Link to="/manuals" className="inline-block mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg font-bold hover:bg-orange-600 transition-colors">
-                                    マニュアルを探す
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Paid Leaves Tab Content */}
-                {activeTab === 'leaves' && (
-                    <div className="grid lg:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-2">
-                        {/* Application Form */}
-                        <div className="lg:col-span-12 xl:col-span-5 space-y-4">
-                            {/* Compliance Alert Widget (M3 Optimized) */}
-                            {leaveStatus?.obligatoryTarget > 0 && (
-                                <div className={`border rounded-[28px] p-6 shadow-m3-1 hover:shadow-m3-2 transition-shadow ${leaveStatus.isObligationMet
-                                    ? 'bg-m3-surface-container-low border-emerald-100'
-                                    : leaveStatus.isWarning
-                                        ? 'bg-m3-error-container/10 border-m3-error/20'
-                                        : 'bg-m3-surface-container-low border-m3-outline-variant'
-                                    }`}>
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="font-bold text-m3-on-surface text-sm flex items-center gap-2">
-                                            <CheckCircle2 size={18} className={leaveStatus.isObligationMet ? "text-m3-primary" : "text-m3-on-surface-variant"} />
-                                            {leaveStatus.isObligationMet ? "年5日の有給取得達成" : "年5日の有給取得義務"}
-                                        </h3>
-                                        {leaveStatus.obligatoryDeadline && (
-                                            <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${leaveStatus.isWarning && !leaveStatus.isObligationMet
-                                                ? 'bg-red-100 text-red-700'
-                                                : 'bg-m3-surface-container-high text-m3-on-surface-variant'}`}>
-                                                期限：{new Date(leaveStatus.obligatoryDeadline).toLocaleDateString('ja-JP')}まで
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-end text-xs font-bold text-m3-on-surface-variant">
-                                            <span>
-                                                取得実績:
-                                                <span className={leaveStatus.isObligationMet ? "text-m3-primary ml-1 text-2xl" : "text-m3-on-surface ml-1 text-2xl"}>
-                                                    {leaveStatus.obligatoryDaysTaken}
-                                                </span>
-                                                <span className="text-sm mx-1">/</span>
-                                                {leaveStatus.obligatoryTarget}日
-                                            </span>
-                                            {!leaveStatus.isObligationMet && (
-                                                <span className={`${leaveStatus.isWarning ? 'text-red-600' : 'text-m3-secondary'}`}>あと{leaveStatus.daysRemainingToObligation}日</span>
-                                            )}
-                                        </div>
-
-                                        {/* Progress Bar (M3 Style: Thinner track, thicker indicator) */}
-                                        <div className="h-4 w-full bg-m3-surface-container-highest rounded-full overflow-hidden p-1">
-                                            <div
-                                                className={`h-full rounded-full transition-all duration-700 ease-out ${leaveStatus.isObligationMet
-                                                    ? 'bg-emerald-500'
-                                                    : leaveStatus.isWarning
-                                                        ? 'bg-red-500'
-                                                        : 'bg-m3-primary'
-                                                    }`}
-                                                style={{ width: `${Math.min(100, (leaveStatus.obligatoryDaysTaken / leaveStatus.obligatoryTarget) * 100)}%` }}
-                                            />
-                                        </div>
-
-                                        {/* Status Text */}
-                                        {leaveStatus.isWarning && !leaveStatus.isObligationMet && (
-                                            <div className="flex items-start gap-2 text-[10px] text-red-700 font-bold bg-red-50 p-3 rounded-xl mt-2 border border-red-100 animate-pulse">
-                                                <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-                                                <span>年5日の取得義務まで残り{leaveStatus.daysRemainingToObligation}日です。期限（{new Date(leaveStatus.obligatoryDeadline!).toLocaleDateString('ja-JP')}）が迫っています。計画的な取得をお願いします。</span>
-                                            </div>
-                                        )}
-                                        {leaveStatus.isObligationMet && (
-                                            <div className="flex items-center gap-2 text-[10px] text-emerald-700 font-bold bg-emerald-100/30 p-2 rounded-xl mt-2">
-                                                <CheckCircle2 size={16} className="shrink-0" />
-                                                <span>今年度の有給取得義務基準を達成しました。</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sticky top-6">
-                                <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm">
-                                    <Plus size={16} className="text-emerald-500" />
-                                    新規申請
-                                </h3>
-
-                                <div className="mb-4">
-                                    <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">申請種別</label>
-                                    <select
-                                        value={requestType}
-                                        onChange={(e) => setRequestType(e.target.value)}
-                                        className="w-full px-2 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50"
-                                    >
-                                        <option value="PAID_LEAVE">有給休暇</option>
-                                        <option value="ABSENCE">欠勤</option>
-                                        <option value="LATE">遅刻</option>
-                                        <option value="EARLY_DEPARTURE">早退</option>
-                                    </select>
-                                </div>
-
-                                {requestType === 'PAID_LEAVE' ? (
-                                    <PaidLeaveRequestForm userId={user.id} onSuccess={() => {
-                                        loadData();
-                                        navigate('/submission-success');
-                                    }} />
-                                ) : (
-                                    <form onSubmit={handleSubmitLeave} className="space-y-3">
-                                        <div className="grid grid-cols-2 gap-3">
-                                            {/* Date Selection for Non-PaidLeave */}
-                                            <div>
-                                                <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">開始日</label>
-                                                <input
-                                                    type="date"
-                                                    required
-                                                    value={startDate}
-                                                    onChange={(e) => setStartDate(e.target.value)}
-                                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">終了日</label>
-                                                <input
-                                                    type="date"
-                                                    required
-                                                    value={endDate}
-                                                    onChange={(e) => setEndDate(e.target.value)}
-                                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {(requestType === 'LATE' || requestType === 'EARLY_DEPARTURE') && (
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div>
-                                                    <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">開始時間</label>
-                                                    <div className="flex gap-1 items-center">
-                                                        <div className="relative w-full">
-                                                            <select
-                                                                value={startTime ? startTime.split(':')[0] : ''}
-                                                                onChange={(e) => {
-                                                                    const h = e.target.value;
-                                                                    const m = startTime ? startTime.split(':')[1] : '00';
-                                                                    setStartTime(`${h}:${m}`);
-                                                                }}
-                                                                className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
-                                                            >
-                                                                <option value="" disabled>--</option>
-                                                                {Array.from({ length: 24 }).map((_, i) => (
-                                                                    <option key={i} value={i.toString().padStart(2, '0')}>
-                                                                        {i.toString().padStart(2, '0')}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                        <span className="text-gray-300 text-xs font-bold">:</span>
-                                                        <div className="relative w-full">
-                                                            <select
-                                                                value={startTime ? startTime.split(':')[1] : ''}
-                                                                onChange={(e) => {
-                                                                    const h = startTime ? startTime.split(':')[0] : '09';
-                                                                    const m = e.target.value;
-                                                                    setStartTime(`${h}:${m}`);
-                                                                }}
-                                                                className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
-                                                            >
-                                                                {['00', '15', '30', '45'].map((m) => (
-                                                                    <option key={m} value={m}>{m}</option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">終了時間</label>
-                                                    <div className="flex gap-1 items-center">
-                                                        <div className="relative w-full">
-                                                            <select
-                                                                value={endTime ? endTime.split(':')[0] : ''}
-                                                                onChange={(e) => {
-                                                                    const h = e.target.value;
-                                                                    const m = endTime ? endTime.split(':')[1] : '00';
-                                                                    setEndTime(`${h}:${m}`);
-                                                                }}
-                                                                className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
-                                                            >
-                                                                <option value="" disabled>--</option>
-                                                                {Array.from({ length: 24 }).map((_, i) => (
-                                                                    <option key={i} value={i.toString().padStart(2, '0')}>
-                                                                        {i.toString().padStart(2, '0')}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                        <span className="text-gray-300 text-xs font-bold">:</span>
-                                                        <div className="relative w-full">
-                                                            <select
-                                                                value={endTime ? endTime.split(':')[1] : ''}
-                                                                onChange={(e) => {
-                                                                    const h = endTime ? endTime.split(':')[0] : '18';
-                                                                    const m = e.target.value;
-                                                                    setEndTime(`${h}:${m}`);
-                                                                }}
-                                                                className="w-full pl-2 pr-4 py-1.5 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs font-bold text-gray-700 bg-gray-50/50 appearance-none text-center"
-                                                            >
-                                                                {['00', '15', '30', '45'].map((m) => (
-                                                                    <option key={m} value={m}>{m}</option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
+            {/* Dynamic Content Area */}
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                {activeTab === 'STUDY' && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Uncompleted List */}
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                            <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <AlertCircle className="text-orange-500" size={18} />
+                                未完了の研修
+                            </h3>
+                            <div className="space-y-3">
+                                {trainingEvents.filter(e => !trainingResponses.some(r => r.eventId === e.id)).map(event => (
+                                    <div key={event.id} className="p-4 rounded-xl bg-orange-50 border border-orange-100 flex justify-between items-center group hover:shadow-sm transition-shadow">
                                         <div>
-                                            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">事由</label>
-                                            <textarea
-                                                required
-                                                value={reason}
-                                                onChange={(e) => setReason(e.target.value)}
-                                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-xs h-20 resize-none bg-gray-50/50"
-                                                placeholder="私用のため..."
-                                            />
+                                            <span className="text-[10px] font-bold text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full mb-1 inline-block">必須</span>
+                                            <h4 className="font-bold text-gray-800">{event.title}</h4>
+                                            <p className="text-xs text-gray-500">期限: {new Date(event.endTime).toLocaleDateString('ja-JP')}</p>
                                         </div>
-                                        {submitError && (
-                                            <div className="p-2 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2 text-red-600 text-[10px] font-bold animate-in fade-in slide-in-from-top-1">
-                                                <AlertCircle size={12} className="shrink-0 mt-0.5" />
-                                                <span>{submitError}</span>
-                                            </div>
-                                        )}
-                                        <button
-                                            type="submit"
-                                            disabled={isSubmitting}
-                                            className="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 text-xs flex items-center justify-center gap-2"
-                                        >
-                                            {isSubmitting ? (
-                                                <span className="animate-pulse">送信中...</span>
-                                            ) : (
-                                                <>
-                                                    <span>申請を送信</span>
-                                                    <ArrowRight size={14} />
-                                                </>
-                                            )}
-                                        </button>
-                                    </form>
+                                        <Link to={`/training/${event.id}`} className="px-4 py-2 bg-white text-orange-600 text-xs font-bold rounded-lg border border-orange-200 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                                            受講する
+                                        </Link>
+                                    </div>
+                                ))}
+                                {uncompletedCount === 0 && (
+                                    <div className="text-center py-8 text-gray-400">
+                                        <CheckCircle2 size={32} className="mx-auto mb-2 text-emerald-300" />
+                                        <p>未完了の研修はありません</p>
+                                    </div>
                                 )}
                             </div>
                         </div>
 
-                        {/* History Table */}
-                        <div className="lg:col-span-12 xl:col-span-7">
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col max-h-[600px]">
-                                <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50 shrink-0 flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <h3 className="font-bold text-gray-800 text-sm">申請履歴</h3>
-                                        <div className="flex bg-gray-200/50 p-0.5 rounded-lg">
-                                            {[
-                                                { id: 'ALL', label: 'すべて' },
-                                                { id: 'FULL', label: '全日' },
-                                                { id: 'HALF', label: '半日' }
-                                            ].map((tab) => (
-                                                <button
-                                                    key={tab.id}
-                                                    onClick={() => setDurationFilter(tab.id as any)}
-                                                    className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${durationFilter === tab.id
-                                                        ? 'bg-white text-gray-700 shadow-sm'
-                                                        : 'text-gray-400 hover:text-gray-600'
-                                                        }`}
-                                                >
-                                                    {tab.label}
-                                                </button>
-                                            ))}
+                        {/* Recent History */}
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                            <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <CheckCircle2 className="text-emerald-500" size={18} />
+                                直近の学習履歴
+                            </h3>
+                            <div className="space-y-4">
+                                {progress.slice(0, 5).map((item) => (
+                                    <div key={item.id} className="flex items-center gap-4 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50 rounded-lg px-2 -mx-2 transition-colors">
+                                        <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0 font-bold text-xs">
+                                            完了
                                         </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="font-bold text-gray-800 truncate">{item.manualTitle}</p>
+                                            <p className="text-xs text-gray-400">{new Date(item.readAt).toLocaleDateString('ja-JP')} に修了</p>
+                                        </div>
+                                        <Link to={`/manuals/${item.manualId}`} className="text-xs font-bold text-gray-400 hover:text-gray-600">
+                                            再確認
+                                        </Link>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <Filter size={14} className="text-gray-400" />
-                                        <select
-                                            value={filterType}
-                                            onChange={(e) => setFilterType(e.target.value)}
-                                            className="text-xs border-none bg-transparent font-bold text-gray-500 focus:ring-0 cursor-pointer"
-                                        >
-                                            <option value="ALL">すべて表示</option>
-                                            <option value="PAID_LEAVE">有給休暇</option>
-                                            <option value="ABSENCE">欠勤</option>
-                                            <option value="LATE">遅刻</option>
-                                            <option value="EARLY_DEPARTURE">早退</option>
-                                        </select>
+                                ))}
+                                {progress.length === 0 && <p className="text-sm text-gray-400 text-center py-4">履歴はありません</p>}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'LEAVE' && (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        {/* Leave Status & Application Form */}
+                        <div className="lg:col-span-12 xl:col-span-7 space-y-6">
+                            {/* Obligation Progress */}
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                                <h3 className="font-bold text-gray-800 mb-4">有給休暇取得状況</h3>
+                                {leaveStatus && leaveStatus.obligatoryTarget > 0 ? (
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-end">
+                                            <div>
+                                                <p className="text-xs text-gray-500 font-bold uppercase mb-1">義務取得日数</p>
+                                                <p className="text-2xl font-black text-gray-800">{leaveStatus.obligatoryDaysTaken} <span className="text-sm text-gray-400 font-bold">/ {leaveStatus.obligatoryTarget}日</span></p>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${leaveStatus.isObligationMet ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'}`}>
+                                                    {leaveStatus.isObligationMet ? "目標達成！" : "あと" + (leaveStatus.obligatoryTarget - leaveStatus.obligatoryDaysTaken) + "日不足"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full rounded-full transition-all duration-1000 ${leaveStatus.isObligationMet ? 'bg-emerald-500' : 'bg-orange-400'}`}
+                                                style={{ width: `${Math.min(100, (leaveStatus.obligatoryDaysTaken / leaveStatus.obligatoryTarget) * 100)}%` }}
+                                            />
+                                        </div>
+                                        <p className="text-xs text-gray-400">※ 年間5日の有給休暇取得が義務付けられています。</p>
                                     </div>
+                                ) : (
+                                    <p className="text-sm text-gray-400">現在の取得義務情報はありません。</p>
+                                )}
+                            </div>
+
+                            {/* Application Form */}
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="font-bold text-gray-800">新規申請</h3>
+                                    <button
+                                        onClick={() => setShowLeaveForm(!showLeaveForm)}
+                                        className="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors"
+                                    >
+                                        {showLeaveForm ? '折りたたむ' : 'フォームを表示'}
+                                    </button>
                                 </div>
-                                <div className="overflow-y-auto flex-1 p-0">
-                                    <table className="w-full">
-                                        <thead className="bg-white sticky top-0 z-10 shadow-sm">
-                                            <tr>
-                                                <th className="px-5 py-2 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/80 backdrop-blur-sm">取得予定日</th>
-                                                <th className="px-5 py-2 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/80 backdrop-blur-sm">ステータス</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-50">
-                                            {leaveRequests
-                                                .filter(req => filterType === 'ALL' || req.type === filterType)
-                                                .filter(req => {
-                                                    if (durationFilter === 'ALL') return true;
-                                                    const isHalf = req.durationType?.includes('HALF');
-                                                    if (durationFilter === 'FULL') return !isHalf;
-                                                    if (durationFilter === 'HALF') return isHalf;
-                                                    return true;
-                                                })
-                                                .map((req) => (
-                                                    <tr key={req.id} className="hover:bg-gray-50/50 transition-colors group">
-                                                        <td className="px-5 py-3 text-xs text-gray-600 font-medium">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="font-mono text-gray-500">
-                                                                    {new Date(req.startDate).toLocaleDateString('ja-JP')}
-                                                                </span>
-                                                                {req.startDate !== req.endDate && (
-                                                                    <>
-                                                                        <ArrowRight size={12} className="text-gray-300" />
-                                                                        <span className="font-mono text-gray-500">
-                                                                            {new Date(req.endDate).toLocaleDateString('ja-JP')}
-                                                                        </span>
-                                                                    </>
-                                                                )}
-                                                                {req.durationType?.includes('HALF') && (
-                                                                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-orange-100 text-orange-700 font-bold border border-orange-200">半休</span>
-                                                                )}
-                                                            </div>
-                                                            <div className="text-[10px] text-gray-400 mt-0.5 pl-0.5 border-l-2 border-gray-100">
-                                                                {req.reason}
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-5 py-3 text-right">
-                                                            {getLeaveStatusBadge(req.status)}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            {leaveRequests.length === 0 && (
-                                                <tr>
-                                                    <td colSpan={2} className="px-5 py-8 text-center text-gray-400 text-xs">
-                                                        申請履歴はありません
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
+
+                                {showLeaveForm && (
+                                    <div className="animate-in fade-in slide-in-from-top-2">
+                                        <div className="mb-4">
+                                            <label className="block text-xs font-bold text-gray-500 mb-1">申請種別</label>
+                                            <select
+                                                value={requestType}
+                                                onChange={(e) => setRequestType(e.target.value)}
+                                                className="w-full p-2 rounded-lg border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                                            >
+                                                <option value="PAID_LEAVE">有給休暇</option>
+                                                <option value="ABSENCE">欠勤</option>
+                                                <option value="LATE">遅刻</option>
+                                                <option value="EARLY_DEPARTURE">早退</option>
+                                            </select>
+                                        </div>
+
+                                        {requestType === 'PAID_LEAVE' ? (
+                                            <PaidLeaveRequestForm userId={user.id} onSuccess={() => {
+                                                loadData();
+                                                navigate('/submission-success');
+                                            }} />
+                                        ) : (
+                                            <form onSubmit={handleSubmitLeave} className="space-y-4">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-gray-500">開始日</label>
+                                                        <input type="date" required value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full p-2 border rounded-lg bg-gray-50 text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-gray-500">終了日</label>
+                                                        <input type="date" required value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full p-2 border rounded-lg bg-gray-50 text-sm" />
+                                                    </div>
+                                                </div>
+                                                {(requestType === 'LATE' || requestType === 'EARLY_DEPARTURE') && (
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="block text-xs font-bold text-gray-500">開始時間</label>
+                                                            <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="w-full p-2 border rounded-lg bg-gray-50 text-sm" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-bold text-gray-500">終了時間</label>
+                                                            <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="w-full p-2 border rounded-lg bg-gray-50 text-sm" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <label className="block text-xs font-bold text-gray-500">事由</label>
+                                                    <textarea required value={reason} onChange={e => setReason(e.target.value)} className="w-full p-2 border rounded-lg bg-gray-50 text-sm h-24" placeholder="理由を入力..." />
+                                                </div>
+                                                {submitError && (
+                                                    <div className="p-2 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2 text-red-600 text-xs font-bold">
+                                                        <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                                                        <span>{submitError}</span>
+                                                    </div>
+                                                )}
+                                                <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-emerald-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20">
+                                                    {isSubmitting ? '送信中...' : '申請を送信'}
+                                                </button>
+                                            </form>
+                                        )}
+                                    </div>
+                                )}
+                                {!showLeaveForm && (
+                                    <p className="text-sm text-gray-400">「フォームを表示」ボタンを押して申請を行ってください。</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* History List */}
+                        <div className="lg:col-span-12 xl:col-span-5">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 h-full">
+                                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <Clock className="text-gray-400" size={18} />
+                                    申請履歴
+                                </h3>
+                                <div className="space-y-4">
+                                    {leaveRequests.map(req => (
+                                        <div key={req.id} className="p-3 rounded-xl bg-gray-50 border border-gray-100 flex justify-between items-center group hover:bg-white hover:shadow-sm transition-all">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="text-[10px] font-bold text-gray-500 bg-white border border-gray-200 px-1.5 py-0.5 rounded">
+                                                        {req.type === 'PAID_LEAVE' ? '有給' : 'その他'}
+                                                    </span>
+                                                    <span className="font-bold text-gray-700 text-sm">{new Date(req.startDate).toLocaleDateString('ja-JP')}</span>
+                                                </div>
+                                                <p className="text-xs text-gray-400 truncate max-w-[150px]">{req.reason}</p>
+                                            </div>
+                                            {getLeaveStatusBadge(req.status)}
+                                        </div>
+                                    ))}
+                                    {leaveRequests.length === 0 && (
+                                        <div className="text-center py-12 text-gray-400">
+                                            <p>申請履歴はありません</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* Notifications Tab Content (Placeholder) */}
+                {activeTab === 'NOTICE' && (
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                        <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            <AlertCircle className="text-blue-500" />
+                            お知らせ一覧
+                        </h2>
+                        <DashboardAnnouncements userId={user.id} />
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -14,7 +14,7 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
     // 2. OR is a Global announcement (facilityId IS NULL)
     // 3. AND is not deleted
     // 4. AND displayUntil is not expired
-    @Query("SELECT a FROM Announcement a WHERE " +
+    @Query("SELECT a FROM Announcement a LEFT JOIN FETCH a.createdBy WHERE " +
             "(a.facilityId IS NULL OR a.facilityId = :facilityId) AND " +
             "a.deletedAt IS NULL AND " +
             "a.displayUntil >= :today " +

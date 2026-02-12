@@ -41,7 +41,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "DEVELOPER")
                         .requestMatchers("/api/facilities/**").hasAnyRole("ADMIN", "DEVELOPER")
                         .requestMatchers("/api/departments/**").hasAnyRole("ADMIN", "DEVELOPER")
+                        .requestMatchers("/api/departments/**").hasAnyRole("ADMIN", "DEVELOPER")
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "DEVELOPER")
+                        .requestMatchers("/api/training/events/admin/**").hasAnyRole("ADMIN", "DEVELOPER")
+                        .requestMatchers("/api/training/responses/**").authenticated() // Allow all authenticated users
+                                                                                       // to submit/view own responses
+                        .requestMatchers("/api/training/**").authenticated() // General training access
                         .anyRequest().permitAll())
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .addFilterBefore(userHeaderFilter,

@@ -29,6 +29,35 @@ export interface Announcement {
     createdAt: string;
 }
 
+export interface TrainingEvent {
+    id: number;
+    title: string;
+    description: string;
+    videoUrl?: string;
+    materialsUrl?: string;
+    targetCommitteeId?: number;
+    targetJobType?: string;
+    startTime: string;
+    endTime: string;
+    qrCodeToken?: string;
+    createdAt: string;
+}
+
+export interface TrainingResponse {
+    id: number;
+    eventId: number;
+    userId: number;
+    attendeeName: string;
+    answersJson: string;
+    attendedAt: string;
+}
+
+export interface Committee {
+    id: number;
+    name: string;
+    description: string;
+}
+
 const API_BASE = '/api';
 
 const getHeaders = (userId?: number): Record<string, string> => {
@@ -764,6 +793,103 @@ export const api = {
             headers: getHeaders(userId),
         });
         if (!res.ok) throw new Error('Failed to delete announcement');
+    },
+
+    // Training Management
+    getTrainingEvents: async (userId: number): Promise<TrainingEvent[]> => {
+        const res = await fetch(`${API_BASE}/training/events`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    getMyTrainingResponses: async (userId: number): Promise<TrainingResponse[]> => {
+        const res = await fetch(`${API_BASE}/training/responses/me`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    getAdminTrainingEvents: async (userId: number): Promise<TrainingEvent[]> => {
+        const res = await fetch(`${API_BASE}/training/events/admin`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    getTrainingEvent: async (userId: number, id: number): Promise<TrainingEvent> => {
+        const res = await fetch(`${API_BASE}/training/events/${id}`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) throw new Error('Event not found');
+        return res.json();
+    },
+
+    createTrainingEvent: async (userId: number, data: any): Promise<TrainingEvent> => {
+        const res = await fetch(`${API_BASE}/training/events`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getHeaders(userId)
+            },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error('Failed to create event');
+        return res.json();
+    },
+
+    getTrainingQrCode: async (userId: number, id: number): Promise<string> => {
+        const res = await fetch(`${API_BASE}/training/events/${id}/qrcode`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) throw new Error('Failed to get QR code');
+        const data = await res.json();
+        return data.url;
+    },
+
+    submitTrainingResponse: async (userId: number, eventId: number, answersJson: string): Promise<TrainingResponse> => {
+        const res = await fetch(`${API_BASE}/training/responses/${eventId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getHeaders(userId)
+            },
+            body: JSON.stringify({ answersJson }),
+        });
+        if (!res.ok) throw new Error('Failed to submit response');
+        return res.json();
+    },
+
+    getTrainingResponses: async (userId: number, eventId: number): Promise<TrainingResponse[]> => {
+        const res = await fetch(`${API_BASE}/training/responses/${eventId}`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    getAllCommittees: async (userId: number): Promise<Committee[]> => {
+        const res = await fetch(`${API_BASE}/committees`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
+    createCommittee: async (userId: number, name: string, description: string): Promise<Committee> => {
+        const res = await fetch(`${API_BASE}/committees`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getHeaders(userId)
+            },
+            body: JSON.stringify({ name, description }),
+        });
+        if (!res.ok) throw new Error('Failed to create committee');
+        return res.json();
     }
 };
 

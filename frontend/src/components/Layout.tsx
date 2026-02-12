@@ -48,7 +48,7 @@ export default function Layout({ children }: LayoutProps) {
                 {/* Sidebar (Drawer) */}
                 <aside
                     className={`
-                        fixed inset-y-0 left-0 z-40 w-80 bg-m3-surface-container-low transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none
+                        fixed inset-y-0 left-0 z-[60] w-80 bg-m3-surface-container-low transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none
                         lg:relative lg:translate-x-0
                         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                     `}

@@ -17,12 +17,15 @@ import java.util.Collections;
 
 @Component
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class UserHeaderFilter extends OncePerRequestFilter {
 
     private final UserRepository userRepository;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(@org.springframework.lang.NonNull HttpServletRequest request,
+            @org.springframework.lang.NonNull HttpServletResponse response,
+            @org.springframework.lang.NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
         String userIdStr = request.getHeader("X-User-Id");
@@ -31,12 +34,25 @@ public class UserHeaderFilter extends OncePerRequestFilter {
             try {
                 Long userId = Long.parseLong(userIdStr);
                 userRepository.findById(userId).ifPresent(user -> {
-                    String role = "ROLE_" + user.getRole().name();
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                            user.getEmployeeId(), null, Collections.singletonList(new SimpleGrantedAuthority(role)));
-                    SecurityContextHolder.getContext().setAuthentication(auth);
+                    try {
+                        String role = "ROLE_" + user.getRole().name();
+                        UserPrincipal principal = new UserPrincipal(
+                                user.getId(),
+                                user.getEmployeeId(),
+                                user.getPassword(),
+                                Collections.singletonList(new SimpleGrantedAuthority(role)));
+                        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                                principal, null, principal.getAuthorities());
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                        log.debug("Authenticated user: {} with role: {}", user.getEmployeeId(), role);
+                    } catch (Exception e) {
+                        log.error("Error setting authentication for user {}: {}", userId, e.getMessage(), e);
+                    }
                 });
-            } catch (NumberFormatException ignored) {
+            } catch (NumberFormatException e) {
+                log.warn("Invalid X-User-Id format: {}", userIdStr);
+            } catch (Exception e) {
+                log.error("Error in UserHeaderFilter: {}", e.getMessage(), e);
             }
         }
 
