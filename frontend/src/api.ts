@@ -270,7 +270,7 @@ export const api = {
     },
 
     registerUser: async (userId: number, data: UserCreateRequest): Promise<any> => {
-        const res = await fetch(`${API_BASE}/admin/users/register`, {
+        const res = await fetch(`${API_BASE}/users/register`, {
             method: 'POST',
             headers: getHeaders(userId),
             body: JSON.stringify(data),
