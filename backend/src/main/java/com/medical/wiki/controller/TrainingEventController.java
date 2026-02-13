@@ -125,6 +125,7 @@ public class TrainingEventController {
     }
 
     @DeleteMapping("/{id}")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
     public ResponseEntity<Void> deleteEvent(@AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long id) {
         trainingEventService.deleteEvent(userPrincipal.getId(), id);
