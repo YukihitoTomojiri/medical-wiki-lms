@@ -113,15 +113,16 @@ export default function TrainingAdmin() {
     const handleConfirmDelete = async () => {
         if (!deletingId) return;
 
-        // Close modal first to prevent re-render issues
-        setIsDeleteModalOpen(false);
+        // Close modal and save ID before API call
         const idToDelete = deletingId;
+        setIsDeleteModalOpen(false);
         setDeletingId(null);
 
         try {
             await api.deleteTrainingEvent(user!.id, idToDelete);
-            // Reload data after successful deletion
-            await loadData();
+            // Directly filter the events array instead of calling loadData()
+            // This prevents any useEffect triggers or notification loops
+            setEvents(prevEvents => prevEvents.filter(event => event.id !== idToDelete));
         } catch (error) {
             console.error(error);
             alert('削除に失敗しました');
