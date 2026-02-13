@@ -74,6 +74,11 @@ describe('MyDashboard Component - Leave Forms', () => {
             </BrowserRouter>
         );
 
+        // Wait for loading to finish
+        await waitFor(() => {
+            expect(screen.getByText(`ようこそ、${mockUser.name}さん。今日のタスクを確認しましょう。`)).toBeInTheDocument();
+        });
+
         // Switch to Leave Tab
         await user.click(screen.getByText('有給休暇'));
 

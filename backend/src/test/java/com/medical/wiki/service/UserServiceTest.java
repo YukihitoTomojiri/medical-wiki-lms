@@ -45,24 +45,24 @@ public class UserServiceTest {
     @Test
     void getAllUsers_ShouldFilterByFacility_WhenAdmin() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(adminUser));
-        when(userRepository.findByFacility("Hospital A")).thenReturn(Collections.emptyList());
+        when(userRepository.findByFacilityAndDeletedAtIsNull("Hospital A")).thenReturn(Collections.emptyList());
 
-        userService.getAllUsers(1L, null);
+        userService.getAllUsers(null, 1L);
 
-        // Should call findByFacility with admin's facility
-        verify(userRepository).findByFacility("Hospital A");
-        verify(userRepository, never()).findAll();
+        // Should call findByFacilityAndDeletedAtIsNull with admin's facility
+        verify(userRepository).findByFacilityAndDeletedAtIsNull("Hospital A");
+        verify(userRepository, never()).findAllByDeletedAtIsNull();
     }
 
     @Test
     void getAllUsers_ShouldFindAll_WhenDeveloperAndNoFacilitySpecified() {
         when(userRepository.findById(2L)).thenReturn(Optional.of(devUser));
-        when(userRepository.findAll()).thenReturn(Collections.emptyList());
+        when(userRepository.findAllByDeletedAtIsNull()).thenReturn(Collections.emptyList());
 
-        userService.getAllUsers(2L, null);
+        userService.getAllUsers(null, 2L);
 
-        // Should call findAll for developer
-        verify(userRepository).findAll();
-        verify(userRepository, never()).findByFacility(any());
+        // Should call findAllByDeletedAtIsNull for developer
+        verify(userRepository).findAllByDeletedAtIsNull();
+        verify(userRepository, never()).findByFacilityAndDeletedAtIsNull(any());
     }
 }

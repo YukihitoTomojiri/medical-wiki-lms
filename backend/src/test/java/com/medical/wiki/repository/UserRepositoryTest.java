@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +28,8 @@ public class UserRepositoryTest {
         user.setFacility("Hospital A");
         user.setRole(User.Role.USER);
         user.setPassword("password");
-        user.setJoinedDate("2024-01-01");
+        user.setJoinedDate(LocalDate.of(2024, 1, 1));
+        user.setDepartment("Dept");
         userRepository.save(user);
 
         Optional<User> found = userRepository.findByEmployeeId("TEST001");
@@ -43,7 +45,8 @@ public class UserRepositoryTest {
         user.setRole(User.Role.USER);
         user.setPassword("password");
         user.setDeletedAt(LocalDateTime.now());
-        user.setJoinedDate("2024-01-01");
+        user.setJoinedDate(LocalDate.of(2024, 1, 1));
+        user.setDepartment("Dept");
         userRepository.save(user);
 
         Optional<User> found = userRepository.findByEmployeeId("TEST002");
@@ -58,7 +61,8 @@ public class UserRepositoryTest {
         activeUser.setFacility("Hospital B");
         activeUser.setRole(User.Role.USER);
         activeUser.setPassword("password");
-        activeUser.setJoinedDate("2024-01-01");
+        activeUser.setJoinedDate(LocalDate.of(2024, 1, 1));
+        activeUser.setDepartment("Dept");
         userRepository.save(activeUser);
 
         User deletedUser = new User();
@@ -68,10 +72,11 @@ public class UserRepositoryTest {
         deletedUser.setRole(User.Role.USER);
         deletedUser.setPassword("password");
         deletedUser.setDeletedAt(LocalDateTime.now());
-        deletedUser.setJoinedDate("2024-01-01");
+        deletedUser.setJoinedDate(LocalDate.of(2024, 1, 1));
+        deletedUser.setDepartment("Dept");
         userRepository.save(deletedUser);
 
-        List<User> users = userRepository.findByFacility("Hospital B");
+        List<User> users = userRepository.findByFacilityAndDeletedAtIsNull("Hospital B");
         assertThat(users).hasSize(1);
         assertThat(users.get(0).getName()).isEqualTo("Active");
     }

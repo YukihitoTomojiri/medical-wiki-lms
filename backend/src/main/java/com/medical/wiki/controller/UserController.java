@@ -58,4 +58,10 @@ public class UserController {
         return ResponseEntity.ok(paidLeaveService.calculateCurrentBalance(userId));
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<UserDto> registerUser(@RequestBody com.medical.wiki.dto.UserCreateDto dto,
+            @RequestHeader(value = "X-User-Id", required = false) Long executorId) {
+        return ResponseEntity.ok(userService.registerUser(dto, executorId));
+    }
+
 }
