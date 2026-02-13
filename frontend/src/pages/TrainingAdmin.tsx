@@ -96,7 +96,7 @@ export default function TrainingAdmin() {
         setVideoUrl2(event.videoUrl2 || '');
         setVideoUrl3(event.videoUrl3 || '');
         setMaterialsUrl(event.materialsUrl || '');
-        setTargetCommitteeId(event.targetCommitteeId);
+        setTargetCommitteeId(event.targetCommitteeId || null);
         setTargetJobType(event.targetJobType || '');
         setStartTime(new Date(event.startTime).toISOString().slice(0, 10));
         setEndTime(new Date(event.endTime).toISOString().slice(0, 10));
@@ -104,6 +104,7 @@ export default function TrainingAdmin() {
     };
 
     const handleDeleteClick = (e: React.MouseEvent, id: number) => {
+        e.preventDefault();
         e.stopPropagation();
         setDeletingId(id);
         setIsDeleteModalOpen(true);

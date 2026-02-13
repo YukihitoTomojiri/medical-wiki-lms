@@ -106,7 +106,7 @@ graph TD
 ### [全施設対象研修の表示バグ修正] (fix/user-training-visibility)
 - **fix**: 施設ID (`facility_id`) が設定されている場合でも、全施設対象フラグ (`is_all_facilities`) が有効な研修は全ユーザーが表示できるようクエリを修正。
 - **feat**: 研修作成・編集APIに `isAllFacilities` パラメータを追加し、明示的に「全施設対象」を指定可能に。
-- **fix**: 研修削除ダイアログが即座に閉じてしまう不具合を修正。`window.confirm` から MDS3準拠の `ConfirmModal` に移行し、イベントの伝播 (`stopPropagation`) を適切に制御。
+- **fix**: 研修削除ダイアログが即座に閉じてしまう不具合を修正。`window.confirm` から MDS3準拠の `ConfirmModal` に移行し、イベントの伝播 (`stopPropagation`) およびデフォルト動作の抑制 (`preventDefault`) を徹底。
 - **verification**: 異なる施設に所属するユーザー間でのアクセス制御と、全施設対象研修の視認性をAPIレベルで検証済み。
 
 ### [ヒーローヘッダー (Warm Orange UI) の導入]
