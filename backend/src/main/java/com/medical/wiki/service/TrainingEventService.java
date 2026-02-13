@@ -223,4 +223,20 @@ public class TrainingEventService {
 
         return event;
     }
+
+    @Transactional
+    public void deleteEvent(Long userId, Long eventId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getRole() == User.Role.USER) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        TrainingEvent event = trainingEventRepository.findById(eventId)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+
+        event.setDeletedAt(LocalDateTime.now());
+        trainingEventRepository.save(event);
+    }
 }
