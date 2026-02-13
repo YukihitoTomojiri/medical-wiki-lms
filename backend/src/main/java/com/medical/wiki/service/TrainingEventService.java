@@ -104,7 +104,7 @@ public class TrainingEventService {
     public TrainingEvent createEvent(Long userId, String title, String description, String videoUrl,
             String videoUrl2, String videoUrl3,
             String materialsUrl, Long targetCommitteeId, String targetJobType,
-            LocalDateTime startTime, LocalDateTime endTime) {
+            LocalDateTime startTime, LocalDateTime endTime, Boolean isAllFacilities) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -134,6 +134,7 @@ public class TrainingEventService {
                 .qrCodeToken(UUID.randomUUID().toString())
                 .createdBy(user)
                 .facilityId(facilityId)
+                .isAllFacilities(isAllFacilities != null ? isAllFacilities : false)
                 .build();
 
         return trainingEventRepository.save(event);
@@ -143,7 +144,7 @@ public class TrainingEventService {
     public TrainingEvent updateEvent(Long userId, Long eventId, String title, String description, String videoUrl,
             String videoUrl2, String videoUrl3,
             String materialsUrl, Long targetCommitteeId, String targetJobType,
-            LocalDateTime startTime, LocalDateTime endTime) {
+            LocalDateTime startTime, LocalDateTime endTime, Boolean isAllFacilities) {
         // ... Permissions ...
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -164,6 +165,7 @@ public class TrainingEventService {
         event.setTargetJobType(targetJobType);
         event.setStartTime(startTime);
         event.setEndTime(endTime);
+        event.setIsAllFacilities(isAllFacilities != null ? isAllFacilities : false);
 
         return trainingEventRepository.save(event);
     }

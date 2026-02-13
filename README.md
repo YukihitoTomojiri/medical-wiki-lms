@@ -103,6 +103,11 @@ graph TD
 ---
 
 ## 最近の変更
+### [全施設対象研修の表示バグ修正] (fix/user-training-visibility)
+- **fix**: 施設ID (`facility_id`) が設定されている場合でも、全施設対象フラグ (`is_all_facilities`) が有効な研修は全ユーザーが表示できるようクエリを修正。
+- **feat**: 研修作成・編集APIに `isAllFacilities` パラメータを追加し、明示的に「全施設対象」を指定可能に。
+- **verification**: 異なる施設に所属するユーザー間でのアクセス制御と、全施設対象研修の視認性をAPIレベルで検証済み。
+
 ### [ヒーローヘッダー (Warm Orange UI) の導入]
 - **feat**: UIの「無機質さ」を解消するため、オレンジ系の帯（Hero Header）を導入。
   - Material Design 3の `Secondary Container` トーンをベースにした親しみやすい配色への変更。

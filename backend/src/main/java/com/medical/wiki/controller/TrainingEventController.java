@@ -72,9 +72,11 @@ public class TrainingEventController {
             throw new IllegalArgumentException("Invalid date format: " + e.getMessage());
         }
 
+        Boolean isAllFacilities = (Boolean) payload.get("isAllFacilities");
+
         return trainingEventService.createEvent(userPrincipal.getId(), title, description, videoUrl, videoUrl2,
                 videoUrl3,
-                materialsUrl, targetCommitteeId, targetJobType, startTime, endTime);
+                materialsUrl, targetCommitteeId, targetJobType, startTime, endTime, isAllFacilities);
     }
 
     @GetMapping("/{id}/qrcode")
@@ -115,9 +117,11 @@ public class TrainingEventController {
             throw new IllegalArgumentException("Invalid date format: " + e.getMessage());
         }
 
+        Boolean isAllFacilities = (Boolean) payload.get("isAllFacilities");
+
         return trainingEventService.updateEvent(userPrincipal.getId(), id, title, description, videoUrl, videoUrl2,
                 videoUrl3,
-                materialsUrl, targetCommitteeId, targetJobType, startTime, endTime);
+                materialsUrl, targetCommitteeId, targetJobType, startTime, endTime, isAllFacilities);
     }
 
     @DeleteMapping("/{id}")
