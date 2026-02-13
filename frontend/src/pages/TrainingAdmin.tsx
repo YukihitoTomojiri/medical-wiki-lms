@@ -3,6 +3,7 @@ import { api, TrainingEvent, Committee } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { Plus, QrCode as QrIcon, Users, FileText, Edit2, Trash2, Youtube } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+import { ConfirmModal } from '../components/ConfirmModal';
 import { useNavigate } from 'react-router-dom';
 
 export default function TrainingAdmin() {
@@ -12,6 +13,8 @@ export default function TrainingAdmin() {
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState<TrainingEvent | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     // Create Form State
     const [title, setTitle] = useState('');
@@ -100,14 +103,23 @@ export default function TrainingAdmin() {
         setShowCreateModal(true);
     };
 
-    const handleDelete = async (id: number) => {
-        if (!window.confirm('この研修会を削除してもよろしいですか？')) return;
+    const handleDeleteClick = (e: React.MouseEvent, id: number) => {
+        e.stopPropagation();
+        setDeletingId(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deletingId) return;
         try {
-            await api.deleteTrainingEvent(user!.id, id);
+            await api.deleteTrainingEvent(user!.id, deletingId);
             loadData();
+            setIsDeleteModalOpen(false);
+            setDeletingId(null);
         } catch (error) {
             console.error(error);
             alert('削除に失敗しました');
+            setIsDeleteModalOpen(false);
         }
     };
 
@@ -189,7 +201,7 @@ export default function TrainingAdmin() {
                                     <Button variant="text" onClick={() => handleEdit(event)} title="編集">
                                         <Edit2 size={18} className="text-m3-primary" />
                                     </Button>
-                                    <Button variant="text" onClick={() => handleDelete(event.id)} title="削除">
+                                    <Button variant="text" onClick={(e) => handleDeleteClick(e, event.id!)} title="削除">
                                         <Trash2 size={18} className="text-m3-error" />
                                     </Button>
                                 </td>
@@ -329,6 +341,15 @@ export default function TrainingAdmin() {
                     </div>
                 </div>
             )}
+
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                title="研修会の削除"
+                message="この研修会を削除してもよろしいですか？この操作は取り消せません。"
+                confirmLabel="削除する"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setIsDeleteModalOpen(false)}
+            />
         </div>
     );
 }
