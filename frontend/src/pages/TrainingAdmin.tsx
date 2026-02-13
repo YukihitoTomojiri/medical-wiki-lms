@@ -3,7 +3,6 @@ import { api, TrainingEvent, Committee } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { Plus, QrCode as QrIcon, Users, FileText, Edit2, Trash2, Youtube } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { ConfirmModal } from '../components/ConfirmModal';
 import { useNavigate } from 'react-router-dom';
 
 export default function TrainingAdmin() {
@@ -13,8 +12,6 @@ export default function TrainingAdmin() {
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState<TrainingEvent | null>(null);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     // Create Form State
     const [title, setTitle] = useState('');
@@ -103,24 +100,27 @@ export default function TrainingAdmin() {
         setShowCreateModal(true);
     };
 
-    const handleDeleteClick = (e: React.MouseEvent, id: number) => {
+    const handleDeleteClick = async (e: React.MouseEvent, id: number) => {
         e.preventDefault();
         e.stopPropagation();
-        setDeletingId(id);
-        setIsDeleteModalOpen(true);
+
+        if (!window.confirm('本当に削除しますか？')) return; // 念のためブラウザ標準で確認、もしくはこれも削除可だが「即時」という要件なら確認なしも検討。
+        // User asked for "popup removal" but also "delete immediately".
+        // The safest "immediate" interpretation is NO custom modal, but maybe a standard confirm for safety?
+        // Actually the prompt says: "ポップアップが出ることなく、即座に一覧から該当の研修が消えること"
+        // So I should remove ALL confirmation.
     };
 
-    const handleConfirmDelete = async () => {
-        if (!deletingId) return;
+    const handleDeleteImmediate = async (e: React.MouseEvent, id: number) => {
+        e.preventDefault();
+        e.stopPropagation();
         try {
-            await api.deleteTrainingEvent(user!.id, deletingId);
+            await api.deleteTrainingEvent(user!.id, id);
+            // Simple feedback: reload data
             loadData();
-            setIsDeleteModalOpen(false);
-            setDeletingId(null);
         } catch (error) {
             console.error(error);
             alert('削除に失敗しました');
-            setIsDeleteModalOpen(false);
         }
     };
 
@@ -202,7 +202,7 @@ export default function TrainingAdmin() {
                                     <Button variant="text" onClick={() => handleEdit(event)} title="編集">
                                         <Edit2 size={18} className="text-m3-primary" />
                                     </Button>
-                                    <Button variant="text" onClick={(e) => handleDeleteClick(e, event.id!)} title="削除">
+                                    <Button variant="text" onClick={(e) => handleDeleteImmediate(e, event.id!)} title="削除">
                                         <Trash2 size={18} className="text-m3-error" />
                                     </Button>
                                 </td>
@@ -343,14 +343,7 @@ export default function TrainingAdmin() {
                 </div>
             )}
 
-            <ConfirmModal
-                isOpen={isDeleteModalOpen}
-                title="研修会の削除"
-                message="この研修会を削除してもよろしいですか？この操作は取り消せません。"
-                confirmLabel="削除する"
-                onConfirm={handleConfirmDelete}
-                onCancel={() => setIsDeleteModalOpen(false)}
-            />
+
         </div>
     );
 }
