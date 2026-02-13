@@ -41,6 +41,10 @@ public class TrainingEvent {
     @Column(name = "target_job_type")
     private String targetJobType; // e.g., "Nurse", "Doctor"
 
+    @Column(name = "is_all_facilities", nullable = false)
+    @Builder.Default
+    private Boolean isAllFacilities = false;
+
     // Availability
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;

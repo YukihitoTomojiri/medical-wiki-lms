@@ -12,7 +12,7 @@ import java.util.Set;
 public interface TrainingEventRepository extends JpaRepository<TrainingEvent, Long> {
 
         @Query("SELECT e FROM TrainingEvent e WHERE " +
-                        "(e.facilityId IS NULL OR e.facilityId = :facilityId) AND " +
+                        "(e.facilityId IS NULL OR e.facilityId = :facilityId OR e.isAllFacilities = true) AND " +
                         "(e.targetCommitteeId IS NULL OR e.targetCommitteeId IN :committeeIds) AND " +
                         "(e.targetJobType IS NULL OR e.targetJobType = :jobType) AND " +
                         "e.deletedAt IS NULL AND " +

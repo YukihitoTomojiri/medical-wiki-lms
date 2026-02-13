@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { api, TrainingEvent, Committee } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { Plus, QrCode as QrIcon, Users, FileText, Edit2, Trash2, Youtube } from 'lucide-react';
@@ -31,7 +31,7 @@ export default function TrainingAdmin() {
         loadData();
     }, [user]);
 
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setLoading(true);
         try {
             const [eventsRes, committeesRes] = await Promise.all([
@@ -45,7 +45,7 @@ export default function TrainingAdmin() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]);
 
     const resetForm = () => {
         setTitle('');
@@ -93,23 +93,29 @@ export default function TrainingAdmin() {
         setVideoUrl2(event.videoUrl2 || '');
         setVideoUrl3(event.videoUrl3 || '');
         setMaterialsUrl(event.materialsUrl || '');
-        setTargetCommitteeId(event.targetCommitteeId);
+        setTargetCommitteeId(event.targetCommitteeId || null);
         setTargetJobType(event.targetJobType || '');
         setStartTime(new Date(event.startTime).toISOString().slice(0, 10));
         setEndTime(new Date(event.endTime).toISOString().slice(0, 10));
         setShowCreateModal(true);
     };
 
-    const handleDelete = async (id: number) => {
-        if (!window.confirm('この研修会を削除してもよろしいですか？')) return;
+    const handleDeleteClick = async (e: React.MouseEvent, id: number) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!window.confirm('本当に削除しますか？')) return;
+
         try {
             await api.deleteTrainingEvent(user!.id, id);
-            loadData();
+            // Delete from state immediately without calling loadData()
+            setEvents(prev => prev.filter(e => e.id !== id));
         } catch (error) {
             console.error(error);
             alert('削除に失敗しました');
         }
     };
+
 
     const openQr = async (eventId: number) => {
         try {
@@ -189,7 +195,7 @@ export default function TrainingAdmin() {
                                     <Button variant="text" onClick={() => handleEdit(event)} title="編集">
                                         <Edit2 size={18} className="text-m3-primary" />
                                     </Button>
-                                    <Button variant="text" onClick={() => handleDelete(event.id)} title="削除">
+                                    <Button variant="text" onClick={(e) => handleDeleteClick(e, event.id!)} title="削除">
                                         <Trash2 size={18} className="text-m3-error" />
                                     </Button>
                                 </td>
@@ -329,6 +335,8 @@ export default function TrainingAdmin() {
                     </div>
                 </div>
             )}
+
+
         </div>
     );
 }
