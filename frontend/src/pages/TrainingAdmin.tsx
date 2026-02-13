@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { api, TrainingEvent, Committee } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { Plus, QrCode as QrIcon, Users, FileText, Edit2, Trash2, Youtube } from 'lucide-react';
@@ -34,7 +34,7 @@ export default function TrainingAdmin() {
         loadData();
     }, [user]);
 
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setLoading(true);
         try {
             const [eventsRes, committeesRes] = await Promise.all([
@@ -48,7 +48,7 @@ export default function TrainingAdmin() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]);
 
     const resetForm = () => {
         setTitle('');
@@ -112,16 +112,19 @@ export default function TrainingAdmin() {
 
     const handleConfirmDelete = async () => {
         if (!deletingId) return;
+
+        // Close modal first to prevent re-render issues
+        setIsDeleteModalOpen(false);
+        const idToDelete = deletingId;
+        setDeletingId(null);
+
         try {
-            await api.deleteTrainingEvent(user!.id, deletingId);
-            loadData();
-            setIsDeleteModalOpen(false);
-            setDeletingId(null);
-            // No alert or toast on success, as per user request
+            await api.deleteTrainingEvent(user!.id, idToDelete);
+            // Reload data after successful deletion
+            await loadData();
         } catch (error) {
             console.error(error);
             alert('削除に失敗しました');
-            setIsDeleteModalOpen(false);
         }
     };
 
