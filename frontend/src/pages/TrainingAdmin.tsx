@@ -3,7 +3,6 @@ import { api, TrainingEvent, Committee } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { Plus, QrCode as QrIcon, Users, FileText, Edit2, Trash2, Youtube } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { ConfirmModal } from '../components/ConfirmModal';
 import { useNavigate } from 'react-router-dom';
 
 export default function TrainingAdmin() {
@@ -13,8 +12,6 @@ export default function TrainingAdmin() {
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState<TrainingEvent | null>(null);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     // Create Form State
     const [title, setTitle] = useState('');
@@ -103,31 +100,22 @@ export default function TrainingAdmin() {
         setShowCreateModal(true);
     };
 
-    const handleDeleteClick = (e: React.MouseEvent, id: number) => {
+    const handleDeleteClick = async (e: React.MouseEvent, id: number) => {
         e.preventDefault();
         e.stopPropagation();
-        setDeletingId(id);
-        setIsDeleteModalOpen(true);
-    };
 
-    const handleConfirmDelete = async () => {
-        if (!deletingId) return;
-
-        // Close modal and save ID before API call
-        const idToDelete = deletingId;
-        setIsDeleteModalOpen(false);
-        setDeletingId(null);
+        if (!window.confirm('本当に削除しますか？')) return;
 
         try {
-            await api.deleteTrainingEvent(user!.id, idToDelete);
-            // Directly filter the events array instead of calling loadData()
-            // This prevents any useEffect triggers or notification loops
-            setEvents(prevEvents => prevEvents.filter(event => event.id !== idToDelete));
+            await api.deleteTrainingEvent(user!.id, id);
+            // Delete from state immediately without calling loadData()
+            setEvents(prev => prev.filter(e => e.id !== id));
         } catch (error) {
             console.error(error);
             alert('削除に失敗しました');
         }
     };
+
 
     const openQr = async (eventId: number) => {
         try {
@@ -349,15 +337,6 @@ export default function TrainingAdmin() {
             )}
 
 
-
-            <ConfirmModal
-                isOpen={isDeleteModalOpen}
-                title="研修会の削除"
-                message="この研修会を削除してもよろしいですか？この操作は取り消せません。"
-                confirmLabel="削除する"
-                onConfirm={handleConfirmDelete}
-                onCancel={() => setIsDeleteModalOpen(false)}
-            />
         </div>
     );
 }
