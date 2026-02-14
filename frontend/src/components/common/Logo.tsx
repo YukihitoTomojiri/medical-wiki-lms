@@ -12,10 +12,10 @@ const Logo = () => {
             </div>
             <div className="flex flex-col leading-none">
                 <span className="text-xl font-black text-white tracking-tight">
-                    Medical <span className="text-orange-400">Wiki</span>
+                    Medivisor
                 </span>
                 <span className="text-[10px] font-bold tracking-[0.2em] text-orange-200/60 uppercase mt-1">
-                    LMS NETWORK
+                    Integrated Business Support
                 </span>
             </div>
         </div>
