@@ -9,7 +9,6 @@ import {
     Activity,
     Database,
     Shield,
-    FileText,
     Users,
     RefreshCw,
     Edit2,
@@ -98,6 +97,8 @@ export default function DeveloperDashboard() {
     const [alertStats, setAlertStats] = useState({ totalOpen: 0, criticalOpen: 0, alerts24h: 0 });
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [showUserBreakdown, setShowUserBreakdown] = useState(false);
+    const [showFacilityBreakdown, setShowFacilityBreakdown] = useState(false);
 
     // Active Nodes Filter States
     const [nodeSearchQuery, setNodeSearchQuery] = useState('');
@@ -511,177 +512,63 @@ export default function DeveloperDashboard() {
                 </div>
 
                 {activeTab === 'stats' ? (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        {/* Status Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-                            {/* DB Status */}
-                            <Card variant="filled" className={`p-6 flex items-center gap-4 ${stats.dbStatus === 'Connected' ? 'bg-emerald-50' : 'bg-m3-error-container'}`}>
-                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${stats.dbStatus === 'Connected' ? 'bg-emerald-100 text-emerald-600' : 'bg-m3-error text-m3-on-error'}`}>
-                                    <Database size={24} />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-xs font-bold opacity-70 mb-1.5 whitespace-nowrap">データベース</p>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`w-2 h-2 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500' : 'bg-m3-on-error-container'}`} />
-                                        <p className="font-bold text-lg leading-none">{stats.dbStatus === 'Connected' ? '接続中' : '切断'}</p>
-                                    </div>
-                                </div>
-                            </Card>
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-                            {/* Users Count */}
-                            <Card variant="elevated" className="p-6 flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0">
-                                    <Users size={24} />
+                        {/* Row 0: DB Connection Indicator + Security Summary Bar */}
+                        <div className="flex items-center justify-between gap-4 flex-wrap">
+                            <div className="flex items-center gap-3">
+                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${stats.dbStatus === 'Connected'
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                    : 'bg-m3-error-container text-m3-on-error-container border border-m3-error animate-pulse'}`}>
+                                    <Database size={16} />
+                                    <span className={`w-2 h-2 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500' : 'bg-m3-error'}`} />
+                                    {stats.dbStatus === 'Connected' ? 'DB 接続中' : 'DB 切断'}
                                 </div>
-                                <div className="min-w-0">
-                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1.5 whitespace-nowrap">総ユーザー数</p>
-                                    <div className="flex items-baseline gap-1">
-                                        <p className="font-bold text-2xl text-m3-on-surface leading-none">{userList.length}</p>
-                                        <span className="text-[10px] text-m3-on-surface-variant font-bold">名</span>
-                                    </div>
-                                </div>
-                            </Card>
-
-                            {/* Role Breakdown */}
-                            <Card variant="elevated" className="p-6 flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0">
-                                    <Shield size={24} />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1.5 whitespace-nowrap">権限内訳</p>
-                                    <div className="flex flex-wrap gap-1.5 text-[10px] font-black">
-                                        <span className="text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100 whitespace-nowrap">Dev:{computedStats.developers}</span>
-                                        <span className="text-m3-error bg-red-50 px-2 py-0.5 rounded-full border border-red-100 whitespace-nowrap">Adm:{computedStats.admins}</span>
-                                        <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 whitespace-nowrap">Usr:{computedStats.users}</span>
-                                    </div>
-                                </div>
-                            </Card>
-
-                            {/* Facilities */}
-                            <Card variant="elevated" className="p-6 flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
-                                    <FileText size={24} />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1.5 whitespace-nowrap">施設数</p>
-                                    <div className="flex items-baseline gap-1">
-                                        <p className="font-bold text-2xl text-m3-on-surface leading-none">{computedStats.facilities}</p>
-                                        <span className="text-[10px] text-m3-on-surface-variant font-bold">拠点</span>
-                                    </div>
-                                </div>
-                            </Card>
-
-                            {/* 24h Alerts Widget */}
-                            <Card variant="elevated" className="p-6 flex items-center gap-4">
-                                <div className={`w-12 h-12 rounded-2xl flex-shrink-0 flex items-center justify-center ${alertStats.alerts24h === 0 ? 'bg-emerald-100 text-emerald-600' :
-                                    alertStats.alerts24h < 5 ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'}`}>
-                                    <Activity size={24} />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1.5 whitespace-nowrap">アラート (24h)</p>
-                                    <div className="flex items-baseline gap-1">
-                                        <p className={`font-bold text-2xl leading-none ${alertStats.alerts24h === 0 ? 'text-emerald-600' :
-                                            alertStats.alerts24h < 5 ? 'text-yellow-600' : 'text-red-600'}`}>
-                                            {alertStats.alerts24h}
-                                        </p>
-                                        <span className="text-[10px] text-m3-on-surface-variant font-bold">件</span>
-                                    </div>
-                                </div>
-                            </Card>
+                                <span className="text-xs text-m3-on-surface-variant font-medium">
+                                    Ping: {resources.dbPing}ms
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {alertStats.criticalOpen > 0 && (
+                                    <span className="px-3 py-1.5 bg-m3-error text-m3-on-error rounded-full text-xs font-bold animate-pulse">
+                                        {alertStats.criticalOpen} Critical
+                                    </span>
+                                )}
+                                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-m3-error-container text-m3-on-error-container text-[10px] font-bold uppercase tracking-widest rounded-full border border-m3-error/20">
+                                    <ShieldAlert size={12} />
+                                    {alertStats.totalOpen} 件の未解決アラート
+                                </span>
+                            </div>
                         </div>
 
-                        {/* Resource Monitoring Cards */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            {/* Memory Usage */}
-                            <Card variant="outlined" className="p-5 flex flex-col justify-between h-full bg-m3-surface">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-2">
-                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                            <Cpu size={18} />
-                                        </div>
-                                        <h4 className="font-bold text-m3-on-surface text-sm">メモリ使用率</h4>
-                                    </div>
-                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${resources.memoryPercent > 90 ? 'bg-m3-error-container text-m3-on-error-container' : resources.memoryPercent > 80 ? 'bg-yellow-100 text-yellow-600' : 'bg-blue-100 text-blue-600'}`}>
-                                        {resources.memoryPercent.toFixed(1)}%
-                                    </span>
-                                </div>
-                                <div className="w-full bg-m3-surface-container-highest rounded-full h-2 mb-2">
-                                    <div
-                                        className={`h-2 rounded-full transition-all duration-1000 ${resources.memoryPercent > 90 ? 'bg-m3-error' : resources.memoryPercent > 80 ? 'bg-yellow-500' : 'bg-blue-500'}`}
-                                        style={{ width: `${resources.memoryPercent}%` }}
-                                    />
-                                </div>
-                                <div className="flex justify-between text-[10px] font-bold text-m3-outline uppercase tracking-widest">
-                                    <span>{(resources.memoryUsed / 1024 / 1024).toFixed(0)} MB / {(resources.memoryMax / 1024 / 1024).toFixed(0)} MB</span>
-                                    <span>Allocated JVM Heap</span>
-                                </div>
-                            </Card>
-
-                            {/* Disk Usage */}
-                            <Card variant="outlined" className="p-5 flex flex-col justify-between h-full bg-m3-surface">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-2">
-                                        <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                                            <HardDrive size={18} />
-                                        </div>
-                                        <h4 className="font-bold text-m3-on-surface text-sm">ディスク使用量</h4>
-                                    </div>
-                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${resources.diskPercent > 90 ? 'bg-m3-error-container text-m3-on-error-container' : resources.diskPercent > 80 ? 'bg-yellow-100 text-yellow-600' : 'bg-purple-100 text-purple-600'}`}>
-                                        {resources.diskPercent.toFixed(1)}%
-                                    </span>
-                                </div>
-                                <div className="w-full bg-m3-surface-container-highest rounded-full h-2 mb-2">
-                                    <div
-                                        className={`h-2 rounded-full transition-all duration-1000 ${resources.diskPercent > 90 ? 'bg-m3-error' : resources.diskPercent > 80 ? 'bg-yellow-500' : 'bg-purple-500'}`}
-                                        style={{ width: `${resources.diskPercent}%` }}
-                                    />
-                                </div>
-                                <div className="flex justify-between text-[10px] font-bold text-m3-outline uppercase tracking-widest">
-                                    <span>{(resources.diskUsed / 1024 / 1024 / 1024).toFixed(1)} GB / {(resources.diskTotal / 1024 / 1024 / 1024).toFixed(1)} GB</span>
-                                    <span>System Storage</span>
-                                </div>
-                            </Card>
-                        </div>
-
-                        {/* Security Alerts Section */}
+                        {/* Row 1: Security Alerts (Top Priority) */}
                         <Card variant="outlined" className="bg-m3-surface rounded-2xl border-m3-outline-variant shadow-sm overflow-hidden">
-                            <div className="p-4 border-b border-m3-outline-variant flex items-center justify-between bg-m3-error-container/30">
+                            <div className="p-5 border-b border-m3-outline-variant flex items-center justify-between bg-m3-error-container/30">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-m3-error-container text-m3-on-error-container rounded-xl">
+                                    <div className="p-3 bg-m3-error-container text-m3-on-error-container rounded-2xl">
                                         <ShieldAlert size={24} />
                                     </div>
                                     <div>
                                         <h3 className="text-lg font-bold text-m3-on-surface tracking-tight">セキュリティアラート</h3>
-                                        <p className="text-xs text-m3-on-surface-variant font-medium">システムの異常行動をリアルタイムで監視・報告します</p>
+                                        <p className="text-xs text-m3-on-surface-variant font-medium">直近24時間: {alertStats.alerts24h} 件</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    {alertStats.criticalOpen > 0 && (
-                                        <span className="px-3 py-1 bg-m3-error text-m3-on-error rounded-full text-xs font-bold animate-pulse">
-                                            {alertStats.criticalOpen} Critical
-                                        </span>
-                                    )}
-                                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-m3-error-container text-m3-on-error-container text-[10px] font-bold uppercase tracking-widest rounded-lg border border-m3-error/20">
-                                        <AlertTriangle size={12} />
-                                        {alertStats.totalOpen} 件の未解決
-                                    </span>
-                                    <Button
-                                        variant="text"
-                                        onClick={fetchSecurityAlerts}
-                                        icon={<RefreshCw size={18} />}
-                                    />
-                                </div>
+                                <Button
+                                    variant="text"
+                                    onClick={fetchSecurityAlerts}
+                                    icon={<RefreshCw size={18} />}
+                                />
                             </div>
 
-                            <div className="p-4">
+                            <div className="p-5">
                                 {securityAlerts.length === 0 ? (
-                                    <div className="text-center py-12 text-m3-on-surface-variant/50">
-                                        <ShieldAlert size={48} className="mx-auto mb-4 opacity-30" />
-                                        <p className="font-medium">セキュリティアラートはありません</p>
-                                        <p className="text-sm">システムは正常に稼働しています</p>
+                                    <div className="text-center py-10 text-m3-on-surface-variant/50">
+                                        <ShieldAlert size={40} className="mx-auto mb-3 opacity-30" />
+                                        <p className="font-medium text-sm">アラートはありません</p>
+                                        <p className="text-xs mt-0.5">システムは正常に稼働しています</p>
                                     </div>
                                 ) : (
-                                    <div className="space-y-3 max-h-80 overflow-y-auto">
+                                    <div className="space-y-3 max-h-72 overflow-y-auto">
                                         {securityAlerts.slice(0, 10).map((alert) => (
                                             <div
                                                 key={alert.id}
@@ -696,7 +583,7 @@ export default function DeveloperDashboard() {
                                                                 : 'bg-blue-50 border-blue-200'
                                                     }`}
                                             >
-                                                <div className={`p-2 rounded-xl ${alert.severity === 'CRITICAL' ? 'bg-m3-error text-m3-on-error' :
+                                                <div className={`p-2 rounded-xl flex-shrink-0 ${alert.severity === 'CRITICAL' ? 'bg-m3-error text-m3-on-error' :
                                                     alert.severity === 'HIGH' ? 'bg-orange-100 text-orange-600' :
                                                         alert.severity === 'MEDIUM' ? 'bg-yellow-100 text-yellow-600' :
                                                             'bg-blue-100 text-blue-600'
@@ -706,8 +593,8 @@ export default function DeveloperDashboard() {
                                                             alert.type === 'MASS_DOWNLOAD' ? <FileDown size={20} /> :
                                                                 <ShieldAlert size={20} />}
                                                 </div>
-                                                <div className="flex-grow">
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex-grow min-w-0">
+                                                    <div className="flex items-center gap-2 flex-wrap">
                                                         <span className="font-bold text-sm text-m3-on-surface">
                                                             {alert.typeDisplayName}
                                                         </span>
@@ -725,7 +612,7 @@ export default function DeveloperDashboard() {
                                                             {alert.status}
                                                         </span>
                                                     </div>
-                                                    <p className="text-xs text-m3-on-surface-variant mt-1">
+                                                    <p className="text-xs text-m3-on-surface-variant mt-1 truncate">
                                                         {alert.description}
                                                     </p>
                                                     <div className="flex items-center gap-3 mt-1 text-[10px] text-m3-outline">
@@ -741,7 +628,7 @@ export default function DeveloperDashboard() {
                                                     </div>
                                                 </div>
                                                 {alert.status !== 'RESOLVED' && (
-                                                    <div className="flex gap-2">
+                                                    <div className="flex gap-1 flex-shrink-0">
                                                         {alert.status === 'OPEN' && (
                                                             <Button
                                                                 variant="text"
@@ -768,6 +655,162 @@ export default function DeveloperDashboard() {
                                 )}
                             </div>
                         </Card>
+
+                        {/* Row 2: Main Statistics (Interactive Cards) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Users Card - Interactive */}
+                            <Card variant="elevated" className="overflow-hidden">
+                                <button
+                                    onClick={() => setShowUserBreakdown(!showUserBreakdown)}
+                                    className="w-full p-6 flex items-center gap-4 text-left hover:bg-m3-surface-container-high/50 transition-colors cursor-pointer"
+                                >
+                                    <div className="w-14 h-14 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0">
+                                        <Users size={28} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs text-m3-on-surface-variant font-bold mb-1">総ユーザー数</p>
+                                        <div className="flex items-baseline gap-1.5">
+                                            <p className="font-bold text-3xl text-m3-on-surface leading-none">{userList.length}</p>
+                                            <span className="text-xs text-m3-on-surface-variant font-bold">名</span>
+                                        </div>
+                                    </div>
+                                    <div className={`transition-transform duration-300 ${showUserBreakdown ? 'rotate-180' : ''}`}>
+                                        <Activity size={18} className="text-m3-outline" />
+                                    </div>
+                                </button>
+                                {showUserBreakdown && (
+                                    <div className="px-6 pb-6 pt-0 border-t border-m3-outline-variant/50 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <p className="text-[10px] font-bold text-m3-on-surface-variant uppercase tracking-widest mt-4 mb-3">権限別内訳</p>
+                                        <div className="space-y-2.5">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-3 h-3 rounded-full bg-purple-500" />
+                                                    <span className="text-sm font-medium text-m3-on-surface">ROLE_DEVELOPER</span>
+                                                </div>
+                                                <span className="text-sm font-bold text-purple-700 bg-purple-50 px-3 py-0.5 rounded-full">{computedStats.developers} 名</span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-3 h-3 rounded-full bg-m3-error" />
+                                                    <span className="text-sm font-medium text-m3-on-surface">ROLE_ADMIN</span>
+                                                </div>
+                                                <span className="text-sm font-bold text-red-700 bg-red-50 px-3 py-0.5 rounded-full">{computedStats.admins} 名</span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-3 h-3 rounded-full bg-emerald-500" />
+                                                    <span className="text-sm font-medium text-m3-on-surface">ROLE_USER</span>
+                                                </div>
+                                                <span className="text-sm font-bold text-emerald-700 bg-emerald-50 px-3 py-0.5 rounded-full">{computedStats.users} 名</span>
+                                            </div>
+                                        </div>
+                                        {/* Role distribution bar */}
+                                        <div className="flex rounded-full h-2 overflow-hidden mt-4">
+                                            <div className="bg-purple-500 transition-all" style={{ width: `${(computedStats.developers / userList.length) * 100}%` }} />
+                                            <div className="bg-m3-error transition-all" style={{ width: `${(computedStats.admins / userList.length) * 100}%` }} />
+                                            <div className="bg-emerald-500 transition-all" style={{ width: `${(computedStats.users / userList.length) * 100}%` }} />
+                                        </div>
+                                    </div>
+                                )}
+                            </Card>
+
+                            {/* Facilities Card - Interactive */}
+                            <Card variant="elevated" className="overflow-hidden">
+                                <button
+                                    onClick={() => setShowFacilityBreakdown(!showFacilityBreakdown)}
+                                    className="w-full p-6 flex items-center gap-4 text-left hover:bg-m3-surface-container-high/50 transition-colors cursor-pointer"
+                                >
+                                    <div className="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                                        <Building2 size={28} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs text-m3-on-surface-variant font-bold mb-1">施設数</p>
+                                        <div className="flex items-baseline gap-1.5">
+                                            <p className="font-bold text-3xl text-m3-on-surface leading-none">{computedStats.facilities}</p>
+                                            <span className="text-xs text-m3-on-surface-variant font-bold">拠点</span>
+                                        </div>
+                                    </div>
+                                    <div className={`transition-transform duration-300 ${showFacilityBreakdown ? 'rotate-180' : ''}`}>
+                                        <Activity size={18} className="text-m3-outline" />
+                                    </div>
+                                </button>
+                                {showFacilityBreakdown && (
+                                    <div className="px-6 pb-6 pt-0 border-t border-m3-outline-variant/50 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <p className="text-[10px] font-bold text-m3-on-surface-variant uppercase tracking-widest mt-4 mb-3">施設別ユーザー数</p>
+                                        <div className="space-y-2">
+                                            {Array.from(new Set(userList.map(u => u.facility).filter(Boolean))).map(facility => {
+                                                const count = userList.filter(u => u.facility === facility).length;
+                                                const percent = (count / userList.length) * 100;
+                                                return (
+                                                    <div key={facility} className="space-y-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm font-medium text-m3-on-surface truncate">{facility}</span>
+                                                            <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full flex-shrink-0 ml-2">{count} 名</span>
+                                                        </div>
+                                                        <div className="w-full bg-m3-surface-container-highest rounded-full h-1.5">
+                                                            <div className="bg-blue-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${percent}%` }} />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </Card>
+                        </div>
+
+                        {/* Row 3: Resource Monitoring Cards */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Memory Usage */}
+                            <Card variant="outlined" className="p-6 flex flex-col justify-between h-full bg-m3-surface">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+                                            <Cpu size={18} />
+                                        </div>
+                                        <h4 className="font-bold text-m3-on-surface text-sm">メモリ使用率</h4>
+                                    </div>
+                                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${resources.memoryPercent > 90 ? 'bg-m3-error-container text-m3-on-error-container' : resources.memoryPercent > 80 ? 'bg-yellow-100 text-yellow-600' : 'bg-blue-100 text-blue-600'}`}>
+                                        {resources.memoryPercent.toFixed(1)}%
+                                    </span>
+                                </div>
+                                <div className="w-full bg-m3-surface-container-highest rounded-full h-2.5 mb-3">
+                                    <div
+                                        className={`h-2.5 rounded-full transition-all duration-1000 ${resources.memoryPercent > 90 ? 'bg-m3-error' : resources.memoryPercent > 80 ? 'bg-yellow-500' : 'bg-blue-500'}`}
+                                        style={{ width: `${resources.memoryPercent}%` }}
+                                    />
+                                </div>
+                                <div className="flex justify-between text-[10px] font-bold text-m3-outline uppercase tracking-widest">
+                                    <span>{(resources.memoryUsed / 1024 / 1024).toFixed(0)} MB / {(resources.memoryMax / 1024 / 1024).toFixed(0)} MB</span>
+                                    <span>Allocated JVM Heap</span>
+                                </div>
+                            </Card>
+
+                            {/* Disk Usage */}
+                            <Card variant="outlined" className="p-6 flex flex-col justify-between h-full bg-m3-surface">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
+                                            <HardDrive size={18} />
+                                        </div>
+                                        <h4 className="font-bold text-m3-on-surface text-sm">ディスク使用量</h4>
+                                    </div>
+                                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${resources.diskPercent > 90 ? 'bg-m3-error-container text-m3-on-error-container' : resources.diskPercent > 80 ? 'bg-yellow-100 text-yellow-600' : 'bg-purple-100 text-purple-600'}`}>
+                                        {resources.diskPercent.toFixed(1)}%
+                                    </span>
+                                </div>
+                                <div className="w-full bg-m3-surface-container-highest rounded-full h-2.5 mb-3">
+                                    <div
+                                        className={`h-2.5 rounded-full transition-all duration-1000 ${resources.diskPercent > 90 ? 'bg-m3-error' : resources.diskPercent > 80 ? 'bg-yellow-500' : 'bg-purple-500'}`}
+                                        style={{ width: `${resources.diskPercent}%` }}
+                                    />
+                                </div>
+                                <div className="flex justify-between text-[10px] font-bold text-m3-outline uppercase tracking-widest">
+                                    <span>{(resources.diskUsed / 1024 / 1024 / 1024).toFixed(1)} GB / {(resources.diskTotal / 1024 / 1024 / 1024).toFixed(1)} GB</span>
+                                    <span>System Storage</span>
+                                </div>
+                            </Card>
+                        </div>
 
                         {/* Main Content Area */}
                         <div className="grid grid-cols-1 gap-4">
