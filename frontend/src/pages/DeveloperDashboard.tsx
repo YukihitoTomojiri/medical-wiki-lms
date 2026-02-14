@@ -513,14 +513,14 @@ export default function DeveloperDashboard() {
                 {activeTab === 'stats' ? (
                     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {/* Status Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                             {/* DB Status */}
-                            <Card variant="filled" className={`p-4 flex items-center gap-4 ${stats.dbStatus === 'Connected' ? 'bg-emerald-50' : 'bg-m3-error-container'}`}>
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stats.dbStatus === 'Connected' ? 'bg-emerald-100 text-emerald-600' : 'bg-m3-error text-m3-on-error'}`}>
+                            <Card variant="filled" className={`p-6 flex items-center gap-4 ${stats.dbStatus === 'Connected' ? 'bg-emerald-50' : 'bg-m3-error-container'}`}>
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${stats.dbStatus === 'Connected' ? 'bg-emerald-100 text-emerald-600' : 'bg-m3-error text-m3-on-error'}`}>
                                     <Database size={24} />
                                 </div>
-                                <div>
-                                    <p className="text-xs font-bold opacity-70 mb-1">データベース</p>
+                                <div className="min-w-0">
+                                    <p className="text-xs font-bold opacity-70 mb-1.5 whitespace-nowrap">データベース</p>
                                     <div className="flex items-center gap-2">
                                         <span className={`w-2 h-2 rounded-full ${stats.dbStatus === 'Connected' ? 'bg-emerald-500' : 'bg-m3-on-error-container'}`} />
                                         <p className="font-bold text-lg leading-none">{stats.dbStatus === 'Connected' ? '接続中' : '切断'}</p>
@@ -529,54 +529,63 @@ export default function DeveloperDashboard() {
                             </Card>
 
                             {/* Users Count */}
-                            <Card variant="elevated" className="p-4 flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                            <Card variant="elevated" className="p-6 flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0">
                                     <Users size={24} />
                                 </div>
-                                <div>
-                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1">総ユーザー数</p>
-                                    <p className="font-bold text-2xl text-m3-on-surface leading-none">{userList.length}</p>
+                                <div className="min-w-0">
+                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1.5 whitespace-nowrap">総ユーザー数</p>
+                                    <div className="flex items-baseline gap-1">
+                                        <p className="font-bold text-2xl text-m3-on-surface leading-none">{userList.length}</p>
+                                        <span className="text-[10px] text-m3-on-surface-variant font-bold">名</span>
+                                    </div>
                                 </div>
                             </Card>
 
                             {/* Role Breakdown */}
-                            <Card variant="elevated" className="p-4 flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                            <Card variant="elevated" className="p-6 flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0">
                                     <Shield size={24} />
                                 </div>
-                                <div className="min-w-0">
-                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1">権限内訳</p>
-                                    <div className="flex gap-1 text-[10px] font-black">
-                                        <span className="text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded">Dev:{computedStats.developers}</span>
-                                        <span className="text-m3-error bg-red-50 px-1.5 py-0.5 rounded">Adm:{computedStats.admins}</span>
-                                        <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">Usr:{computedStats.users}</span>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1.5 whitespace-nowrap">権限内訳</p>
+                                    <div className="flex flex-wrap gap-1.5 text-[10px] font-black">
+                                        <span className="text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100 whitespace-nowrap">Dev:{computedStats.developers}</span>
+                                        <span className="text-m3-error bg-red-50 px-2 py-0.5 rounded-full border border-red-100 whitespace-nowrap">Adm:{computedStats.admins}</span>
+                                        <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 whitespace-nowrap">Usr:{computedStats.users}</span>
                                     </div>
                                 </div>
                             </Card>
 
                             {/* Facilities */}
-                            <Card variant="elevated" className="p-4 flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                            <Card variant="elevated" className="p-6 flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
                                     <FileText size={24} />
                                 </div>
-                                <div>
-                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1">施設数</p>
-                                    <p className="font-bold text-2xl text-m3-on-surface leading-none">{computedStats.facilities}</p>
+                                <div className="min-w-0">
+                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1.5 whitespace-nowrap">施設数</p>
+                                    <div className="flex items-baseline gap-1">
+                                        <p className="font-bold text-2xl text-m3-on-surface leading-none">{computedStats.facilities}</p>
+                                        <span className="text-[10px] text-m3-on-surface-variant font-bold">拠点</span>
+                                    </div>
                                 </div>
                             </Card>
 
                             {/* 24h Alerts Widget */}
-                            <Card variant="elevated" className="p-4 flex items-center gap-4">
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${alertStats.alerts24h === 0 ? 'bg-emerald-100 text-emerald-600' :
+                            <Card variant="elevated" className="p-6 flex items-center gap-4">
+                                <div className={`w-12 h-12 rounded-2xl flex-shrink-0 flex items-center justify-center ${alertStats.alerts24h === 0 ? 'bg-emerald-100 text-emerald-600' :
                                     alertStats.alerts24h < 5 ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'}`}>
                                     <Activity size={24} />
                                 </div>
-                                <div>
-                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1">アラート (24h)</p>
-                                    <p className={`font-bold text-2xl leading-none ${alertStats.alerts24h === 0 ? 'text-emerald-600' :
-                                        alertStats.alerts24h < 5 ? 'text-yellow-600' : 'text-red-600'}`}>
-                                        {alertStats.alerts24h}
-                                    </p>
+                                <div className="min-w-0">
+                                    <p className="text-xs text-m3-on-surface-variant font-bold mb-1.5 whitespace-nowrap">アラート (24h)</p>
+                                    <div className="flex items-baseline gap-1">
+                                        <p className={`font-bold text-2xl leading-none ${alertStats.alerts24h === 0 ? 'text-emerald-600' :
+                                            alertStats.alerts24h < 5 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                            {alertStats.alerts24h}
+                                        </p>
+                                        <span className="text-[10px] text-m3-on-surface-variant font-bold">件</span>
+                                    </div>
                                 </div>
                             </Card>
                         </div>
