@@ -11,22 +11,24 @@ import java.util.Set;
 
 public interface TrainingEventRepository extends JpaRepository<TrainingEvent, Long> {
 
-        @Query("SELECT e FROM TrainingEvent e WHERE " +
-                        "(e.facilityId IS NULL OR e.facilityId = :facilityId OR e.isAllFacilities = true) AND " +
-                        "(e.targetCommitteeId IS NULL OR e.targetCommitteeId IN :committeeIds) AND " +
-                        "(e.targetJobType IS NULL OR e.targetJobType = :jobType) AND " +
-                        "e.deletedAt IS NULL AND " +
-                        ":now BETWEEN e.startTime AND e.endTime " +
-                        "ORDER BY e.startTime DESC")
+        List<TrainingEvent> findAllByStartTimeAfterOrderByStartTimeAsc(LocalDateTime startTime);
+
+        List<TrainingEvent> findByDeletedAtIsNullOrderByCreatedAtDesc();
+
+        List<TrainingEvent> findByFacilityIdAndDeletedAtIsNullOrderByCreatedAtDesc(Long facilityId);
+
+        @Query("SELECT e FROM TrainingEvent e WHERE e.deletedAt IS NULL " +
+                        "AND e.startTime >= :now " +
+                        "AND (e.isAllFacilities = true OR (:facilityId IS NOT NULL AND e.facilityId = :facilityId)) " +
+                        "AND (" +
+                        "  (e.targetCommitteeId IS NULL AND (e.targetJobType IS NULL OR e.targetJobType = '')) " +
+                        "  OR (e.targetCommitteeId IN :committeeIds) " +
+                        "  OR (:jobType IS NOT NULL AND e.targetJobType = :jobType) " +
+                        ") " +
+                        "ORDER BY e.startTime ASC")
         List<TrainingEvent> findVisibleEvents(
                         @Param("facilityId") Long facilityId,
                         @Param("committeeIds") Set<Long> committeeIds,
                         @Param("jobType") String jobType,
                         @Param("now") LocalDateTime now);
-
-        // For Admin: Facility-specific events
-        List<TrainingEvent> findByFacilityIdAndDeletedAtIsNullOrderByCreatedAtDesc(Long facilityId);
-
-        // For Developer: All non-deleted events
-        List<TrainingEvent> findByDeletedAtIsNullOrderByCreatedAtDesc();
 }

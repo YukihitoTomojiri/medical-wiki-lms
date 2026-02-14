@@ -1,134 +1,133 @@
 package com.medical.wiki.controller;
 
 import com.medical.wiki.entity.TrainingEvent;
-import com.medical.wiki.repository.UserRepository;
 import com.medical.wiki.service.TrainingEventService;
-import com.medical.wiki.config.UserPrincipal;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/api/training/events")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class TrainingEventController {
 
     private final TrainingEventService trainingEventService;
-    private final UserRepository userRepository;
+    private final com.medical.wiki.repository.TrainingEventRepository trainingEventRepository;
 
-    @GetMapping
-    public List<TrainingEvent> getEvents(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        // If Admin/Developer, maybe show all or separate endpoint?
-        // For now, reuse getVisibleEvents which handles logic inside service
-        // Actually, service says Admin logic is TODO.
-        // Let's rely on service logic.
-        return trainingEventService.getVisibleEvents(userPrincipal.getId());
+    // Existing: Notification integration
+    @GetMapping("/admin/training-events/upcoming")
+    public List<TrainingEvent> getUpcomingTrainingEvents(
+            @RequestHeader("X-User-Id") Long userId) {
+        return trainingEventRepository.findAllByStartTimeAfterOrderByStartTimeAsc(LocalDateTime.now());
     }
 
-    @GetMapping("/admin")
-    public List<TrainingEvent> getAdminEvents(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return trainingEventService.getAllEventsForAdmin(userPrincipal.getId());
+    // --- New Endpoints matching api.ts ---
+
+    // 1. GET /api/training/events (User visible events)
+    @GetMapping("/training/events")
+    public List<TrainingEvent> getTrainingEvents(
+            @RequestHeader("X-User-Id") Long userId) {
+        return trainingEventService.getVisibleEvents(userId);
     }
 
-    @GetMapping("/{id}")
-    public TrainingEvent getEvent(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long id) {
-        return trainingEventService.getEvent(userPrincipal.getId(), id);
+    // 2. GET /api/training/events/admin (Admin all events)
+    @GetMapping("/training/events/admin")
+    public List<TrainingEvent> getAdminTrainingEvents(
+            @RequestHeader("X-User-Id") Long userId) {
+        return trainingEventService.getAllEventsForAdmin(userId);
     }
 
-    @PostMapping
-    public TrainingEvent createEvent(@AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestBody Map<String, Object> payload) {
-        // Extract fields manually or use DTO. Manual for speed now.
-        String title = (String) payload.get("title");
-        String description = (String) payload.get("description");
-        String videoUrl = (String) payload.get("videoUrl");
-        String videoUrl2 = (String) payload.get("videoUrl2");
-        String videoUrl3 = (String) payload.get("videoUrl3");
-        String materialsUrl = (String) payload.get("materialsUrl");
-        Long targetCommitteeId = payload.get("targetCommitteeId") != null
-                ? ((Number) payload.get("targetCommitteeId")).longValue()
-                : null;
-        String targetJobType = (String) payload.get("targetJobType");
-
-        String startTimeStr = (String) payload.get("startTime");
-        String endTimeStr = (String) payload.get("endTime");
-
-        LocalDateTime startTime;
-        LocalDateTime endTime;
-
-        try {
-            startTime = (startTimeStr != null && !startTimeStr.contains("T"))
-                    ? LocalDateTime.parse(startTimeStr + "T00:00:00")
-                    : LocalDateTime.parse(startTimeStr);
-            endTime = (endTimeStr != null && !endTimeStr.contains("T"))
-                    ? LocalDateTime.parse(endTimeStr + "T23:59:59")
-                    : LocalDateTime.parse(endTimeStr);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid date format: " + e.getMessage());
-        }
-
-        Boolean isAllFacilities = (Boolean) payload.get("isAllFacilities");
-
-        return trainingEventService.createEvent(userPrincipal.getId(), title, description, videoUrl, videoUrl2,
-                videoUrl3,
-                materialsUrl, targetCommitteeId, targetJobType, startTime, endTime, isAllFacilities);
+    // 3. POST /api/training/events (Create)
+    @PostMapping("/training/events")
+    public TrainingEvent createTrainingEvent(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestBody TrainingEventRequest request) {
+        return trainingEventService.createEvent(
+                userId,
+                request.getTitle(),
+                request.getDescription(),
+                request.getVideoUrl(),
+                request.getVideoUrl2(),
+                request.getVideoUrl3(),
+                request.getMaterialsUrl(),
+                request.getTargetCommitteeId(),
+                request.getTargetJobType(),
+                request.getStartTime(),
+                request.getEndTime(),
+                request.getIsAllFacilities());
     }
 
-    @GetMapping("/{id}/qrcode")
-    public ResponseEntity<Map<String, String>> getQrCode(@PathVariable Long id) {
-        String url = trainingEventService.getQrCodeUrl(id);
-        return ResponseEntity.ok(Map.of("url", url));
-    }
-
-    @PutMapping("/{id}")
-    public TrainingEvent updateEvent(@AuthenticationPrincipal UserPrincipal userPrincipal,
-            @PathVariable Long id,
-            @RequestBody Map<String, Object> payload) {
-        String title = (String) payload.get("title");
-        String description = (String) payload.get("description");
-        String videoUrl = (String) payload.get("videoUrl");
-        String videoUrl2 = (String) payload.get("videoUrl2");
-        String videoUrl3 = (String) payload.get("videoUrl3");
-        String materialsUrl = (String) payload.get("materialsUrl");
-        Long targetCommitteeId = payload.get("targetCommitteeId") != null
-                ? ((Number) payload.get("targetCommitteeId")).longValue()
-                : null;
-        String targetJobType = (String) payload.get("targetJobType");
-
-        String startTimeStr = (String) payload.get("startTime");
-        String endTimeStr = (String) payload.get("endTime");
-
-        LocalDateTime startTime;
-        LocalDateTime endTime;
-
-        try {
-            startTime = (startTimeStr != null && !startTimeStr.contains("T"))
-                    ? LocalDateTime.parse(startTimeStr + "T00:00:00")
-                    : LocalDateTime.parse(startTimeStr);
-            endTime = (endTimeStr != null && !endTimeStr.contains("T"))
-                    ? LocalDateTime.parse(endTimeStr + "T23:59:59")
-                    : LocalDateTime.parse(endTimeStr);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid date format: " + e.getMessage());
-        }
-
-        Boolean isAllFacilities = (Boolean) payload.get("isAllFacilities");
-
-        return trainingEventService.updateEvent(userPrincipal.getId(), id, title, description, videoUrl, videoUrl2,
-                videoUrl3,
-                materialsUrl, targetCommitteeId, targetJobType, startTime, endTime, isAllFacilities);
-    }
-
-    @DeleteMapping("/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
-    public ResponseEntity<Void> deleteEvent(@AuthenticationPrincipal UserPrincipal userPrincipal,
+    // 4. GET /api/training/events/{id} (Read)
+    @GetMapping("/training/events/{id}")
+    public TrainingEvent getTrainingEvent(
+            @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long id) {
-        trainingEventService.deleteEvent(userPrincipal.getId(), id);
-        return ResponseEntity.noContent().build();
+        return trainingEventService.getEvent(userId, id);
+    }
+
+    // 5. PUT /api/training/events/{id} (Update)
+    @PutMapping("/training/events/{id}")
+    public TrainingEvent updateTrainingEvent(
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable Long id,
+            @RequestBody TrainingEventRequest request) {
+        return trainingEventService.updateEvent(
+                userId,
+                id,
+                request.getTitle(),
+                request.getDescription(),
+                request.getVideoUrl(),
+                request.getVideoUrl2(),
+                request.getVideoUrl3(),
+                request.getMaterialsUrl(),
+                request.getTargetCommitteeId(),
+                request.getTargetJobType(),
+                request.getStartTime(),
+                request.getEndTime(),
+                request.getIsAllFacilities());
+    }
+
+    // 6. DELETE /api/training/events/{id} (Delete)
+    @DeleteMapping("/training/events/{id}")
+    public void deleteTrainingEvent(
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable Long id) {
+        trainingEventService.deleteEvent(userId, id);
+    }
+
+    // 7. GET /api/training/events/{id}/qrcode
+    @GetMapping("/training/events/{id}/qrcode")
+    public QrCodeResponse getTrainingQrCode(
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable Long id) {
+        String url = trainingEventService.getQrCodeUrl(id);
+        return new QrCodeResponse(url);
+    }
+
+    @Data
+    public static class TrainingEventRequest {
+        private String title;
+        private String description;
+        private String videoUrl;
+        private String videoUrl2;
+        private String videoUrl3;
+        private String materialsUrl;
+        private Long targetCommitteeId;
+        private String targetJobType;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private Boolean isAllFacilities;
+    }
+
+    @Data
+    public static class QrCodeResponse {
+        private String url;
+
+        public QrCodeResponse(String url) {
+            this.url = url;
+        }
     }
 }

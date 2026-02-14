@@ -22,6 +22,7 @@ public class UserDto {
     private String email;
     private Double paidLeaveDays;
     private java.time.LocalDate joinedDate;
+    private java.time.LocalDate hiredAt;
 
     public static UserDto fromEntity(User user) {
         return UserDto.builder()
@@ -39,6 +40,8 @@ public class UserDto {
                 .email(user.getEmail())
                 .paidLeaveDays(user.getPaidLeaveDays() != null ? user.getPaidLeaveDays() : 0.0)
                 .joinedDate(user.getJoinedDate())
+                .hiredAt(user.getHiredAt())
                 .build();
     }
+
 }

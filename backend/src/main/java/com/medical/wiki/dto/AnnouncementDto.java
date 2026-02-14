@@ -24,4 +24,9 @@ public class AnnouncementDto {
     // 研修マニュアル連携
     private Long relatedWikiId;
     private String relatedWikiTitle;
+
+    // 研修会連携
+    private Long relatedEventId;
+    private String relatedEventTitle;
+    private String relatedType; // "WIKI" or "EVENT"
 }

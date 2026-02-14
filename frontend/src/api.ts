@@ -29,6 +29,9 @@ export interface Announcement {
     createdAt: string;
     relatedWikiId?: number;
     relatedWikiTitle?: string;
+    relatedEventId?: number;
+    relatedEventTitle?: string;
+    relatedType?: 'WIKI' | 'EVENT';
 }
 
 export interface TrainingEvent {
@@ -771,7 +774,7 @@ export const api = {
         return res.json();
     },
 
-    createAnnouncement: async (userId: number, data: { title: string; content: string; priority: string; displayUntil: string; facilityId?: number | null; relatedWikiId?: number | null }): Promise<Announcement> => {
+    createAnnouncement: async (userId: number, data: { title: string; content: string; priority: string; displayUntil: string; facilityId?: number | null; relatedWikiId?: number | null; relatedEventId?: number | null; relatedType?: 'WIKI' | 'EVENT' | null }): Promise<Announcement> => {
         const res = await fetch(`${API_BASE}/admin/announcements`, {
             method: 'POST',
             headers: getHeaders(userId),
@@ -781,7 +784,7 @@ export const api = {
         return res.json();
     },
 
-    updateAnnouncement: async (userId: number, id: number, data: { title: string; content: string; priority: string; displayUntil: string; relatedWikiId?: number | null }): Promise<Announcement> => {
+    updateAnnouncement: async (userId: number, id: number, data: { title: string; content: string; priority: string; displayUntil: string; relatedWikiId?: number | null; relatedEventId?: number | null; relatedType?: 'WIKI' | 'EVENT' | null }): Promise<Announcement> => {
         const res = await fetch(`${API_BASE}/admin/announcements/${id}`, {
             method: 'PUT',
             headers: getHeaders(userId),
@@ -797,6 +800,14 @@ export const api = {
             headers: getHeaders(userId),
         });
         if (!res.ok) throw new Error('Failed to delete announcement');
+    },
+
+    getUpcomingTrainingEvents: async (userId: number): Promise<TrainingEvent[]> => {
+        const res = await fetch(`${API_BASE}/admin/training-events/upcoming`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
     },
 
     // Training Records (研修完了記録)

@@ -80,6 +80,9 @@ public class User {
     @Column(name = "joined_date")
     private LocalDate joinedDate;
 
+    @Column(name = "hired_at", nullable = false)
+    private LocalDate hiredAt;
+
     public enum Role {
         ADMIN, USER, DEVELOPER
     }

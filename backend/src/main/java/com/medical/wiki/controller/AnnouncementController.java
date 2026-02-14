@@ -46,7 +46,9 @@ public class AnnouncementController {
                 request.getPriority(),
                 request.getDisplayUntil(),
                 request.getFacilityId(),
-                request.getRelatedWikiId());
+                request.getRelatedWikiId(),
+                request.getRelatedEventId(),
+                request.getRelatedType());
         return toDto(announcement);
     }
 
@@ -62,7 +64,9 @@ public class AnnouncementController {
                 request.getContent(),
                 request.getPriority(),
                 request.getDisplayUntil(),
-                request.getRelatedWikiId());
+                request.getRelatedWikiId(),
+                request.getRelatedEventId(),
+                request.getRelatedType());
         return toDto(announcement);
     }
 
@@ -75,6 +79,7 @@ public class AnnouncementController {
 
     private AnnouncementDto toDto(Announcement announcement) {
         String wikiTitle = announcementService.getWikiTitle(announcement.getRelatedWikiId());
+        String eventTitle = announcementService.getEventTitle(announcement.getRelatedEventId());
         return AnnouncementDto.builder()
                 .id(announcement.getId())
                 .title(announcement.getTitle())
@@ -86,6 +91,9 @@ public class AnnouncementController {
                 .createdByName(announcement.getCreatedBy() != null ? announcement.getCreatedBy().getName() : "Unknown")
                 .relatedWikiId(announcement.getRelatedWikiId())
                 .relatedWikiTitle(wikiTitle)
+                .relatedEventId(announcement.getRelatedEventId())
+                .relatedEventTitle(eventTitle)
+                .relatedType(announcement.getRelatedType())
                 .build();
     }
 
@@ -97,5 +105,7 @@ public class AnnouncementController {
         private LocalDate displayUntil;
         private Long facilityId; // Optional, null for global
         private Long relatedWikiId; // Optional
+        private Long relatedEventId; // Optional
+        private String relatedType; // "WIKI" or "EVENT"
     }
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api, Announcement } from '../api';
-import { Bell, Info, AlertTriangle, MessageCircle, ChevronRight, X, BookOpen } from 'lucide-react';
+import { Bell, Info, AlertTriangle, MessageCircle, ChevronRight, X, BookOpen, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Props {
@@ -89,6 +89,15 @@ export default function DashboardAnnouncements({ userId }: Props) {
                                     >
                                         <BookOpen size={14} />
                                         研修資料を読む
+                                    </button>
+                                )}
+                                {a.relatedEventId && (
+                                    <button
+                                        onClick={() => navigate(`/training/${a.relatedEventId}?fromAnnouncement=${a.id}`)}
+                                        className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 text-pink-700 hover:bg-pink-100 rounded-lg text-xs font-bold transition-colors"
+                                    >
+                                        <Calendar size={14} />
+                                        研修詳細・参加予約
                                     </button>
                                 )}
                             </div>

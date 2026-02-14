@@ -22,6 +22,7 @@ public class AnnouncementService {
     private final UserRepository userRepository;
     private final FacilityRepository facilityRepository;
     private final com.medical.wiki.repository.ManualRepository manualRepository;
+    private final com.medical.wiki.repository.TrainingEventRepository trainingEventRepository;
 
     // Get active announcements for a specific user (Dashboard view)
     @Transactional(readOnly = true)
@@ -66,7 +67,8 @@ public class AnnouncementService {
 
     @Transactional
     public Announcement createAnnouncement(Long userId, String title, String content,
-            Announcement.Priority priority, LocalDate displayUntil, Long targetFacilityId, Long relatedWikiId) {
+            Announcement.Priority priority, LocalDate displayUntil, Long targetFacilityId, Long relatedWikiId,
+            Long relatedEventId, String relatedType) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -92,7 +94,10 @@ public class AnnouncementService {
                 .priority(priority)
                 .displayUntil(displayUntil)
                 .facilityId(targetFacilityId)
+
                 .relatedWikiId(relatedWikiId)
+                .relatedEventId(relatedEventId)
+                .relatedType(relatedType)
                 .createdBy(user)
                 .build();
 
@@ -101,7 +106,8 @@ public class AnnouncementService {
 
     @Transactional
     public Announcement updateAnnouncement(Long userId, Long announcementId, String title, String content,
-            Announcement.Priority priority, LocalDate displayUntil, Long relatedWikiId) {
+            Announcement.Priority priority, LocalDate displayUntil, Long relatedWikiId, Long relatedEventId,
+            String relatedType) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -126,7 +132,10 @@ public class AnnouncementService {
         announcement.setContent(content);
         announcement.setPriority(priority);
         announcement.setDisplayUntil(displayUntil);
+
         announcement.setRelatedWikiId(relatedWikiId);
+        announcement.setRelatedEventId(relatedEventId);
+        announcement.setRelatedType(relatedType);
 
         return announcementRepository.save(announcement);
     }
@@ -158,6 +167,14 @@ public class AnnouncementService {
             return null;
         return manualRepository.findById(wikiId)
                 .map(com.medical.wiki.entity.Manual::getTitle)
+                .orElse(null);
+    }
+
+    public String getEventTitle(Long eventId) {
+        if (eventId == null)
+            return null;
+        return trainingEventRepository.findById(eventId)
+                .map(com.medical.wiki.entity.TrainingEvent::getTitle)
                 .orElse(null);
     }
 }
