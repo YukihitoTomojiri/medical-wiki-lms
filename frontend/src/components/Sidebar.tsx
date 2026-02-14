@@ -39,21 +39,26 @@ export default function Sidebar({ onClose }: SidebarProps) {
             {/* Branding Area removed for Modern Header integration */}
             <div className="h-4" />
 
-            <nav className="flex-1 overflow-y-auto px-2 space-y-6">
-                <div>
-                    <div className="px-6 mb-2 text-xs font-bold text-m3-outline uppercase tracking-wider">Main</div>
-                    <NavigationDrawer items={mainItems} user={user} onItemClick={onClose} />
+            <nav className="flex-1 overflow-y-auto px-2 pb-32 flex flex-col">
+                <div className="space-y-6">
+                    <div>
+                        <div className="px-6 mb-2 text-xs font-bold text-m3-outline uppercase tracking-wider">Main</div>
+                        <NavigationDrawer items={mainItems} user={user} onItemClick={onClose} />
+                    </div>
+
+                    {(isAdmin || isDeveloper) && (
+                        <div>
+                            <div className="px-6 mb-2 text-xs font-bold text-m3-outline uppercase tracking-wider">Admin</div>
+                            <NavigationDrawer items={adminItems} user={user} onItemClick={onClose} />
+                        </div>
+                    )}
                 </div>
 
-                {(isAdmin || isDeveloper) && (
-                    <div>
-                        <div className="px-6 mb-2 text-xs font-bold text-m3-outline uppercase tracking-wider">Admin</div>
-                        <NavigationDrawer items={adminItems} user={user} onItemClick={onClose} />
-                    </div>
-                )}
+                {/* Dynamic Spacer to push Developer Menu towards the bottom (approx 1/4 of viewport) */}
+                <div className="flex-1 min-h-[100px]" />
 
                 {isDeveloper && (
-                    <div>
+                    <div className="mt-auto">
                         <div className="px-6 mb-2 text-xs font-bold text-m3-outline uppercase tracking-wider">System</div>
                         <NavigationDrawer items={devItems} user={user} onItemClick={onClose} />
                     </div>
