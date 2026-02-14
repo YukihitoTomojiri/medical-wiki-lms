@@ -24,13 +24,17 @@ export default function AdminAnnouncementManagement({ user }: props) {
     const [displayUntil, setDisplayUntil] = useState('');
     const [target, setTarget] = useState<'ALL' | 'FACILITY'>('FACILITY');
     const [selectedWikiId, setSelectedWikiId] = useState<number | null>(null);
+    const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+    const [relatedType, setRelatedType] = useState<'WIKI' | 'EVENT' | null>(null);
 
-    // Manuals list for dropdown
+    // Manuals & Events list for dropdown
     const [manuals, setManuals] = useState<Manual[]>([]);
+    const [events, setEvents] = useState<any[]>([]);
 
     useEffect(() => {
         loadAnnouncements();
         loadManuals();
+        loadEvents();
     }, [user.id]);
 
     const loadManuals = async () => {
@@ -39,6 +43,15 @@ export default function AdminAnnouncementManagement({ user }: props) {
             setManuals(data);
         } catch (err) {
             console.error('Failed to load manuals:', err);
+        }
+    };
+
+    const loadEvents = async () => {
+        try {
+            const data = await api.getAdminTrainingEvents(user.id);
+            setEvents(data);
+        } catch (err) {
+            console.error('Failed to load events:', err);
         }
     };
 
@@ -62,6 +75,8 @@ export default function AdminAnnouncementManagement({ user }: props) {
             setPriority(announcement.priority);
             setDisplayUntil(announcement.displayUntil);
             setSelectedWikiId(announcement.relatedWikiId ?? null);
+            setSelectedEventId(announcement.relatedEventId ?? null);
+            setRelatedType(announcement.relatedType ?? null);
         } else {
             setEditingId(null);
             setTitle('');
@@ -73,6 +88,8 @@ export default function AdminAnnouncementManagement({ user }: props) {
             setDisplayUntil(date.toISOString().split('T')[0]);
             setTarget('FACILITY');
             setSelectedWikiId(null);
+            setSelectedEventId(null);
+            setRelatedType(null);
         }
         setIsModalOpen(true);
     };
@@ -83,7 +100,9 @@ export default function AdminAnnouncementManagement({ user }: props) {
             if (editingId) {
                 await api.updateAnnouncement(user.id, editingId, {
                     title, content, priority, displayUntil,
-                    relatedWikiId: selectedWikiId
+                    relatedWikiId: relatedType === 'WIKI' ? selectedWikiId : null,
+                    relatedEventId: relatedType === 'EVENT' ? selectedEventId : null,
+                    relatedType
                 });
             } else {
                 const isGlobal = user.role === 'DEVELOPER' && target === 'ALL';
@@ -92,7 +111,9 @@ export default function AdminAnnouncementManagement({ user }: props) {
                 await api.createAnnouncement(user.id, {
                     title, content, priority, displayUntil,
                     facilityId: payloadFacilityId as any,
-                    relatedWikiId: selectedWikiId
+                    relatedWikiId: relatedType === 'WIKI' ? selectedWikiId : null,
+                    relatedEventId: relatedType === 'EVENT' ? selectedEventId : null,
+                    relatedType
                 });
             }
             setIsModalOpen(false);
@@ -165,10 +186,15 @@ export default function AdminAnnouncementManagement({ user }: props) {
                                     <div className="text-xs text-gray-500 truncate max-w-md">{a.content}</div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    {a.relatedWikiTitle ? (
+                                    {a.relatedType === 'WIKI' && a.relatedWikiTitle ? (
                                         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-medium">
                                             <BookOpen size={12} />
-                                            {a.relatedWikiTitle}
+                                            Wiki: {a.relatedWikiTitle}
+                                        </span>
+                                    ) : a.relatedType === 'EVENT' && a.relatedEventTitle ? (
+                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
+                                            <Bell size={12} />
+                                            研修: {a.relatedEventTitle}
                                         </span>
                                     ) : (
                                         <span className="text-xs text-gray-400">—</span>
@@ -302,25 +328,70 @@ export default function AdminAnnouncementManagement({ user }: props) {
                                     />
                                 </div>
 
-                                {/* 研修マニュアル連携 */}
-                                <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100">
-                                    <label className="block text-sm font-bold text-purple-900 mb-2">
-                                        <BookOpen size={14} className="inline mr-1" />
-                                        研修マニュアル連携（任意）
-                                    </label>
-                                    <select
-                                        value={selectedWikiId ?? ''}
-                                        onChange={(e) => setSelectedWikiId(e.target.value ? Number(e.target.value) : null)}
-                                        className="w-full px-4 py-3 border border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all bg-white appearance-none text-sm"
-                                    >
-                                        <option value="">連携なし</option>
-                                        {manuals.map(m => (
-                                            <option key={m.id} value={m.id}>{m.title}（{m.category}）</option>
-                                        ))}
-                                    </select>
-                                    <p className="text-xs text-purple-600/80 mt-2 ml-1">
-                                        ※ 選択すると、ユーザーのダッシュボードに「研修資料を読む」ボタンが表示されます。
-                                    </p>
+                                {/* 関連コンテンツ連携 */}
+                                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                    <label className="block text-sm font-bold text-gray-700 mb-3">関連コンテンツ連携（任意）</label>
+
+                                    <div className="flex gap-4 mb-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => setRelatedType(relatedType === 'WIKI' ? null : 'WIKI')}
+                                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border transition-all text-xs font-bold ${relatedType === 'WIKI'
+                                                ? 'bg-purple-100 border-purple-200 text-purple-700'
+                                                : 'bg-white border-gray-200 text-gray-600 hover:border-purple-200'
+                                                }`}
+                                        >
+                                            <BookOpen size={14} /> Wiki連携
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setRelatedType(relatedType === 'EVENT' ? null : 'EVENT')}
+                                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border transition-all text-xs font-bold ${relatedType === 'EVENT'
+                                                ? 'bg-blue-100 border-blue-200 text-blue-700'
+                                                : 'bg-white border-gray-200 text-gray-600 hover:border-blue-200'
+                                                }`}
+                                        >
+                                            <Bell size={14} /> 研修イベント連携
+                                        </button>
+                                    </div>
+
+                                    {relatedType === 'WIKI' && (
+                                        <div className="animate-in slide-in-from-top-2 duration-200">
+                                            <label className="block text-[10px] font-bold text-purple-600 uppercase mb-1 ml-1">連携するWikiマニュアル</label>
+                                            <select
+                                                value={selectedWikiId ?? ''}
+                                                onChange={(e) => setSelectedWikiId(e.target.value ? Number(e.target.value) : null)}
+                                                className="w-full px-4 py-3 border border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all bg-white appearance-none text-sm"
+                                            >
+                                                <option value="">Wikiを選択してください</option>
+                                                {manuals.map(m => (
+                                                    <option key={m.id} value={m.id}>{m.title}（{m.category}）</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    {relatedType === 'EVENT' && (
+                                        <div className="animate-in slide-in-from-top-2 duration-200">
+                                            <label className="block text-[10px] font-bold text-blue-600 uppercase mb-1 ml-1">連携する研修会イベント</label>
+                                            <select
+                                                value={selectedEventId ?? ''}
+                                                onChange={(e) => setSelectedEventId(e.target.value ? Number(e.target.value) : null)}
+                                                className="w-full px-4 py-3 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white appearance-none text-sm"
+                                            >
+                                                <option value="">イベントを選択してください</option>
+                                                {events.map(e => (
+                                                    <option key={e.id} value={e.id}>{e.title}（{new Date(e.startTime).toLocaleDateString()}）</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    {!relatedType && (
+                                        <p className="text-[11px] text-gray-500 mt-1 ml-1">
+                                            ※ お知らせから特定の資料やイベントへ直接誘導する場合に設定します。
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 

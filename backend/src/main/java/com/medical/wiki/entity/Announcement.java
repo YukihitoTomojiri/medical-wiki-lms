@@ -43,6 +43,12 @@ public class Announcement {
     @Column(name = "related_wiki_id")
     private Long relatedWikiId;
 
+    @Column(name = "related_event_id")
+    private Long relatedEventId;
+
+    @Column(name = "related_type")
+    private String relatedType;
+
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
