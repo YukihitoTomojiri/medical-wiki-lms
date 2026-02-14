@@ -31,7 +31,7 @@ export interface Announcement {
     relatedWikiTitle?: string;
     relatedEventId?: number;
     relatedEventTitle?: string;
-    relatedType?: 'WIKI' | 'EVENT';
+    relatedType?: 'WIKI' | 'TRAINING_EVENT';
 }
 
 
@@ -783,7 +783,7 @@ export const api = {
         facilityId?: number | null;
         relatedWikiId?: number | null;
         relatedEventId?: number | null;
-        relatedType?: 'WIKI' | 'EVENT' | null;
+        relatedType?: 'WIKI' | 'TRAINING_EVENT' | null;
     }): Promise<Announcement> => {
         const res = await fetch(`${API_BASE}/admin/announcements`, {
             method: 'POST',
@@ -801,7 +801,7 @@ export const api = {
         displayUntil: string;
         relatedWikiId?: number | null;
         relatedEventId?: number | null;
-        relatedType?: 'WIKI' | 'EVENT' | null;
+        relatedType?: 'WIKI' | 'TRAINING_EVENT' | null;
     }): Promise<Announcement> => {
         const res = await fetch(`${API_BASE}/admin/announcements/${id}`, {
             method: 'PUT',

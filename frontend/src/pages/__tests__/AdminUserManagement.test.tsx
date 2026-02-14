@@ -25,10 +25,8 @@ const mockUser: User = {
     facility: '本館',
     department: '管理部',
     email: 'admin@example.com',
-    password: 'password',
     joinedDate: '2023-01-01',
-    paidLeaveDays: 20,
-    isActive: true
+    paidLeaveDays: 20
 };
 
 const mockUsers: User[] = [
@@ -41,10 +39,8 @@ const mockUsers: User[] = [
         facility: '本館',
         department: '看護部',
         email: 'test@example.com',
-        password: 'password',
         joinedDate: '2024-01-01',
-        paidLeaveDays: 10,
-        isActive: true
+        paidLeaveDays: 10
     }
 ];
 

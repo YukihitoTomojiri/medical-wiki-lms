@@ -25,7 +25,7 @@ export default function AdminAnnouncementManagement({ user }: props) {
     const [target, setTarget] = useState<'ALL' | 'FACILITY'>('FACILITY');
     const [selectedWikiId, setSelectedWikiId] = useState<number | null>(null);
     const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
-    const [relatedType, setRelatedType] = useState<'WIKI' | 'EVENT' | null>(null);
+    const [relatedType, setRelatedType] = useState<'WIKI' | 'TRAINING_EVENT' | null>(null);
 
     // Manuals & Events list for dropdown
     const [manuals, setManuals] = useState<Manual[]>([]);
@@ -101,7 +101,7 @@ export default function AdminAnnouncementManagement({ user }: props) {
                 await api.updateAnnouncement(user.id, editingId, {
                     title, content, priority, displayUntil,
                     relatedWikiId: relatedType === 'WIKI' ? selectedWikiId : null,
-                    relatedEventId: relatedType === 'EVENT' ? selectedEventId : null,
+                    relatedEventId: relatedType === 'TRAINING_EVENT' ? selectedEventId : null,
                     relatedType
                 });
             } else {
@@ -112,7 +112,7 @@ export default function AdminAnnouncementManagement({ user }: props) {
                     title, content, priority, displayUntil,
                     facilityId: payloadFacilityId as any,
                     relatedWikiId: relatedType === 'WIKI' ? selectedWikiId : null,
-                    relatedEventId: relatedType === 'EVENT' ? selectedEventId : null,
+                    relatedEventId: relatedType === 'TRAINING_EVENT' ? selectedEventId : null,
                     relatedType
                 });
             }
@@ -191,7 +191,7 @@ export default function AdminAnnouncementManagement({ user }: props) {
                                             <BookOpen size={12} />
                                             Wiki: {a.relatedWikiTitle}
                                         </span>
-                                    ) : a.relatedType === 'EVENT' && a.relatedEventTitle ? (
+                                    ) : a.relatedType === 'TRAINING_EVENT' && a.relatedEventTitle ? (
                                         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
                                             <Bell size={12} />
                                             研修: {a.relatedEventTitle}
@@ -345,10 +345,10 @@ export default function AdminAnnouncementManagement({ user }: props) {
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => setRelatedType(relatedType === 'EVENT' ? null : 'EVENT')}
-                                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border transition-all text-xs font-bold ${relatedType === 'EVENT'
-                                                ? 'bg-blue-100 border-blue-200 text-blue-700'
-                                                : 'bg-white border-gray-200 text-gray-600 hover:border-blue-200'
+                                            onClick={() => setRelatedType(relatedType === 'TRAINING_EVENT' ? null : 'TRAINING_EVENT')}
+                                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border transition-all text-xs font-bold ${relatedType === 'TRAINING_EVENT'
+                                                    ? 'bg-blue-100 border-blue-200 text-blue-700'
+                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-blue-200'
                                                 }`}
                                         >
                                             <Bell size={14} /> 研修イベント連携
@@ -371,7 +371,7 @@ export default function AdminAnnouncementManagement({ user }: props) {
                                         </div>
                                     )}
 
-                                    {relatedType === 'EVENT' && (
+                                    {relatedType === 'TRAINING_EVENT' && (
                                         <div className="animate-in slide-in-from-top-2 duration-200">
                                             <label className="block text-[10px] font-bold text-blue-600 uppercase mb-1 ml-1">連携する研修会イベント</label>
                                             <select

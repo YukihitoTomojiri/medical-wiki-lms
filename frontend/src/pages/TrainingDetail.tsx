@@ -174,6 +174,15 @@ export default function TrainingDetail() {
                 >
                     <ArrowLeft size={24} className="text-m3-on-surface-variant group-hover:text-m3-primary" />
                 </button>
+                {new URLSearchParams(window.location.search).get('fromAnnouncement') && (
+                    <button
+                        onClick={() => navigate('/my-dashboard')}
+                        className="mb-4 inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-sm font-bold transition-all border border-emerald-100/50"
+                    >
+                        <ArrowLeft size={16} />
+                        お知らせに戻る
+                    </button>
+                )}
                 <div className="space-y-4">
                     <div className="flex items-center gap-3">
                         <span className="bg-blue-500/10 text-blue-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider ring-1 ring-blue-500/20">Learning Content</span>

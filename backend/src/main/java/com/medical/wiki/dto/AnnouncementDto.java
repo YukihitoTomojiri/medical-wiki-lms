@@ -26,5 +26,5 @@ public class AnnouncementDto {
     private String relatedWikiTitle;
     private Long relatedEventId;
     private String relatedEventTitle;
-    private String relatedType; // "WIKI" or "EVENT" or null
+    private String relatedType; // "WIKI" or "TRAINING_EVENT" or null
 }

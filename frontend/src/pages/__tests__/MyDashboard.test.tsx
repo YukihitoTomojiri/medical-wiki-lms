@@ -38,10 +38,8 @@ const mockUser: User = {
     facility: '本館',
     department: '看護部',
     email: 'test@example.com',
-    password: 'password',
     joinedDate: '2023-01-01',
-    paidLeaveDays: 10,
-    isActive: true
+    paidLeaveDays: 10
 };
 
 describe('MyDashboard Component - Leave Forms', () => {

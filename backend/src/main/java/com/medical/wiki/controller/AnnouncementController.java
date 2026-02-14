@@ -105,6 +105,6 @@ public class AnnouncementController {
         private Long facilityId; // Optional, null for global
         private Long relatedWikiId; // Optional
         private Long relatedEventId; // Optional
-        private String relatedType; // "WIKI" or "EVENT"
+        private String relatedType; // "WIKI" or "TRAINING_EVENT"
     }
 }

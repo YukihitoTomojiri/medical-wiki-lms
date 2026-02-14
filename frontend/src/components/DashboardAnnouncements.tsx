@@ -82,13 +82,22 @@ export default function DashboardAnnouncements({ userId }: Props) {
                                 <p className="text-xs text-gray-500 leading-relaxed whitespace-pre-wrap">
                                     {a.content}
                                 </p>
-                                {a.relatedWikiId && (
+                                {a.relatedWikiId && a.relatedType === 'WIKI' && (
                                     <button
                                         onClick={() => navigate(`/manuals/${a.relatedWikiId}?fromAnnouncement=${a.id}`)}
                                         className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg text-xs font-bold transition-colors"
                                     >
                                         <BookOpen size={14} />
                                         研修資料を読む
+                                    </button>
+                                )}
+                                {a.relatedEventId && a.relatedType === 'TRAINING_EVENT' && (
+                                    <button
+                                        onClick={() => navigate(`/training/${a.relatedEventId}?fromAnnouncement=${a.id}`)}
+                                        className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors"
+                                    >
+                                        <Bell size={14} />
+                                        研修詳細・参加予約へ
                                     </button>
                                 )}
                             </div>
