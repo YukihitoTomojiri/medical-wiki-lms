@@ -20,4 +20,11 @@ public class AnnouncementDto {
 
     // Optional: minimalistic creator info if needed
     private String createdByName;
+
+    // 関連コンテンツ（Wiki または 研修会）
+    private Long relatedWikiId;
+    private String relatedWikiTitle;
+    private Long relatedEventId;
+    private String relatedEventTitle;
+    private String relatedType; // "WIKI" or "EVENT" or null
 }

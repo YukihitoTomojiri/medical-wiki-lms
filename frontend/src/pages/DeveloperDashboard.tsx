@@ -27,7 +27,8 @@ import {
     Eye,
     CheckCircle2,
     Cpu,
-    HardDrive
+    HardDrive,
+    BookOpen
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -95,6 +96,7 @@ export default function DeveloperDashboard() {
     });
     const [securityAlerts, setSecurityAlerts] = useState<any[]>([]);
     const [alertStats, setAlertStats] = useState({ totalOpen: 0, criticalOpen: 0, alerts24h: 0 });
+    const [trainingStats, setTrainingStats] = useState<any[]>([]);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showUserBreakdown, setShowUserBreakdown] = useState(false);
@@ -233,16 +235,18 @@ export default function DeveloperDashboard() {
         setLoading(true);
         try {
             addLog('Fetching system data...', 'info');
-            const [usersData] = await Promise.all([
+            const [usersData, , , , , , , trainingData] = await Promise.all([
                 api.getUsers(1),
                 api.getManuals(1).catch(() => []),
                 api.getAllUsersProgress().catch(() => []),
                 fetchDiagnostics(),
                 fetchSystemResources(),
                 fetchSystemLogs(),
-                fetchSecurityAlerts()
+                fetchSecurityAlerts(),
+                api.getTrainingStats(1).catch(() => [])
             ]);
             setUserList(usersData);
+            if (Array.isArray(trainingData)) setTrainingStats(trainingData);
             // Load organization master for dropdowns
             try {
                 // Ensure userId is available before calling
@@ -811,6 +815,39 @@ export default function DeveloperDashboard() {
                                 </div>
                             </Card>
                         </div>
+
+                        {/* Row 4: Training Completion Stats */}
+                        {trainingStats.length > 0 && (
+                            <Card variant="outlined" className="p-6 bg-m3-surface">
+                                <div className="flex items-center gap-3 mb-5">
+                                    <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
+                                        <BookOpen size={18} />
+                                    </div>
+                                    <h4 className="font-bold text-m3-on-surface text-sm">研修受講率</h4>
+                                    <span className="ml-auto text-xs text-gray-400">お知らせ連携研修の完了状況</span>
+                                </div>
+                                <div className="space-y-4">
+                                    {trainingStats.map((stat: any) => (
+                                        <div key={stat.announcementId} className="flex items-center gap-4">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between mb-1.5">
+                                                    <span className="text-sm font-medium text-gray-800 truncate">{stat.announcementTitle}</span>
+                                                    <span className="text-xs font-bold text-purple-600 whitespace-nowrap ml-2">
+                                                        {stat.completedCount}/{stat.totalUsers}人 ({stat.totalUsers > 0 ? Math.round(stat.completedCount / stat.totalUsers * 100) : 0}%)
+                                                    </span>
+                                                </div>
+                                                <div className="w-full bg-gray-100 rounded-full h-2">
+                                                    <div
+                                                        className="h-2 rounded-full bg-gradient-to-r from-purple-400 to-indigo-500 transition-all duration-700"
+                                                        style={{ width: `${stat.totalUsers > 0 ? (stat.completedCount / stat.totalUsers * 100) : 0}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Card>
+                        )}
 
                         {/* Main Content Area */}
                         <div className="grid grid-cols-1 gap-4">
