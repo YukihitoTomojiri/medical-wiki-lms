@@ -48,7 +48,7 @@ export default function SubmissionSuccessPage() {
 
                 {/* Footer Tip */}
                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                    Medical Wiki LMS Application System
+                    Medivisor Application System
                 </p>
             </div>
         </div>

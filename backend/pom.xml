@@ -14,8 +14,8 @@
     <groupId>com.medical</groupId>
     <artifactId>wiki</artifactId>
     <version>1.0.0</version>
-    <name>Medical Wiki LMS</name>
-    <description>社内Wiki &amp; 学習管理システム</description>
+    <name>Medivisor</name>
+    <description>医療・介護 業務支援統合システム</description>
 
     <properties>
         <java.version>17</java.version>
