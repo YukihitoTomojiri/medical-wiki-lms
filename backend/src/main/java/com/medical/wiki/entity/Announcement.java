@@ -40,6 +40,9 @@ public class Announcement {
     @Column(name = "display_until", nullable = false)
     private LocalDate displayUntil;
 
+    @Column(name = "related_wiki_id")
+    private Long relatedWikiId;
+
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 

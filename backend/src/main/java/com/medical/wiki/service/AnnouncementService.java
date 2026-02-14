@@ -65,7 +65,7 @@ public class AnnouncementService {
 
     @Transactional
     public Announcement createAnnouncement(Long userId, String title, String content,
-            Announcement.Priority priority, LocalDate displayUntil, Long targetFacilityId) {
+            Announcement.Priority priority, LocalDate displayUntil, Long targetFacilityId, Long relatedWikiId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -91,6 +91,7 @@ public class AnnouncementService {
                 .priority(priority)
                 .displayUntil(displayUntil)
                 .facilityId(targetFacilityId)
+                .relatedWikiId(relatedWikiId)
                 .createdBy(user)
                 .build();
 
@@ -99,7 +100,7 @@ public class AnnouncementService {
 
     @Transactional
     public Announcement updateAnnouncement(Long userId, Long announcementId, String title, String content,
-            Announcement.Priority priority, LocalDate displayUntil) {
+            Announcement.Priority priority, LocalDate displayUntil, Long relatedWikiId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -124,6 +125,7 @@ public class AnnouncementService {
         announcement.setContent(content);
         announcement.setPriority(priority);
         announcement.setDisplayUntil(displayUntil);
+        announcement.setRelatedWikiId(relatedWikiId);
 
         return announcementRepository.save(announcement);
     }

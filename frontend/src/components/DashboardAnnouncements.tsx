@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api, Announcement } from '../api';
-import { Bell, Info, AlertTriangle, MessageCircle, ChevronRight, X } from 'lucide-react';
+import { Bell, Info, AlertTriangle, MessageCircle, ChevronRight, X, BookOpen } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
     userId: number;
@@ -10,6 +11,7 @@ export default function DashboardAnnouncements({ userId }: Props) {
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
     const [showAll, setShowAll] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const load = async () => {
@@ -80,6 +82,15 @@ export default function DashboardAnnouncements({ userId }: Props) {
                                 <p className="text-xs text-gray-500 leading-relaxed whitespace-pre-wrap">
                                     {a.content}
                                 </p>
+                                {a.relatedWikiId && (
+                                    <button
+                                        onClick={() => navigate(`/manuals/${a.relatedWikiId}?fromAnnouncement=${a.id}`)}
+                                        className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg text-xs font-bold transition-colors"
+                                    >
+                                        <BookOpen size={14} />
+                                        研修資料を読む
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

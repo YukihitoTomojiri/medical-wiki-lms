@@ -1,6 +1,8 @@
 package com.medical.wiki.controller;
 
 import com.medical.wiki.entity.Announcement;
+import com.medical.wiki.entity.Manual;
+import com.medical.wiki.repository.ManualRepository;
 import com.medical.wiki.service.AnnouncementService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 public class AnnouncementController {
 
     private final AnnouncementService announcementService;
+    private final ManualRepository manualRepository;
 
     // Existing users (Dashboard)
     @GetMapping("/announcements")
@@ -45,7 +48,8 @@ public class AnnouncementController {
                 request.getContent(),
                 request.getPriority(),
                 request.getDisplayUntil(),
-                request.getFacilityId());
+                request.getFacilityId(),
+                request.getRelatedWikiId());
         return toDto(announcement);
     }
 
@@ -60,7 +64,8 @@ public class AnnouncementController {
                 request.getTitle(),
                 request.getContent(),
                 request.getPriority(),
-                request.getDisplayUntil());
+                request.getDisplayUntil(),
+                request.getRelatedWikiId());
         return toDto(announcement);
     }
 
@@ -72,6 +77,11 @@ public class AnnouncementController {
     }
 
     private AnnouncementDto toDto(Announcement announcement) {
+        String wikiTitle = null;
+        if (announcement.getRelatedWikiId() != null) {
+            wikiTitle = manualRepository.findById(announcement.getRelatedWikiId())
+                    .map(Manual::getTitle).orElse(null);
+        }
         return AnnouncementDto.builder()
                 .id(announcement.getId())
                 .title(announcement.getTitle())
@@ -80,9 +90,9 @@ public class AnnouncementController {
                 .displayUntil(announcement.getDisplayUntil())
                 .facilityId(announcement.getFacilityId())
                 .createdAt(announcement.getCreatedAt())
-                // Safe way to get creator name without exposing User entity
-                // If createdBy is null (should not happen), handle gracefully
                 .createdByName(announcement.getCreatedBy() != null ? announcement.getCreatedBy().getName() : "Unknown")
+                .relatedWikiId(announcement.getRelatedWikiId())
+                .relatedWikiTitle(wikiTitle)
                 .build();
     }
 
@@ -93,5 +103,6 @@ public class AnnouncementController {
         private Announcement.Priority priority;
         private LocalDate displayUntil;
         private Long facilityId; // Optional, null for global
+        private Long relatedWikiId; // Optional
     }
 }

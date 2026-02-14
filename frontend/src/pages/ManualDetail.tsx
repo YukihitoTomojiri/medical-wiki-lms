@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { api } from '../api';
 import { Manual, User } from '../types';
 import PageHeader from '../components/layout/PageHeader';
@@ -9,7 +9,8 @@ import {
     CheckCircle2,
     BookCheck,
     Edit,
-    Clock
+    Clock,
+    Award
 } from 'lucide-react';
 
 interface ManualDetailProps {
@@ -19,15 +20,22 @@ interface ManualDetailProps {
 export default function ManualDetail({ user }: ManualDetailProps) {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const fromAnnouncement = searchParams.get('fromAnnouncement');
     const [manual, setManual] = useState<Manual | null>(null);
     const [loading, setLoading] = useState(true);
     const [marking, setMarking] = useState(false);
+    const [trainingCompleted, setTrainingCompleted] = useState(false);
+    const [completingTraining, setCompletingTraining] = useState(false);
 
     useEffect(() => {
         if (id) {
             loadManual(parseInt(id));
         }
-    }, [id]);
+        if (fromAnnouncement) {
+            checkTrainingCompletion(parseInt(fromAnnouncement));
+        }
+    }, [id, fromAnnouncement]);
 
     const loadManual = async (manualId: number) => {
         try {
@@ -50,6 +58,28 @@ export default function ManualDetail({ user }: ManualDetailProps) {
             console.error('Failed to mark as read:', error);
         } finally {
             setMarking(false);
+        }
+    };
+
+    const checkTrainingCompletion = async (announcementId: number) => {
+        try {
+            const result = await api.checkTrainingCompletion(user.id, announcementId);
+            setTrainingCompleted(result.completed);
+        } catch (error) {
+            console.error('Failed to check training completion:', error);
+        }
+    };
+
+    const handleCompleteTraining = async () => {
+        if (!fromAnnouncement) return;
+        setCompletingTraining(true);
+        try {
+            await api.completeTraining(user.id, parseInt(fromAnnouncement));
+            setTrainingCompleted(true);
+        } catch (error) {
+            console.error('Failed to complete training:', error);
+        } finally {
+            setCompletingTraining(false);
         }
     };
 
@@ -156,6 +186,38 @@ export default function ManualDetail({ user }: ManualDetailProps) {
                 )}
             </div>
 
+
+            {/* 研修完了ボタン（お知らせからの遷移時） */}
+            {fromAnnouncement && (
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-100 mb-6">
+                    {trainingCompleted ? (
+                        <div className="flex items-center justify-center gap-3 text-purple-600">
+                            <Award size={28} />
+                            <span className="text-lg font-semibold">この研修は受講完了済みです</span>
+                        </div>
+                    ) : (
+                        <div className="text-center">
+                            <p className="text-gray-600 mb-4">
+                                内容を確認したら「受講完了としてマーク」ボタンを押してください
+                            </p>
+                            <button
+                                onClick={handleCompleteTraining}
+                                disabled={completingTraining}
+                                className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-medium rounded-xl hover:from-purple-600 hover:to-indigo-700 focus:ring-4 focus:ring-purple-500/30 transition-all disabled:opacity-50 shadow-lg shadow-purple-500/25"
+                            >
+                                {completingTraining ? (
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        <Award size={22} />
+                                        受講完了としてマーク
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
 
             <div className="bg-gradient-to-r from-primary-50 to-amber-50 rounded-2xl p-6 border border-primary-100">
                 {manual.isRead ? (

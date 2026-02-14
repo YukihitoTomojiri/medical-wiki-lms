@@ -27,6 +27,8 @@ export interface Announcement {
     displayUntil: string;
     facilityId?: number;
     createdAt: string;
+    relatedWikiId?: number;
+    relatedWikiTitle?: string;
 }
 
 export interface TrainingEvent {
@@ -769,7 +771,7 @@ export const api = {
         return res.json();
     },
 
-    createAnnouncement: async (userId: number, data: { title: string; content: string; priority: string; displayUntil: string; facilityId?: number }): Promise<Announcement> => {
+    createAnnouncement: async (userId: number, data: { title: string; content: string; priority: string; displayUntil: string; facilityId?: number | null; relatedWikiId?: number | null }): Promise<Announcement> => {
         const res = await fetch(`${API_BASE}/admin/announcements`, {
             method: 'POST',
             headers: getHeaders(userId),
@@ -779,7 +781,7 @@ export const api = {
         return res.json();
     },
 
-    updateAnnouncement: async (userId: number, id: number, data: { title: string; content: string; priority: string; displayUntil: string }): Promise<Announcement> => {
+    updateAnnouncement: async (userId: number, id: number, data: { title: string; content: string; priority: string; displayUntil: string; relatedWikiId?: number | null }): Promise<Announcement> => {
         const res = await fetch(`${API_BASE}/admin/announcements/${id}`, {
             method: 'PUT',
             headers: getHeaders(userId),
@@ -795,6 +797,36 @@ export const api = {
             headers: getHeaders(userId),
         });
         if (!res.ok) throw new Error('Failed to delete announcement');
+    },
+
+    // Training Records (研修完了記録)
+    completeTraining: async (userId: number, announcementId: number): Promise<{ message: string; alreadyCompleted: boolean }> => {
+        const res = await fetch(`${API_BASE}/training-records`, {
+            method: 'POST',
+            headers: getHeaders(userId),
+            body: JSON.stringify({ announcementId }),
+        });
+        if (!res.ok) throw new Error('Failed to complete training');
+        return res.json();
+    },
+
+    checkTrainingCompletion: async (userId: number, announcementId: number): Promise<{ completed: boolean }> => {
+        const res = await fetch(`${API_BASE}/training-records/check?announcementId=${announcementId}`, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return { completed: false };
+        return res.json();
+    },
+
+    getTrainingStats: async (userId: number, announcementId?: number): Promise<any> => {
+        const url = announcementId
+            ? `${API_BASE}/admin/training-records/stats?announcementId=${announcementId}`
+            : `${API_BASE}/admin/training-records/stats`;
+        const res = await fetch(url, {
+            headers: getHeaders(userId),
+        });
+        if (!res.ok) return [];
+        return res.json();
     },
 
     // Training Management

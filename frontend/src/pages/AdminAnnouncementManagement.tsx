@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, AlertCircle, X, Save, Bell } from 'lucide-react';
+import { Plus, Edit2, Trash2, AlertCircle, X, Save, Bell, BookOpen } from 'lucide-react';
 import { api, Announcement } from '../api';
+import { Manual } from '../types';
 import PageHeader from '../components/layout/PageHeader';
 import { Button } from '../components/ui/Button';
 import { User } from '../types';
@@ -22,10 +23,24 @@ export default function AdminAnnouncementManagement({ user }: props) {
     const [priority, setPriority] = useState<'HIGH' | 'NORMAL' | 'LOW'>('NORMAL');
     const [displayUntil, setDisplayUntil] = useState('');
     const [target, setTarget] = useState<'ALL' | 'FACILITY'>('FACILITY');
+    const [selectedWikiId, setSelectedWikiId] = useState<number | null>(null);
+
+    // Manuals list for dropdown
+    const [manuals, setManuals] = useState<Manual[]>([]);
 
     useEffect(() => {
         loadAnnouncements();
+        loadManuals();
     }, [user.id]);
+
+    const loadManuals = async () => {
+        try {
+            const data = await api.getManuals(user.id);
+            setManuals(data);
+        } catch (err) {
+            console.error('Failed to load manuals:', err);
+        }
+    };
 
     const loadAnnouncements = async () => {
         try {
@@ -46,6 +61,7 @@ export default function AdminAnnouncementManagement({ user }: props) {
             setContent(announcement.content);
             setPriority(announcement.priority);
             setDisplayUntil(announcement.displayUntil);
+            setSelectedWikiId(announcement.relatedWikiId ?? null);
         } else {
             setEditingId(null);
             setTitle('');
@@ -55,7 +71,8 @@ export default function AdminAnnouncementManagement({ user }: props) {
             const date = new Date();
             date.setDate(date.getDate() + 14);
             setDisplayUntil(date.toISOString().split('T')[0]);
-            setTarget('FACILITY'); // Default target
+            setTarget('FACILITY');
+            setSelectedWikiId(null);
         }
         setIsModalOpen(true);
     };
@@ -65,57 +82,17 @@ export default function AdminAnnouncementManagement({ user }: props) {
         try {
             if (editingId) {
                 await api.updateAnnouncement(user.id, editingId, {
-                    title, content, priority, displayUntil
+                    title, content, priority, displayUntil,
+                    relatedWikiId: selectedWikiId
                 });
             } else {
-                // If Developer selects ALL, pass undefined/null for facilityId (which means global)
-                // If ADMIN, backend ignores facilityId and uses their own.
-                // If Developer selects FACILITY, we should ideally pass a specific ID, but for now assuming 'FACILITY' means "My Facility" or just defaulting to specificity logic if implemented.
-                // NOTE: Based on backend implementation:
-                // Developer: facilityId == null -> Global. facilityId != null -> Specific.
-                // If Developer selects "Own Facility", we need to pass their facility ID if we have it?
-                // Actually, let's assume if target is FACILITY, we pass user's facility ID if available?
-                // But the user object might not have it populated as an ID directly (it has facility name or object?).
-                // Let's pass undefined if ALL.
-
-                // Correction: Backend check:
-                // if (user.getRole() == User.Role.DEVELOPER) { targetFacilityId = request.getFacilityId(); ... }
-                // So if we send null, it creates global.
-                // If we send something, it creates specific.
-
-                // For this implementation, if Developer selects "FACILITY", strictly speaking we'd need to know clearly WHICH facility.
-                // But the prompt says "全施設 or 自施設" (All or Own).
-                // If "Own", does the backend support "Create for my own facility" for developers without explicit ID?
-                // Looking at backend: "if (user.getRole() == User.Role.DEVELOPER) { targetFacilityId = request.getFacilityId(); }"
-                // So we MUST send an ID if we want specific.
-                // Does `user` object have facility ID?
-                // `User` interface in frontend: `facility?: string;`. It might be the name.
-                // We might not have the ID readily available in the User context if it's just a name string.
-                // However, for the sake of the requirement "Role-Based Logic ... 配信対象に「全施設（facility_id = null）」を選択できるオプション", 
-                // the focus is heavily on the "All Facilities" option for Developers.
-                // If they select "Own", we might run into issue if we don't have the ID.
-                // But let's proceed with sending `undefined` for ALL, and for FACILITY... maybe `undefined` too if we can't resolve it?
-                // Wait, if we send `undefined` as a Developer, it becomes Global!
-                // So we MUST NOT send `undefined` if they chose "FACILITY".
-                // Since I cannot easily resolve the facility ID here without a lookup, and the prompt emphasized the "Global" option...
-                // I will try to use `user.facilityId` if it exists in the type definition, or fallback to global if strictly needed?
-                // Actually, let's look at `User` type. I'll check `api.ts` next.
-                // For now, I will implement logic: `target === 'ALL' ? undefined : (user.role === 'ADMIN' ? undefined : undefined)` logic is dangerous for Developer "FACILITY" choice.
-
-                // Workaround: We will strictly implement the "All Facilities" option logic as requested. 
-                // "開発者...「全施設（facility_id = null）」を選択できる"
-                // If they choose "FACILITY" (Own), and we pass null, it becomes Global. That's bad.
-                // If `user` has `facilityId` (number), use it.
-                // The `User` type usually has `id`, `name`, `role`, `facility` (string?).
-
                 const isGlobal = user.role === 'DEVELOPER' && target === 'ALL';
                 const payloadFacilityId = isGlobal ? null : undefined;
-                // If we pass `undefined` to JSON stringify, it disappears.
-                // If we pass `null`, it stays `null`.
 
                 await api.createAnnouncement(user.id, {
                     title, content, priority, displayUntil,
-                    facilityId: payloadFacilityId as any // Cast to satisfy type if needed
+                    facilityId: payloadFacilityId as any,
+                    relatedWikiId: selectedWikiId
                 });
             }
             setIsModalOpen(false);
@@ -166,6 +143,7 @@ export default function AdminAnnouncementManagement({ user }: props) {
                         <tr>
                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">優先度</th>
                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">タイトル</th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">連携研修</th>
                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">掲載期限</th>
                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">作成日</th>
                             <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">操作</th>
@@ -185,6 +163,16 @@ export default function AdminAnnouncementManagement({ user }: props) {
                                 <td className="px-6 py-4">
                                     <div className="text-sm font-bold text-gray-900 mb-0.5">{a.title}</div>
                                     <div className="text-xs text-gray-500 truncate max-w-md">{a.content}</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {a.relatedWikiTitle ? (
+                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-medium">
+                                            <BookOpen size={12} />
+                                            {a.relatedWikiTitle}
+                                        </span>
+                                    ) : (
+                                        <span className="text-xs text-gray-400">—</span>
+                                    )}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
                                     {a.displayUntil}
@@ -210,7 +198,7 @@ export default function AdminAnnouncementManagement({ user }: props) {
                         ))}
                         {announcements.length === 0 && (
                             <tr>
-                                <td colSpan={5} className="px-6 py-12 text-center text-gray-400 text-sm">
+                                <td colSpan={6} className="px-6 py-12 text-center text-gray-400 text-sm">
                                     お知らせはありません
                                 </td>
                             </tr>
@@ -222,7 +210,7 @@ export default function AdminAnnouncementManagement({ user }: props) {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-[28px] w-full max-w-lg shadow-xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                    <div className="bg-white rounded-[28px] w-full max-w-lg shadow-xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden max-h-[85vh] flex flex-col">
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h2 className="text-lg font-bold text-gray-800">
                                 {editingId ? 'お知らせを編集' : '新規お知らせ作成'}
@@ -231,89 +219,112 @@ export default function AdminAnnouncementManagement({ user }: props) {
                                 <X size={20} />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1.5">タイトル</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-gray-50/30"
-                                    placeholder="お知らせのタイトルを入力"
-                                />
-                            </div>
-
-                            {/* Developer Only Option */}
-                            {user.role === 'DEVELOPER' && (
-                                <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100">
-                                    <label className="block text-sm font-bold text-blue-900 mb-3">配信対象</label>
-                                    <div className="flex gap-6">
-                                        <label className="flex items-center gap-2 cursor-pointer group">
-                                            <input
-                                                type="radio"
-                                                name="target"
-                                                checked={target === 'ALL'}
-                                                onChange={() => setTarget('ALL')}
-                                                className="w-4 h-4 text-m3-primary focus:ring-m3-primary border-gray-300"
-                                            />
-                                            <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors">全施設（共通通知）</span>
-                                        </label>
-                                        <label className="flex items-center gap-2 cursor-pointer group">
-                                            <input
-                                                type="radio"
-                                                name="target"
-                                                checked={target === 'FACILITY'}
-                                                onChange={() => setTarget('FACILITY')}
-                                                className="w-4 h-4 text-m3-primary focus:ring-m3-primary border-gray-300"
-                                            />
-                                            <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors">自施設のみ</span>
-                                        </label>
-                                    </div>
-                                    <p className="text-xs text-blue-600/80 mt-2 ml-1">
-                                        ※「全施設」を選択すると、全ての施設のユーザーのダッシュボードに表示されます。
-                                    </p>
-                                </div>
-                            )}
-
-                            <div className="grid grid-cols-2 gap-4">
+                        <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+                            <div className="flex-1 overflow-y-auto p-6 space-y-6 pb-8">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1.5">優先度</label>
-                                    <select
-                                        value={priority}
-                                        onChange={(e) => setPriority(e.target.value as any)}
-                                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-gray-50/30 appearance-none"
-                                    >
-                                        <option value="HIGH">重要 (HIGH)</option>
-                                        <option value="NORMAL">通常 (NORMAL)</option>
-                                        <option value="LOW">低 (LOW)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1.5">掲載期限</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1.5">タイトル</label>
                                     <input
-                                        type="date"
+                                        type="text"
                                         required
-                                        value={displayUntil}
-                                        onChange={(e) => setDisplayUntil(e.target.value)}
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
                                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-gray-50/30"
+                                        placeholder="お知らせのタイトルを入力"
                                     />
                                 </div>
+
+                                {/* Developer Only Option */}
+                                {user.role === 'DEVELOPER' && (
+                                    <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                                        <label className="block text-sm font-bold text-blue-900 mb-3">配信対象</label>
+                                        <div className="flex gap-6">
+                                            <label className="flex items-center gap-2 cursor-pointer group">
+                                                <input
+                                                    type="radio"
+                                                    name="target"
+                                                    checked={target === 'ALL'}
+                                                    onChange={() => setTarget('ALL')}
+                                                    className="w-4 h-4 text-m3-primary focus:ring-m3-primary border-gray-300"
+                                                />
+                                                <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors">全施設（共通通知）</span>
+                                            </label>
+                                            <label className="flex items-center gap-2 cursor-pointer group">
+                                                <input
+                                                    type="radio"
+                                                    name="target"
+                                                    checked={target === 'FACILITY'}
+                                                    onChange={() => setTarget('FACILITY')}
+                                                    className="w-4 h-4 text-m3-primary focus:ring-m3-primary border-gray-300"
+                                                />
+                                                <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors">自施設のみ</span>
+                                            </label>
+                                        </div>
+                                        <p className="text-xs text-blue-600/80 mt-2 ml-1">
+                                            ※「全施設」を選択すると、全ての施設のユーザーのダッシュボードに表示されます。
+                                        </p>
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1.5">優先度</label>
+                                        <select
+                                            value={priority}
+                                            onChange={(e) => setPriority(e.target.value as any)}
+                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-gray-50/30 appearance-none"
+                                        >
+                                            <option value="HIGH">重要 (HIGH)</option>
+                                            <option value="NORMAL">通常 (NORMAL)</option>
+                                            <option value="LOW">低 (LOW)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1.5">掲載期限</label>
+                                        <input
+                                            type="date"
+                                            required
+                                            value={displayUntil}
+                                            onChange={(e) => setDisplayUntil(e.target.value)}
+                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-gray-50/30"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1.5">内容</label>
+                                    <textarea
+                                        required
+                                        value={content}
+                                        onChange={(e) => setContent(e.target.value)}
+                                        rows={6}
+                                        placeholder="お知らせの内容を入力してください"
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none resize-none bg-gray-50/30"
+                                    />
+                                </div>
+
+                                {/* 研修マニュアル連携 */}
+                                <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100">
+                                    <label className="block text-sm font-bold text-purple-900 mb-2">
+                                        <BookOpen size={14} className="inline mr-1" />
+                                        研修マニュアル連携（任意）
+                                    </label>
+                                    <select
+                                        value={selectedWikiId ?? ''}
+                                        onChange={(e) => setSelectedWikiId(e.target.value ? Number(e.target.value) : null)}
+                                        className="w-full px-4 py-3 border border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all bg-white appearance-none text-sm"
+                                    >
+                                        <option value="">連携なし</option>
+                                        {manuals.map(m => (
+                                            <option key={m.id} value={m.id}>{m.title}（{m.category}）</option>
+                                        ))}
+                                    </select>
+                                    <p className="text-xs text-purple-600/80 mt-2 ml-1">
+                                        ※ 選択すると、ユーザーのダッシュボードに「研修資料を読む」ボタンが表示されます。
+                                    </p>
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1.5">内容</label>
-                                <textarea
-                                    required
-                                    value={content}
-                                    onChange={(e) => setContent(e.target.value)}
-                                    rows={6}
-                                    placeholder="お知らせの内容を入力してください"
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none resize-none bg-gray-50/30"
-                                />
-                            </div>
-
-                            <div className="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                            <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
                                 <Button
                                     variant="text"
                                     onClick={() => setIsModalOpen(false)}

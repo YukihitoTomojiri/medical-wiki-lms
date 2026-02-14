@@ -20,4 +20,8 @@ public class AnnouncementDto {
 
     // Optional: minimalistic creator info if needed
     private String createdByName;
+
+    // 研修マニュアル連携
+    private Long relatedWikiId;
+    private String relatedWikiTitle;
 }
