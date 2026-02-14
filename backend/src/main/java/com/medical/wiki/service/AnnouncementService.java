@@ -21,6 +21,7 @@ public class AnnouncementService {
     private final AnnouncementRepository announcementRepository;
     private final UserRepository userRepository;
     private final FacilityRepository facilityRepository;
+    private final com.medical.wiki.repository.ManualRepository manualRepository;
 
     // Get active announcements for a specific user (Dashboard view)
     @Transactional(readOnly = true)
@@ -150,5 +151,13 @@ public class AnnouncementService {
 
         announcement.setDeletedAt(LocalDateTime.now());
         announcementRepository.save(announcement);
+    }
+
+    public String getWikiTitle(Long wikiId) {
+        if (wikiId == null)
+            return null;
+        return manualRepository.findById(wikiId)
+                .map(com.medical.wiki.entity.Manual::getTitle)
+                .orElse(null);
     }
 }

@@ -1,8 +1,6 @@
 package com.medical.wiki.controller;
 
 import com.medical.wiki.entity.Announcement;
-import com.medical.wiki.entity.Manual;
-import com.medical.wiki.repository.ManualRepository;
 import com.medical.wiki.service.AnnouncementService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +18,6 @@ import java.util.stream.Collectors;
 public class AnnouncementController {
 
     private final AnnouncementService announcementService;
-    private final ManualRepository manualRepository;
 
     // Existing users (Dashboard)
     @GetMapping("/announcements")
@@ -77,11 +74,7 @@ public class AnnouncementController {
     }
 
     private AnnouncementDto toDto(Announcement announcement) {
-        String wikiTitle = null;
-        if (announcement.getRelatedWikiId() != null) {
-            wikiTitle = manualRepository.findById(announcement.getRelatedWikiId())
-                    .map(Manual::getTitle).orElse(null);
-        }
+        String wikiTitle = announcementService.getWikiTitle(announcement.getRelatedWikiId());
         return AnnouncementDto.builder()
                 .id(announcement.getId())
                 .title(announcement.getTitle())
