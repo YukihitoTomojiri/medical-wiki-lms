@@ -16,9 +16,9 @@ export default function Sidebar({ onClose }: SidebarProps) {
     if (!user) return null;
 
     const mainItems = useMemo(() => [
-        { path: '/manuals', label: 'マニュアル', icon: BookOpen },
-        { path: '/training', label: '研修・アンケート', icon: BookOpen }, // Use BookOpen or similar
         { path: '/my-dashboard', label: 'Myダッシュボード', icon: LayoutDashboard },
+        { path: '/manuals', label: 'マニュアル', icon: BookOpen },
+        { path: '/training', label: '研修・アンケート', icon: BookOpen },
     ], []);
 
     const adminItems = useMemo(() => [
