@@ -11,7 +11,7 @@ import {
     LayoutDashboard,
     AlertCircle
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import PaidLeaveRequestForm from '../components/PaidLeaveRequestForm';
 import DashboardAnnouncements from '../components/DashboardAnnouncements';
 
@@ -21,14 +21,23 @@ interface MyDashboardProps {
 
 export default function MyDashboard({ user }: MyDashboardProps) {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const tabParam = searchParams.get('tab');
+
     const [dashboardData, setDashboardData] = useState<any>(null);
     const [progress, setProgress] = useState<Progress[]>([]);
     const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
     const [leaveStatus, setLeaveStatus] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'STUDY' | 'LEAVE' | 'NOTICE'>('STUDY');
+    const [activeTab, setActiveTab] = useState<'STUDY' | 'LEAVE' | 'NOTICE'>(() => {
+        if (tabParam === 'notice') return 'NOTICE';
+        if (tabParam === 'leave') return 'LEAVE';
+        return 'STUDY';
+    });
     const [trainingEvents, setTrainingEvents] = useState<any[]>([]);
     const [trainingResponses, setTrainingResponses] = useState<any[]>([]);
+    const [announcements, setAnnouncements] = useState<any[]>([]);
+    const [readAnnouncementIds, setReadAnnouncementIds] = useState<number[]>([]);
 
     const [showLeaveForm, setShowLeaveForm] = useState(false);
 
@@ -55,13 +64,14 @@ export default function MyDashboard({ user }: MyDashboardProps) {
 
     const loadData = async () => {
         try {
-            const [dashData, progressData, historyData, statusData, eventsData, responsesData] = await Promise.all([
+            const [dashData, progressData, historyData, statusData, eventsData, responsesData, announcementData] = await Promise.all([
                 api.getMyDashboard(user.id),
                 api.getMyProgress(user.id),
                 api.getMyHistory(user.id, historyStartDate),
                 api.getLeaveStatus(user.id),
                 api.getTrainingEvents(user.id),
-                api.getMyTrainingResponses(user.id)
+                api.getMyTrainingResponses(user.id),
+                api.getAnnouncements(user.id)
             ]);
             setDashboardData(dashData);
             setProgress(progressData);
@@ -69,6 +79,13 @@ export default function MyDashboard({ user }: MyDashboardProps) {
             setLeaveStatus(statusData);
             setTrainingEvents(eventsData);
             setTrainingResponses(responsesData);
+            setAnnouncements(announcementData);
+
+            // Load read IDs from localStorage
+            const storedReadIds = localStorage.getItem(`readAnnouncements_${user.id}`);
+            if (storedReadIds) {
+                setReadAnnouncementIds(JSON.parse(storedReadIds));
+            }
         } catch (error) {
             console.error(error);
         } finally {
@@ -196,10 +213,26 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                 >
                     <div className="flex items-center justify-between mb-4">
                         <span className={`text-xs font-bold uppercase ${activeTab === 'NOTICE' ? 'text-blue-700' : 'text-gray-500'}`}>お知らせ</span>
-                        <AlertCircle className={activeTab === 'NOTICE' ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-500'} size={20} />
+                        <div className="relative">
+                            <AlertCircle className={activeTab === 'NOTICE' ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-500'} size={20} />
+                            {announcements.some(a => !readAnnouncementIds.includes(a.id)) && (
+                                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full animate-pulse" />
+                            )}
+                        </div>
                     </div>
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-bold text-gray-600">最新情報を確認</span>
+                    <div className="flex flex-col gap-1">
+                        <div className="flex items-baseline gap-2">
+                            {announcements.some(a => !readAnnouncementIds.includes(a.id)) ? (
+                                <span className="text-sm font-bold text-gray-800">未読のお知らせが {announcements.filter(a => !readAnnouncementIds.includes(a.id)).length} 件あります</span>
+                            ) : (
+                                <span className="text-sm font-bold text-gray-600">最新情報を確認</span>
+                            )}
+                        </div>
+                        {announcements.length > 0 && (
+                            <div className="text-[10px] text-gray-400 truncate mt-1">
+                                {announcements[0].title}
+                            </div>
+                        )}
                     </div>
                     {activeTab === 'NOTICE' && (
                         <div className="absolute bottom-0 left-0 w-full h-1 bg-blue-500" />
@@ -418,7 +451,17 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                             <AlertCircle className="text-blue-500" />
                             お知らせ一覧
                         </h2>
-                        <DashboardAnnouncements userId={user.id} />
+                        <DashboardAnnouncements
+                            userId={user.id}
+                            readAnnouncementIds={readAnnouncementIds}
+                            onMarkAsRead={(id) => {
+                                if (!readAnnouncementIds.includes(id)) {
+                                    const newIds = [...readAnnouncementIds, id];
+                                    setReadAnnouncementIds(newIds);
+                                    localStorage.setItem(`readAnnouncements_${user.id}`, JSON.stringify(newIds));
+                                }
+                            }}
+                        />
                     </div>
                 )}
             </div>

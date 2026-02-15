@@ -155,7 +155,7 @@ export default function TrainingDetail() {
                     お探しの研修は削除されたか、お客様の権限では閲覧できない可能性があります。管理者にお問い合わせください。
                 </p>
                 <button
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => navigate('/my-dashboard')}
                     className="px-8 py-3 bg-m3-primary text-white rounded-full font-bold hover:bg-m3-primary/90 transition-all shadow-lg"
                 >
                     ダッシュボードに戻る
@@ -176,7 +176,7 @@ export default function TrainingDetail() {
                 </button>
                 {new URLSearchParams(window.location.search).get('fromAnnouncement') && (
                     <button
-                        onClick={() => navigate('/my-dashboard')}
+                        onClick={() => navigate('/my-dashboard?tab=notice')}
                         className="mb-4 inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-sm font-bold transition-all border border-emerald-100/50"
                     >
                         <ArrowLeft size={16} />
