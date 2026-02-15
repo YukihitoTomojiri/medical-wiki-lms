@@ -144,8 +144,8 @@ export default function DashboardAnnouncements({ userId, readAnnouncementIds = [
 
             {/* Detail Modal */}
             {selectedAnnouncement && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-white rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 relative">
                         <div className="p-6 border-b border-gray-50 flex items-center justify-between bg-emerald-50/30">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600">
