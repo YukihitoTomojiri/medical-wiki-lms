@@ -160,13 +160,13 @@ export default function MyDashboard({ user }: MyDashboardProps) {
             />
 
             {/* Summary Cards (Tabs) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 -mb-px relative z-0">
                 {/* Card 1: Study */}
                 <button
                     onClick={() => setActiveTab('STUDY')}
-                    className={`relative overflow-hidden rounded-2xl border p-5 text-left transition-all duration-200 group ${activeTab === 'STUDY'
-                        ? 'bg-orange-50 border-orange-200 ring-2 ring-orange-500 ring-opacity-50 shadow-md'
-                        : 'bg-white border-gray-100 hover:border-orange-200 hover:shadow-md'
+                    className={`relative overflow-hidden rounded-t-2xl border p-5 text-left transition-all duration-200 group ${activeTab === 'STUDY'
+                        ? 'bg-orange-50/50 border-gray-200 border-b-transparent z-10 shadow-sm pb-6 -mb-1'
+                        : 'bg-white border-gray-200 hover:border-orange-200 hover:shadow-sm rounded-b-2xl'
                         }`}
                 >
                     <div className="flex items-center justify-between mb-4">
@@ -185,9 +185,9 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                 {/* Card 2: Leave */}
                 <button
                     onClick={() => setActiveTab('LEAVE')}
-                    className={`relative overflow-hidden rounded-2xl border p-5 text-left transition-all duration-200 group ${activeTab === 'LEAVE'
-                        ? 'bg-emerald-50 border-emerald-200 ring-2 ring-emerald-500 ring-opacity-50 shadow-md'
-                        : 'bg-white border-gray-100 hover:border-emerald-200 hover:shadow-md'
+                    className={`relative overflow-hidden rounded-t-2xl border p-5 text-left transition-all duration-200 group ${activeTab === 'LEAVE'
+                        ? 'bg-emerald-50/50 border-gray-200 border-b-transparent z-10 shadow-sm pb-6 -mb-1'
+                        : 'bg-white border-gray-200 hover:border-emerald-200 hover:shadow-sm rounded-b-2xl'
                         }`}
                 >
                     <div className="flex items-center justify-between mb-4">
@@ -206,9 +206,9 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                 {/* Card 3: Notices */}
                 <button
                     onClick={() => setActiveTab('NOTICE')}
-                    className={`relative overflow-hidden rounded-2xl border p-5 text-left transition-all duration-200 group ${activeTab === 'NOTICE'
-                        ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-500 ring-opacity-50 shadow-md'
-                        : 'bg-white border-gray-100 hover:border-blue-200 hover:shadow-md'
+                    className={`relative overflow-hidden rounded-t-2xl border p-5 text-left transition-all duration-200 group ${activeTab === 'NOTICE'
+                        ? 'bg-slate-50 border-gray-200 border-b-transparent z-10 shadow-sm pb-6 -mb-1'
+                        : 'bg-white border-gray-200 hover:border-blue-200 hover:shadow-sm rounded-b-2xl'
                         }`}
                 >
                     <div className="flex items-center justify-between mb-4">
@@ -241,9 +241,9 @@ export default function MyDashboard({ user }: MyDashboardProps) {
             </div>
 
             {/* Dynamic Content Area */}
-            <div className={`rounded-3xl p-6 transition-colors duration-300 ${activeTab === 'STUDY' ? 'bg-orange-50/30' :
-                    activeTab === 'LEAVE' ? 'bg-emerald-50/30' :
-                        'bg-blue-50/30'
+            <div className={`rounded-b-3xl rounded-t-xl border border-gray-200 p-6 transition-colors duration-300 shadow-sm ${activeTab === 'STUDY' ? 'bg-orange-50/50 border-t-0' :
+                    activeTab === 'LEAVE' ? 'bg-emerald-50/50 border-t-0' :
+                        'bg-slate-50 border-t-0'
                 }`}>
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
                     {activeTab === 'STUDY' && (
