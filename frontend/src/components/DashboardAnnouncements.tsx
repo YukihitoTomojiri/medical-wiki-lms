@@ -45,22 +45,14 @@ export default function DashboardAnnouncements({ userId, readAnnouncementIds = [
     const hasMore = announcements.length > 3;
 
     return (
-        <div className="bg-white rounded-[24px] border border-gray-100 shadow-m3-1 overflow-hidden mb-6 animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="bg-emerald-50/50 px-6 py-4 flex items-center justify-between border-b border-emerald-100/30">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-emerald-100/50 rounded-xl text-emerald-600">
-                        <Bell size={20} className="stroke-[2.5]" />
-                    </div>
-                    <h3 className="font-bold text-gray-800 text-base">お知らせ</h3>
-                    <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full">
-                        {announcements.length}
-                    </span>
-                </div>
-            </div>
-
-            <div className="divide-y divide-gray-50">
+        <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="grid gap-4">
                 {displayedAnnouncements.map((a) => (
-                    <div key={a.id} className="p-5 hover:bg-gray-50/80 transition-colors group relative">
+                    <div
+                        key={a.id}
+                        className="bg-white rounded-2xl border border-gray-100/50 p-5 shadow-sm hover:shadow-md transition-all group relative cursor-pointer"
+                        onClick={() => handleSelect(a)}
+                    >
                         <div className="flex items-start gap-4">
                             <div className="shrink-0 mt-0.5">
                                 {a.priority === 'HIGH' ? (
@@ -72,7 +64,7 @@ export default function DashboardAnnouncements({ userId, readAnnouncementIds = [
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1 cursor-pointer" onClick={() => handleSelect(a)}>
+                                <div className="flex items-center gap-2 mb-1">
                                     {a.priority === 'HIGH' && (
                                         <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-md">
                                             重要
@@ -87,64 +79,67 @@ export default function DashboardAnnouncements({ userId, readAnnouncementIds = [
                                         {new Date(a.createdAt).toLocaleDateString()}
                                     </span>
                                 </div>
-                                <h4
-                                    className="font-bold text-gray-800 text-sm mb-1 group-hover:text-emerald-700 transition-colors cursor-pointer flex items-center gap-2"
-                                    onClick={() => handleSelect(a)}
-                                >
+                                <h4 className="font-bold text-gray-800 text-sm mb-1 group-hover:text-blue-700 transition-colors">
                                     {a.title}
                                     {!readAnnouncementIds.includes(a.id) && (
-                                        <span className="w-2 h-2 bg-red-500 rounded-full shrink-0" />
+                                        <span className="ml-2 inline-block w-2 h-2 bg-red-500 rounded-full shrink-0" />
                                     )}
                                 </h4>
-                                <p
-                                    className="text-xs text-gray-500 leading-relaxed whitespace-pre-wrap cursor-pointer"
-                                    onClick={() => handleSelect(a)}
-                                >
-                                    {a.content && a.content.length > 100 ? a.content.substring(0, 100) + '...' : a.content}
+                                <p className="text-xs text-gray-500 leading-relaxed truncate">
+                                    {a.content}
                                 </p>
-                                <div className="flex gap-2 mt-2">
+                                <div className="flex gap-2 mt-3">
                                     {a.relatedWikiId && a.relatedType === 'WIKI' && (
                                         <button
-                                            onClick={() => navigate(`/manuals/${a.relatedWikiId}?fromAnnouncement=${a.id}`)}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg text-xs font-bold transition-colors"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/manuals/${a.relatedWikiId}?fromAnnouncement=${a.id}`);
+                                            }}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg text-[10px] font-bold transition-colors border border-purple-100/50"
                                         >
-                                            <BookOpen size={14} />
-                                            研修資料を読む
+                                            <BookOpen size={12} />
+                                            マニュアルを確認
                                         </button>
                                     )}
                                     {a.relatedEventId && a.relatedType === 'TRAINING_EVENT' && (
                                         <button
-                                            onClick={() => navigate(`/training/${a.relatedEventId}?fromAnnouncement=${a.id}`)}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/training/${a.relatedEventId}?fromAnnouncement=${a.id}`);
+                                            }}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-[10px] font-bold transition-colors border border-blue-100/50"
                                         >
-                                            <Bell size={14} />
+                                            <Bell size={12} />
                                             研修詳細
                                         </button>
                                     )}
                                 </div>
                             </div>
+                            <ChevronRight size={16} className="text-gray-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
                         </div>
                     </div>
                 ))}
             </div>
 
             {hasMore && (
-                <button
-                    onClick={() => setShowAll(!showAll)}
-                    className="w-full py-3 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-emerald-600 transition-colors flex items-center justify-center gap-1 border-t border-gray-50"
-                >
-                    {showAll ? (
-                        <>
-                            閉じる
-                            <X size={14} />
-                        </>
-                    ) : (
-                        <>
-                            すべて表示 ({announcements.length}件)
-                            <ChevronRight size={14} />
-                        </>
-                    )}
-                </button>
+                <div className="flex justify-center pt-2">
+                    <button
+                        onClick={() => setShowAll(!showAll)}
+                        className="px-6 py-2 bg-white/50 hover:bg-white text-gray-500 hover:text-blue-600 rounded-full text-xs font-bold transition-all flex items-center gap-2 border border-blue-200/50 shadow-sm"
+                    >
+                        {showAll ? (
+                            <>
+                                閉じる
+                                <X size={14} />
+                            </>
+                        ) : (
+                            <>
+                                すべて表示 ({announcements.length}件)
+                                <ChevronRight size={14} />
+                            </>
+                        )}
+                    </button>
+                </div>
             )}
 
             {/* Detail Modal */}

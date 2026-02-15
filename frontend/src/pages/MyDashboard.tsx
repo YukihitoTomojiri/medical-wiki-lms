@@ -452,9 +452,9 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                     )}
 
                     {activeTab === 'NOTICE' && (
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                            <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
-                                <AlertCircle className="text-blue-500" />
+                        <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                            <h2 className="text-sm font-black text-blue-900/40 uppercase tracking-widest mb-6 flex items-center gap-2 px-2">
+                                <AlertCircle size={16} />
                                 お知らせ一覧
                             </h2>
                             <DashboardAnnouncements
