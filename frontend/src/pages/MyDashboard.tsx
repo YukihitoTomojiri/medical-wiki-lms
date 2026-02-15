@@ -160,61 +160,62 @@ export default function MyDashboard({ user }: MyDashboardProps) {
             />
 
             {/* Summary Cards (Tabs) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 -mb-px relative z-0">
+            {/* Summary Cards (Tabs) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 -mb-2 relative z-10 px-4 md:px-6">
                 {/* Card 1: Study */}
                 <button
                     onClick={() => setActiveTab('STUDY')}
-                    className={`relative overflow-hidden rounded-t-2xl border p-5 text-left transition-all duration-200 group ${activeTab === 'STUDY'
-                        ? 'bg-orange-50/50 border-gray-200 border-b-transparent z-10 shadow-sm pb-6 -mb-1'
-                        : 'bg-white border-gray-200 hover:border-orange-200 hover:shadow-sm rounded-b-2xl'
+                    className={`relative overflow-hidden rounded-t-2xl p-5 text-left transition-all duration-300 group ${activeTab === 'STUDY'
+                        ? 'bg-orange-100 text-orange-900 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 pb-8'
+                        : 'bg-transparent text-gray-500 hover:bg-gray-50 z-0 border-b border-gray-200 pb-5'
                         }`}
                 >
-                    <div className="flex items-center justify-between mb-4">
-                        <span className={`text-xs font-bold uppercase ${activeTab === 'STUDY' ? 'text-orange-700' : 'text-gray-500'}`}>研修・学習状況</span>
-                        <BookOpen className={activeTab === 'STUDY' ? 'text-orange-600' : 'text-gray-400 group-hover:text-orange-500'} size={20} />
+                    <div className="flex items-center justify-between mb-2">
+                        <span className={`text-xs font-black uppercase tracking-wider ${activeTab === 'STUDY' ? 'text-orange-900' : 'text-gray-400'}`}>研修・学習状況</span>
+                        <BookOpen className={activeTab === 'STUDY' ? 'text-orange-700' : 'text-gray-300 group-hover:text-orange-400'} size={20} />
                     </div>
                     <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-black text-gray-800">{uncompletedCount}</span>
-                        <span className="text-xs font-bold text-gray-400">件の未完了 / {dashboardData?.completedTrainingCount || 0}件完了</span>
+                        <span className={`text-2xl font-black ${activeTab === 'STUDY' ? 'text-orange-950' : 'text-gray-400'}`}>{uncompletedCount}</span>
+                        <span className={`text-xs font-bold ${activeTab === 'STUDY' ? 'text-orange-800/70' : 'text-gray-300'}`}>件の未完了</span>
                     </div>
                     {activeTab === 'STUDY' && (
-                        <div className="absolute bottom-0 left-0 w-full h-1 bg-orange-500" />
+                        <div className="absolute top-0 left-0 w-full h-1 bg-orange-400/30" />
                     )}
                 </button>
 
                 {/* Card 2: Leave */}
                 <button
                     onClick={() => setActiveTab('LEAVE')}
-                    className={`relative overflow-hidden rounded-t-2xl border p-5 text-left transition-all duration-200 group ${activeTab === 'LEAVE'
-                        ? 'bg-emerald-50/50 border-gray-200 border-b-transparent z-10 shadow-sm pb-6 -mb-1'
-                        : 'bg-white border-gray-200 hover:border-emerald-200 hover:shadow-sm rounded-b-2xl'
+                    className={`relative overflow-hidden rounded-t-2xl p-5 text-left transition-all duration-300 group ${activeTab === 'LEAVE'
+                        ? 'bg-emerald-100 text-emerald-900 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 pb-8'
+                        : 'bg-transparent text-gray-500 hover:bg-gray-50 z-0 border-b border-gray-200 pb-5'
                         }`}
                 >
-                    <div className="flex items-center justify-between mb-4">
-                        <span className={`text-xs font-bold uppercase ${activeTab === 'LEAVE' ? 'text-emerald-700' : 'text-gray-500'}`}>有給休暇</span>
-                        <Calendar className={activeTab === 'LEAVE' ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500'} size={20} />
+                    <div className="flex items-center justify-between mb-2">
+                        <span className={`text-xs font-black uppercase tracking-wider ${activeTab === 'LEAVE' ? 'text-emerald-900' : 'text-gray-400'}`}>有給休暇</span>
+                        <Calendar className={activeTab === 'LEAVE' ? 'text-emerald-700' : 'text-gray-300 group-hover:text-emerald-400'} size={20} />
                     </div>
                     <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-black text-gray-800">{leaveStatus?.remainingDays ?? dashboardData?.paidLeaveDays ?? 0}</span>
-                        <span className="text-xs font-bold text-gray-400">日の残日数</span>
+                        <span className={`text-2xl font-black ${activeTab === 'LEAVE' ? 'text-emerald-950' : 'text-gray-400'}`}>{leaveStatus?.remainingDays ?? dashboardData?.paidLeaveDays ?? 0}</span>
+                        <span className={`text-xs font-bold ${activeTab === 'LEAVE' ? 'text-emerald-800/70' : 'text-gray-300'}`}>日の残日数</span>
                     </div>
                     {activeTab === 'LEAVE' && (
-                        <div className="absolute bottom-0 left-0 w-full h-1 bg-emerald-500" />
+                        <div className="absolute top-0 left-0 w-full h-1 bg-emerald-400/30" />
                     )}
                 </button>
 
                 {/* Card 3: Notices */}
                 <button
                     onClick={() => setActiveTab('NOTICE')}
-                    className={`relative overflow-hidden rounded-t-2xl border p-5 text-left transition-all duration-200 group ${activeTab === 'NOTICE'
-                        ? 'bg-slate-50 border-gray-200 border-b-transparent z-10 shadow-sm pb-6 -mb-1'
-                        : 'bg-white border-gray-200 hover:border-blue-200 hover:shadow-sm rounded-b-2xl'
+                    className={`relative overflow-hidden rounded-t-2xl p-5 text-left transition-all duration-300 group ${activeTab === 'NOTICE'
+                        ? 'bg-blue-100 text-blue-900 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 pb-8'
+                        : 'bg-transparent text-gray-500 hover:bg-gray-50 z-0 border-b border-gray-200 pb-5'
                         }`}
                 >
-                    <div className="flex items-center justify-between mb-4">
-                        <span className={`text-xs font-bold uppercase ${activeTab === 'NOTICE' ? 'text-blue-700' : 'text-gray-500'}`}>お知らせ</span>
+                    <div className="flex items-center justify-between mb-2">
+                        <span className={`text-xs font-black uppercase tracking-wider ${activeTab === 'NOTICE' ? 'text-blue-900' : 'text-gray-400'}`}>お知らせ</span>
                         <div className="relative">
-                            <AlertCircle className={activeTab === 'NOTICE' ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-500'} size={20} />
+                            <AlertCircle className={activeTab === 'NOTICE' ? 'text-blue-700' : 'text-gray-300 group-hover:text-blue-400'} size={20} />
                             {announcements.some(a => !readAnnouncementIds.includes(a.id)) && (
                                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full animate-pulse" />
                             )}
@@ -223,27 +224,28 @@ export default function MyDashboard({ user }: MyDashboardProps) {
                     <div className="flex flex-col gap-1">
                         <div className="flex items-baseline gap-2">
                             {announcements.some(a => !readAnnouncementIds.includes(a.id)) ? (
-                                <span className="text-sm font-bold text-gray-800">未読のお知らせが {announcements.filter(a => !readAnnouncementIds.includes(a.id)).length} 件あります</span>
+                                <span className={`text-sm font-bold ${activeTab === 'NOTICE' ? 'text-blue-950' : 'text-gray-600'}`}>未読 {announcements.filter(a => !readAnnouncementIds.includes(a.id)).length} 件</span>
                             ) : (
-                                <span className="text-sm font-bold text-gray-600">最新情報を確認</span>
+                                <span className={`text-sm font-bold ${activeTab === 'NOTICE' ? 'text-blue-950' : 'text-gray-600'}`}>最新情報を確認</span>
                             )}
                         </div>
                         {announcements.length > 0 && (
-                            <div className="text-[10px] text-gray-400 truncate mt-1">
+                            <div className={`text-[10px] truncate mt-1 ${activeTab === 'NOTICE' ? 'text-blue-800/70' : 'text-gray-400'}`}>
                                 {announcements[0].title}
                             </div>
                         )}
                     </div>
                     {activeTab === 'NOTICE' && (
-                        <div className="absolute bottom-0 left-0 w-full h-1 bg-blue-500" />
+                        <div className="absolute top-0 left-0 w-full h-1 bg-blue-400/30" />
                     )}
                 </button>
             </div>
 
             {/* Dynamic Content Area */}
-            <div className={`rounded-b-3xl rounded-t-xl border border-gray-200 p-6 transition-colors duration-300 shadow-sm ${activeTab === 'STUDY' ? 'bg-orange-50/50 border-t-0' :
-                    activeTab === 'LEAVE' ? 'bg-emerald-50/50 border-t-0' :
-                        'bg-slate-50 border-t-0'
+            {/* Dynamic Content Area */}
+            <div className={`rounded-3xl p-6 transition-colors duration-300 shadow-sm relative z-0 ${activeTab === 'STUDY' ? 'bg-orange-100' :
+                activeTab === 'LEAVE' ? 'bg-emerald-100' :
+                    'bg-blue-100'
                 }`}>
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
                     {activeTab === 'STUDY' && (
