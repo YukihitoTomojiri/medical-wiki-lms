@@ -30,7 +30,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
     ], []);
 
     const devItems = useMemo(() => [
-        { path: '/developer', label: '開発者メニュー', icon: Database, roles: ['DEVELOPER'] },
+        { path: '/developer', label: '開発者ダッシュボード', icon: Database, roles: ['DEVELOPER'] },
     ], []);
 
     return (

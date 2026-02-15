@@ -59,7 +59,7 @@ describe('Layout Sidebar Visibility', () => {
         // I should fix this expectation too.
         expect(screen.queryByText('Myダッシュボード')).toBeInTheDocument();
         expect(screen.queryByText('管理者ダッシュボード')).not.toBeInTheDocument();
-        expect(screen.queryByText('開発者メニュー')).not.toBeInTheDocument();
+        expect(screen.queryByText('開発者ダッシュボード')).not.toBeInTheDocument();
     });
 
     it('shows Admin Dashboard for ADMIN role', () => {
@@ -81,7 +81,7 @@ describe('Layout Sidebar Visibility', () => {
             </MemoryRouter>
         );
         expect(screen.getByText('管理者ダッシュボード')).toBeInTheDocument();
-        expect(screen.queryByText('開発者メニュー')).not.toBeInTheDocument();
+        expect(screen.queryByText('開発者ダッシュボード')).not.toBeInTheDocument();
     });
 
     it('shows all menus for DEVELOPER role', () => {
@@ -103,6 +103,6 @@ describe('Layout Sidebar Visibility', () => {
             </MemoryRouter>
         );
         expect(screen.getByText('管理者ダッシュボード')).toBeInTheDocument();
-        expect(screen.getByText('開発者メニュー')).toBeInTheDocument();
+        expect(screen.getByText('開発者ダッシュボード')).toBeInTheDocument();
     });
 });

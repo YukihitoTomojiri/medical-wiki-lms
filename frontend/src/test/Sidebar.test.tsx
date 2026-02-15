@@ -64,7 +64,7 @@ describe('Sidebar Menu Visibility', () => {
         expect(screen.getByText('Myダッシュボード')).toBeDefined();
         const adminDashboard = screen.queryByText('管理者ダッシュボード');
         expect(adminDashboard).toBeNull();
-        const devMenu = screen.queryByText('開発者メニュー');
+        const devMenu = screen.queryByText('開発者ダッシュボード');
         expect(devMenu).toBeNull();
     });
 
@@ -89,7 +89,7 @@ describe('Sidebar Menu Visibility', () => {
 
         expect(screen.getByText('マニュアル')).toBeDefined();
         expect(screen.getByText('管理者ダッシュボード')).toBeDefined();
-        const devMenu = screen.queryByText('開発者メニュー');
+        const devMenu = screen.queryByText('開発者ダッシュボード');
         expect(devMenu).toBeNull();
     });
 
@@ -114,6 +114,6 @@ describe('Sidebar Menu Visibility', () => {
 
         expect(screen.getByText('マニュアル')).toBeDefined();
         expect(screen.getByText('管理者ダッシュボード')).toBeDefined();
-        expect(screen.getByText('開発者メニュー')).toBeDefined();
+        expect(screen.getByText('開発者ダッシュボード')).toBeDefined();
     });
 });
