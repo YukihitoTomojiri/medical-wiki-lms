@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { api, Announcement } from '../api';
 import { Bell, Info, AlertTriangle, MessageCircle, ChevronRight, X, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -142,11 +143,11 @@ export default function DashboardAnnouncements({ userId, readAnnouncementIds = [
                 </div>
             )}
 
-            {/* Detail Modal */}
-            {selectedAnnouncement && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 relative">
-                        <div className="p-6 border-b border-gray-50 flex items-center justify-between bg-emerald-50/30">
+            {/* Detail Modal - Using Portal to escape parent stacking context */}
+            {selectedAnnouncement && createPortal(
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 relative max-h-[90vh] flex flex-col">
+                        <div className="p-6 border-b border-gray-50 flex items-center justify-between bg-emerald-50/30 shrink-0">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600">
                                     <Bell size={20} />
@@ -160,7 +161,7 @@ export default function DashboardAnnouncements({ userId, readAnnouncementIds = [
                                 <X size={20} />
                             </button>
                         </div>
-                        <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+                        <div className="p-8 space-y-6 overflow-y-auto">
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2">
                                     {selectedAnnouncement.priority === 'HIGH' && (
@@ -235,7 +236,7 @@ export default function DashboardAnnouncements({ userId, readAnnouncementIds = [
                                 </div>
                             )}
                         </div>
-                        <div className="p-6 bg-gray-50/50 border-t border-gray-50 flex justify-end">
+                        <div className="p-6 bg-gray-50/50 border-t border-gray-50 flex justify-end shrink-0">
                             <button
                                 onClick={() => setSelectedAnnouncement(null)}
                                 className="px-6 py-2 bg-white hover:bg-gray-100 text-gray-600 rounded-full font-bold text-sm border border-gray-200 transition-all shadow-sm"
@@ -244,7 +245,8 @@ export default function DashboardAnnouncements({ userId, readAnnouncementIds = [
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
