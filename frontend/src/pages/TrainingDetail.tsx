@@ -168,12 +168,6 @@ export default function TrainingDetail() {
         <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
             {/* Header Section */}
             <div className="relative group">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="absolute -left-12 top-1 p-2 hover:bg-m3-surface-container-high rounded-full transition-all group hidden lg:block"
-                >
-                    <ArrowLeft size={24} className="text-m3-on-surface-variant group-hover:text-m3-primary" />
-                </button>
                 {new URLSearchParams(window.location.search).get('fromAnnouncement') && (
                     <button
                         onClick={() => navigate('/my-dashboard?tab=notice')}
